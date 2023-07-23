@@ -2,10 +2,13 @@
 
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 
-Template for a minimal, basic repository for AIND projects.
+For FIP photometry data acquisition and hardware control.
+*corresponding protocols.io will be soon available.
 
 ## Installation
-Describe the steps required for a user to begin using the project.
+1.Arduino/Teensy
+2.Spinnakar (ver 1.29.0.5)
+3.Bonsai 
 
 ## Contributing
 Describe how other software developers can contribute to the codebase.

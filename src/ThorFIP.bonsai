@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.8.1"
+<WorkflowBuilder Version="2.8.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
@@ -14,9 +14,12 @@
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
     <Nodes>
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="Value" DisplayName="session" />
+      </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>C:\PhotometryDataTemp\</Value>
+          <Value>C:\behavior_data\428-9-A\0\behavior_0_2024-05-01_14-02-22</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:BehaviorSubject">
@@ -741,7 +744,7 @@
               <Name>RootPath</Name>
             </Expression>
             <Expression xsi:type="Format">
-              <Format>{0}/PhotometryFolder/FIP_DataG_.csv</Format>
+              <Format>{0}/fib/FIP_DataG_.csv</Format>
               <Selector />
             </Expression>
             <Expression xsi:type="PropertyMapping">
@@ -750,7 +753,7 @@
               </PropertyMappings>
             </Expression>
             <Expression xsi:type="io:CsvWriter">
-              <io:FileName>C:\PhotometryDataTemp\/PhotometryFolder/FIP_DataG_.csv</io:FileName>
+              <io:FileName>C:\behavior_data\428-9-A\0\behavior_0_2024-05-01_14-02-22/fib/FIP_DataG_.csv</io:FileName>
               <io:Append>false</io:Append>
               <io:Overwrite>false</io:Overwrite>
               <io:Suffix>Timestamp</io:Suffix>
@@ -760,7 +763,7 @@
               <Name>RootPath</Name>
             </Expression>
             <Expression xsi:type="Format">
-              <Format>{0}/PhotometryFolder/FIP_RawG_.bin</Format>
+              <Format>{0}/fib/FIP_RawG_.bin</Format>
               <Selector />
             </Expression>
             <Expression xsi:type="PropertyMapping">
@@ -770,7 +773,7 @@
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="dsp:MatrixWriter">
-                <dsp:Path>C:\PhotometryDataTemp\/PhotometryFolder/FIP_RawG_.bin</dsp:Path>
+                <dsp:Path>C:\behavior_data\428-9-A\0\behavior_0_2024-05-01_14-02-22/fib/FIP_RawG_.bin</dsp:Path>
                 <dsp:Suffix>Timestamp</dsp:Suffix>
                 <dsp:Overwrite>false</dsp:Overwrite>
                 <dsp:Layout>ColumnMajor</dsp:Layout>
@@ -1474,7 +1477,7 @@
               <Name>RootPath</Name>
             </Expression>
             <Expression xsi:type="Format">
-              <Format>{0}/PhotometryFolder/FIP_DataIso_.csv</Format>
+              <Format>{0}/fib/FIP_DataIso_.csv</Format>
               <Selector />
             </Expression>
             <Expression xsi:type="PropertyMapping">
@@ -1483,7 +1486,7 @@
               </PropertyMappings>
             </Expression>
             <Expression xsi:type="io:CsvWriter">
-              <io:FileName>C:\PhotometryDataTemp\/PhotometryFolder/FIP_DataIso_.csv</io:FileName>
+              <io:FileName>C:\behavior_data\428-9-A\0\behavior_0_2024-05-01_14-02-22/fib/FIP_DataIso_.csv</io:FileName>
               <io:Append>false</io:Append>
               <io:Overwrite>false</io:Overwrite>
               <io:Suffix>Timestamp</io:Suffix>
@@ -1493,7 +1496,7 @@
               <Name>RootPath</Name>
             </Expression>
             <Expression xsi:type="Format">
-              <Format>{0}/PhotometryFolder/FIP_RawIso_.bin</Format>
+              <Format>{0}/fib/FIP_RawIso_.bin</Format>
               <Selector />
             </Expression>
             <Expression xsi:type="PropertyMapping">
@@ -1503,7 +1506,7 @@
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="dsp:MatrixWriter">
-                <dsp:Path>C:\PhotometryDataTemp\/PhotometryFolder/FIP_RawIso_.bin</dsp:Path>
+                <dsp:Path>C:\behavior_data\428-9-A\0\behavior_0_2024-05-01_14-02-22/fib/FIP_RawIso_.bin</dsp:Path>
                 <dsp:Suffix>Timestamp</dsp:Suffix>
                 <dsp:Overwrite>false</dsp:Overwrite>
                 <dsp:Layout>ColumnMajor</dsp:Layout>
@@ -2213,7 +2216,7 @@
               <Name>RootPath</Name>
             </Expression>
             <Expression xsi:type="Format">
-              <Format>{0}/PhotometryFolder/FIP_DataR_.csv</Format>
+              <Format>{0}/fib/FIP_DataR_.csv</Format>
               <Selector />
             </Expression>
             <Expression xsi:type="PropertyMapping">
@@ -2222,7 +2225,7 @@
               </PropertyMappings>
             </Expression>
             <Expression xsi:type="io:CsvWriter">
-              <io:FileName>C:\PhotometryDataTemp\/PhotometryFolder/FIP_DataR_.csv</io:FileName>
+              <io:FileName>C:\behavior_data\428-9-A\0\behavior_0_2024-05-01_14-02-22/fib/FIP_DataR_.csv</io:FileName>
               <io:Append>false</io:Append>
               <io:Overwrite>false</io:Overwrite>
               <io:Suffix>Timestamp</io:Suffix>
@@ -2232,7 +2235,7 @@
               <Name>RootPath</Name>
             </Expression>
             <Expression xsi:type="Format">
-              <Format>{0}/PhotometryFolder/FIP_RawR_.bin</Format>
+              <Format>{0}/fib/FIP_RawR_.bin</Format>
               <Selector />
             </Expression>
             <Expression xsi:type="PropertyMapping">
@@ -2242,7 +2245,7 @@
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="dsp:MatrixWriter">
-                <dsp:Path>C:\PhotometryDataTemp\/PhotometryFolder/FIP_RawR_.bin</dsp:Path>
+                <dsp:Path>C:\behavior_data\428-9-A\0\behavior_0_2024-05-01_14-02-22/fib/FIP_RawR_.bin</dsp:Path>
                 <dsp:Suffix>Timestamp</dsp:Suffix>
                 <dsp:Overwrite>false</dsp:Overwrite>
                 <dsp:Layout>ColumnMajor</dsp:Layout>
@@ -4258,6 +4261,29 @@
           </Edges>
         </Workflow>
       </Expression>
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="Value" DisplayName="RunCamera" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="BooleanProperty">
+          <Value>true</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="rx:Condition">
+          <Workflow>
+            <Nodes>
+              <Expression xsi:type="WorkflowInput">
+                <Name>Source1</Name>
+              </Expression>
+              <Expression xsi:type="WorkflowOutput" />
+            </Nodes>
+            <Edges>
+              <Edge From="0" To="1" Label="Source1" />
+            </Edges>
+          </Workflow>
+        </Builder>
+      </Expression>
       <Expression xsi:type="Disable">
         <Builder xsi:type="GroupWorkflow">
           <Name>BehaviorCam</Name>
@@ -4289,7 +4315,7 @@
                 <Name>RootPath</Name>
               </Expression>
               <Expression xsi:type="Format">
-                <Format>{0}/VideoFolder/FaceBottomCamera_.avi</Format>
+                <Format>{0}/behavior-videos/FaceBottomCamera_.avi</Format>
                 <Selector />
               </Expression>
               <Expression xsi:type="PropertyMapping">
@@ -4299,7 +4325,7 @@
               </Expression>
               <Expression xsi:type="Combinator">
                 <Combinator xsi:type="cv:VideoWriter">
-                  <cv:FileName>C:\PhotometryDataTemp\/VideoFolder/FaceBottomCamera_.avi</cv:FileName>
+                  <cv:FileName>C:\behavior_data\428-9-A\0\behavior_0_2024-05-01_13-39-56\fib/VideoFolder/FaceBottomCamera_.avi</cv:FileName>
                   <cv:Suffix>Timestamp</cv:Suffix>
                   <cv:Buffered>true</cv:Buffered>
                   <cv:Overwrite>false</cv:Overwrite>
@@ -4322,7 +4348,7 @@
                 <Name>RootPath</Name>
               </Expression>
               <Expression xsi:type="Format">
-                <Format>{0}/VideoFolder/FaceBottomCamera_.csv</Format>
+                <Format>{0}/behavior-videos/FaceBottomCamera_.csv</Format>
                 <Selector />
               </Expression>
               <Expression xsi:type="PropertyMapping">
@@ -4331,7 +4357,7 @@
                 </PropertyMappings>
               </Expression>
               <Expression xsi:type="io:CsvWriter">
-                <io:FileName>C:\PhotometryDataTemp\/VideoFolder/FaceBottomCamera_.csv</io:FileName>
+                <io:FileName>C:\behavior_data\428-9-A\0\behavior_0_2024-05-01_13-39-56\fib/VideoFolder/FaceBottomCamera_.csv</io:FileName>
                 <io:Append>false</io:Append>
                 <io:Overwrite>false</io:Overwrite>
                 <io:Suffix>Timestamp</io:Suffix>
@@ -4361,7 +4387,7 @@
                 <Name>RootPath</Name>
               </Expression>
               <Expression xsi:type="Format">
-                <Format>{0}/VideoFolder/FaceSideCamera_.avi</Format>
+                <Format>{0}/behavior-videos/FaceSideCamera_.avi</Format>
                 <Selector />
               </Expression>
               <Expression xsi:type="PropertyMapping">
@@ -4371,7 +4397,7 @@
               </Expression>
               <Expression xsi:type="Combinator">
                 <Combinator xsi:type="cv:VideoWriter">
-                  <cv:FileName>C:\PhotometryDataTemp\/VideoFolder/FaceSideCamera_.avi</cv:FileName>
+                  <cv:FileName>C:\behavior_data\428-9-A\0\behavior_0_2024-05-01_13-39-56\fib/VideoFolder/FaceSideCamera_.avi</cv:FileName>
                   <cv:Suffix>Timestamp</cv:Suffix>
                   <cv:Buffered>true</cv:Buffered>
                   <cv:Overwrite>false</cv:Overwrite>
@@ -4394,7 +4420,7 @@
                 <Name>RootPath</Name>
               </Expression>
               <Expression xsi:type="Format">
-                <Format>{0}/VideoFolder/FaceSideCamera_.csv</Format>
+                <Format>{0}/behavior-videos/FaceSideCamera_.csv</Format>
                 <Selector />
               </Expression>
               <Expression xsi:type="PropertyMapping">
@@ -4403,7 +4429,7 @@
                 </PropertyMappings>
               </Expression>
               <Expression xsi:type="io:CsvWriter">
-                <io:FileName>C:\PhotometryDataTemp\/VideoFolder/FaceSideCamera_.csv</io:FileName>
+                <io:FileName>C:\behavior_data\428-9-A\0\behavior_0_2024-05-01_13-39-56\fib/VideoFolder/FaceSideCamera_.csv</io:FileName>
                 <io:Append>false</io:Append>
                 <io:Overwrite>false</io:Overwrite>
                 <io:Suffix>Timestamp</io:Suffix>
@@ -4450,9 +4476,19 @@
           </Workflow>
         </Builder>
       </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="rx:SubscribeWhen" />
+        </Builder>
+      </Expression>
     </Nodes>
     <Edges>
       <Edge From="0" To="1" Label="Source1" />
+      <Edge From="1" To="2" Label="Source1" />
+      <Edge From="4" To="5" Label="Source1" />
+      <Edge From="5" To="6" Label="Source1" />
+      <Edge From="6" To="8" Label="Source1" />
+      <Edge From="7" To="8" Label="Source2" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>

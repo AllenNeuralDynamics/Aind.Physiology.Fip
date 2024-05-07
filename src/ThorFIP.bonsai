@@ -2252,6 +2252,7 @@
               </Combinator>
             </Expression>
             <Expression xsi:type="viz:TableLayoutPanelBuilder">
+              <viz:Name>FIP Measurements></viz:Name>
               <viz:ColumnCount>4</viz:ColumnCount>
               <viz:RowCount>6</viz:RowCount>
               <viz:ColumnStyles />
@@ -4438,6 +4439,7 @@
               <Expression xsi:type="VisualizerMapping" />
               <Expression xsi:type="VisualizerMapping" />
               <Expression xsi:type="viz:TableLayoutPanelBuilder">
+                <viz:Name>FIP Camera</viz:Name>
                 <viz:ColumnCount>1</viz:ColumnCount>
                 <viz:RowCount>2</viz:RowCount>
                 <viz:ColumnStyles />

@@ -1452,7 +1452,7 @@
               </Operand>
             </Expression>
             <Expression xsi:type="MemberSelector">
-              <Selector>Activity</Selector>
+              <Selector>Activity.Val0</Selector>
             </Expression>
             <Expression xsi:type="Index">
               <Operand xsi:type="IntProperty">
@@ -2252,7 +2252,7 @@
               </Combinator>
             </Expression>
             <Expression xsi:type="viz:TableLayoutPanelBuilder">
-              <viz:Name>FIP Measurements></viz:Name>
+              <viz:Name>FIP Measurements&gt;</viz:Name>
               <viz:ColumnCount>4</viz:ColumnCount>
               <viz:RowCount>6</viz:RowCount>
               <viz:ColumnStyles />

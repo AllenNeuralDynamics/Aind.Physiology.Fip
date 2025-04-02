@@ -2,9 +2,9 @@ import datetime
 import os
 
 from aind_behavior_services.session import AindBehaviorSessionModel
-from aind_physiology_fip.task_logic import AindPhysioFipParameters, AindPhysioFipTaskLogic
-import aind_physiology_fip.rig import AindPhysioFipRig
 
+from aind_physiology_fip.rig import AindPhysioFipRig
+from aind_physiology_fip.task_logic import AindPhysioFipParameters, AindPhysioFipTaskLogic
 
 
 def mock_session() -> AindBehaviorSessionModel:
@@ -23,17 +23,13 @@ def mock_session() -> AindBehaviorSessionModel:
 
 
 def mock_rig() -> AindPhysioFipRig:
-
     return AindPhysioFipRig(
         rig_name="test_rig",
     )
 
 
 def mock_task_logic() -> AindPhysioFipTaskLogic:
-
-    return AindPhysioFipTaskLogic(
-        task_parameters=AindPhysioFipParameters()
-    )
+    return AindPhysioFipTaskLogic(task_parameters=AindPhysioFipParameters())
 
 
 def main(path_seed: str = "./local/{schema}.json"):

@@ -1,0 +1,760 @@
+{
+  "definitions": {
+    "BaseModel": {
+      "properties": {},
+      "title": "BaseModel",
+      "type": "object"
+    },
+    "Circle": {
+      "properties": {
+        "center": {
+          "$ref": "#/definitions/Point2f",
+          "default": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "description": "Center of the circle (px)"
+        },
+        "radius": {
+          "default": 50,
+          "description": "Radius of the circle (px)",
+          "minimum": 0,
+          "title": "Radius",
+          "type": "number"
+        }
+      },
+      "title": "Circle",
+      "type": "object"
+    },
+    "FipCamera": {
+      "properties": {
+        "device_type": {
+          "const": "SpinnakerCamera",
+          "default": "SpinnakerCamera",
+          "description": "Device type",
+          "title": "Device Type",
+          "type": "string"
+        },
+        "additional_settings": {
+          "default": null,
+          "description": "Additional settings",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/BaseModel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "calibration": {
+          "default": null,
+          "description": "Calibration",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/BaseModel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "serial_number": {
+          "description": "Camera serial number",
+          "title": "Serial Number",
+          "type": "string"
+        },
+        "binning": {
+          "default": 1,
+          "description": "Binning",
+          "minimum": 1,
+          "title": "Binning",
+          "type": "integer"
+        },
+        "color_processing": {
+          "default": "Default",
+          "description": "Color processing",
+          "enum": [
+            "Default",
+            "NoColorProcessing"
+          ],
+          "title": "Color Processing",
+          "type": "string"
+        },
+        "exposure": {
+          "default": 1000,
+          "description": "Exposure time",
+          "minimum": 100,
+          "title": "Exposure",
+          "type": "integer"
+        },
+        "gain": {
+          "default": 0,
+          "description": "Gain",
+          "minimum": 0,
+          "title": "Gain",
+          "type": "number"
+        },
+        "gamma": {
+          "default": null,
+          "description": "Gamma. If None, will disable gamma correction.",
+          "oneOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Gamma"
+        },
+        "adc_bit_depth": {
+          "const": 2,
+          "default": 2,
+          "description": "ADC bit depth. If None will be left as default.",
+          "title": "Adc Bit Depth",
+          "type": "integer"
+        },
+        "pixel_format": {
+          "default": 1,
+          "description": "Pixel format. If None will be left as default.",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/SpinnakerCameraPixelFormat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "region_of_interest": {
+          "$ref": "#/definitions/Rect",
+          "default": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "description": "Region of interest"
+        },
+        "video_writer": {
+          "default": {
+            "video_writer_type": "VideoMatrixWriter",
+            "container_extension": "bin",
+            "layout": "ColumnMajor",
+            "spatial_downsample": 1
+          },
+          "description": "Video writer. If not provided, no video will be saved.",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/VideoMatrixWriter"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "serial_number"
+      ],
+      "title": "FipCamera",
+      "type": "object"
+    },
+    "HarpCuttlefishFip": {
+      "properties": {
+        "device_type": {
+          "const": "cuTTLefishFip",
+          "default": "cuTTLefishFip",
+          "title": "Device Type",
+          "type": "string"
+        },
+        "additional_settings": {
+          "$ref": "#/definitions/HarpCuttlefishFipSettings",
+          "description": "Additional settings for the cuTTLefishFip device"
+        },
+        "calibration": {
+          "default": null,
+          "description": "Calibration",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/BaseModel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "who_am_i": {
+          "const": 1407,
+          "default": 1407,
+          "title": "Who Am I",
+          "type": "integer"
+        },
+        "serial_number": {
+          "default": null,
+          "description": "Device serial number",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Serial Number"
+        },
+        "port_name": {
+          "description": "Device port name",
+          "title": "Port Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "additional_settings",
+        "port_name"
+      ],
+      "title": "HarpCuttlefishFip",
+      "type": "object"
+    },
+    "HarpCuttlefishFipSettings": {
+      "properties": {
+        "green_light_source_power": {
+          "default": 0,
+          "description": "Green light source power (0-100%)",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Green Light Source Power",
+          "type": "integer"
+        },
+        "red_light_source_power": {
+          "default": 0,
+          "description": "Red light source power (0-100%)",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Red Light Source Power",
+          "type": "integer"
+        }
+      },
+      "title": "HarpCuttlefishFipSettings",
+      "type": "object"
+    },
+    "Networking": {
+      "properties": {
+        "zmq_publisher": {
+          "$ref": "#/definitions/ZmqConnection",
+          "default": {
+            "connection_string": "@tcp://localhost:5556",
+            "topic": "fip"
+          }
+        },
+        "zmq_subscriber": {
+          "$ref": "#/definitions/ZmqConnection",
+          "default": {
+            "connection_string": "@tcp://localhost:5557",
+            "topic": "fip"
+          }
+        }
+      },
+      "title": "Networking",
+      "type": "object"
+    },
+    "Point2f": {
+      "properties": {
+        "x": {
+          "description": "X coordinate of the point (px)",
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "description": "Y coordinate of the point (px)",
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "Point2f",
+      "type": "object"
+    },
+    "Rect": {
+      "properties": {
+        "x": {
+          "default": 0,
+          "description": "X coordinate of the top-left corner",
+          "minimum": 0,
+          "title": "X",
+          "type": "integer"
+        },
+        "y": {
+          "default": 0,
+          "description": "Y coordinate of the top-left corner",
+          "minimum": 0,
+          "title": "Y",
+          "type": "integer"
+        },
+        "width": {
+          "default": 0,
+          "description": "Width of the rectangle",
+          "minimum": 0,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "default": 0,
+          "description": "Height of the rectangle",
+          "minimum": 0,
+          "title": "Height",
+          "type": "integer"
+        }
+      },
+      "title": "Rect",
+      "type": "object"
+    },
+    "RoiSettings": {
+      "properties": {
+        "camera_green_iso": {
+          "$ref": "#/definitions/Circle",
+          "description": "Region of interest to be applied to the green and iso camera channel"
+        },
+        "camera_red": {
+          "$ref": "#/definitions/Circle",
+          "description": "Region of interest to be applied to the red camera channel"
+        },
+        "operation": {
+          "const": "Avg",
+          "default": "Avg",
+          "description": "Operation to be applied to the region of interest",
+          "title": "Operation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "camera_green_iso",
+        "camera_red"
+      ],
+      "title": "RoiSettings",
+      "type": "object"
+    },
+    "SpinnakerCameraPixelFormat": {
+      "enum": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143
+      ],
+      "title": "SpinnakerCameraPixelFormat",
+      "type": "integer",
+      "x-enumNames": [
+        "Mono8",
+        "Mono16",
+        "Rgb8packed",
+        "Bayergr8",
+        "Bayerrg8",
+        "Bayergb8",
+        "Bayerbg8",
+        "Bayergr16",
+        "Bayerrg16",
+        "Bayergb16",
+        "Bayerbg16",
+        "Mono12packed",
+        "Bayergr12packed",
+        "Bayerrg12packed",
+        "Bayergb12packed",
+        "Bayerbg12packed",
+        "Yuv411packed",
+        "Yuv422packed",
+        "Yuv444packed",
+        "Mono12p",
+        "Bayergr12p",
+        "Bayerrg12p",
+        "Bayergb12p",
+        "Bayerbg12p",
+        "Ycbcr8",
+        "Ycbcr4228",
+        "Ycbcr4118",
+        "Bgr8",
+        "Bgra8",
+        "Mono10packed",
+        "Bayergr10packed",
+        "Bayerrg10packed",
+        "Bayergb10packed",
+        "Bayerbg10packed",
+        "Mono10p",
+        "Bayergr10p",
+        "Bayerrg10p",
+        "Bayergb10p",
+        "Bayerbg10p",
+        "Mono1p",
+        "Mono2p",
+        "Mono4p",
+        "Mono8s",
+        "Mono10",
+        "Mono12",
+        "Mono14",
+        "Mono16s",
+        "Mono32f",
+        "Bayerbg10",
+        "Bayerbg12",
+        "Bayergb10",
+        "Bayergb12",
+        "Bayergr10",
+        "Bayergr12",
+        "Bayerrg10",
+        "Bayerrg12",
+        "Rgba8",
+        "Rgba10",
+        "Rgba10p",
+        "Rgba12",
+        "Rgba12p",
+        "Rgba14",
+        "Rgba16",
+        "Rgb8",
+        "Rgb8Planar",
+        "Rgb10",
+        "Rgb10Planar",
+        "Rgb10p",
+        "Rgb10p32",
+        "Rgb12",
+        "Rgb12Planar",
+        "Rgb12p",
+        "Rgb14",
+        "Rgb16",
+        "Rgb16s",
+        "Rgb32f",
+        "Rgb16Planar",
+        "Rgb565p",
+        "Bgra10",
+        "Bgra10p",
+        "Bgra12",
+        "Bgra12p",
+        "Bgra14",
+        "Bgra16",
+        "Rgba32f",
+        "Bgr10",
+        "Bgr10p",
+        "Bgr12",
+        "Bgr12p",
+        "Bgr14",
+        "Bgr16",
+        "Bgr565p",
+        "R8",
+        "R10",
+        "R12",
+        "R16",
+        "G8",
+        "G10",
+        "G12",
+        "G16",
+        "B8",
+        "B10",
+        "B12",
+        "B16",
+        "Coord3dAbc8",
+        "Coord3dAbc8Planar",
+        "Coord3dAbc10p",
+        "Coord3dAbc10pPlanar",
+        "Coord3dAbc12p",
+        "Coord3dAbc12pPlanar",
+        "Coord3dAbc16",
+        "Coord3dAbc16Planar",
+        "Coord3dAbc32f",
+        "Coord3dAbc32fPlanar",
+        "Coord3dAc8",
+        "Coord3dAc8Planar",
+        "Coord3dAc10p",
+        "Coord3dAc10pPlanar",
+        "Coord3dAc12p",
+        "Coord3dAc12pPlanar",
+        "Coord3dAc16",
+        "Coord3dAc16Planar",
+        "Coord3dAc32f",
+        "Coord3dAc32fPlanar",
+        "Coord3dA8",
+        "Coord3dA10p",
+        "Coord3dA12p",
+        "Coord3dA16",
+        "Coord3dA32f",
+        "Coord3dB8",
+        "Coord3dB10p",
+        "Coord3dB12p",
+        "Coord3dB16",
+        "Coord3dB32f",
+        "Coord3dC8",
+        "Coord3dC10p",
+        "Coord3dC12p",
+        "Coord3dC16",
+        "Coord3dC32f",
+        "Confidence1",
+        "Confidence1p",
+        "Confidence8",
+        "Confidence16",
+        "Confidence32f"
+      ]
+    },
+    "VideoMatrixWriter": {
+      "properties": {
+        "video_writer_type": {
+          "const": "VideoMatrixWriter",
+          "default": "VideoMatrixWriter",
+          "title": "Video Writer Type",
+          "type": "string"
+        },
+        "container_extension": {
+          "default": "bin",
+          "description": "Container extension",
+          "title": "Container Extension",
+          "type": "string"
+        },
+        "layout": {
+          "default": "ColumnMajor",
+          "description": "Layout of the video matrix",
+          "enum": [
+            "RawMajor",
+            "ColumnMajor"
+          ],
+          "title": "Layout",
+          "type": "string"
+        },
+        "spatial_downsample": {
+          "default": 1,
+          "description": "Downsample factor",
+          "minimum": 1,
+          "title": "Spatial Downsample",
+          "type": "integer"
+        }
+      },
+      "title": "VideoMatrixWriter",
+      "type": "object"
+    },
+    "ZmqConnection": {
+      "properties": {
+        "connection_string": {
+          "default": "@tcp://localhost:5556",
+          "title": "Connection String",
+          "type": "string"
+        },
+        "topic": {
+          "default": "",
+          "title": "Topic",
+          "type": "string"
+        }
+      },
+      "title": "ZmqConnection",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "aind_behavior_services_pkg_version": {
+      "default": "0.10.2",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "title": "aind_behavior_services package version",
+      "type": "string"
+    },
+    "version": {
+      "const": "0.1.0",
+      "default": "0.1.0",
+      "title": "Version",
+      "type": "string"
+    },
+    "computer_name": {
+      "description": "Computer name",
+      "title": "Computer Name",
+      "type": "string"
+    },
+    "rig_name": {
+      "description": "Rig name",
+      "title": "Rig Name",
+      "type": "string"
+    },
+    "camera_green_iso": {
+      "$ref": "#/definitions/FipCamera",
+      "description": "Camera for the green and iso channels",
+      "title": "G/Iso Camera"
+    },
+    "camera_red": {
+      "$ref": "#/definitions/FipCamera",
+      "description": "Red camera",
+      "title": "Red Camera"
+    },
+    "roi_settings": {
+      "default": [],
+      "description": "Region of interest settings",
+      "items": {
+        "$ref": "#/definitions/RoiSettings"
+      },
+      "title": "Region of interest settings",
+      "type": "array"
+    },
+    "cuttlefish_fip": {
+      "$ref": "#/definitions/HarpCuttlefishFip",
+      "description": "CuttlefishFip board for controlling the trigger of cameras and light-sources",
+      "title": "CuttlefishFip"
+    },
+    "networking": {
+      "$ref": "#/definitions/Networking",
+      "default": {
+        "zmq_publisher": {
+          "connection_string": "@tcp://localhost:5556",
+          "topic": "fip"
+        },
+        "zmq_subscriber": {
+          "connection_string": "@tcp://localhost:5557",
+          "topic": "fip"
+        }
+      },
+      "description": "Networking settings"
+    }
+  },
+  "required": [
+    "rig_name",
+    "camera_green_iso",
+    "camera_red",
+    "cuttlefish_fip"
+  ],
+  "title": "AindPhysioFipRig",
+  "type": "object"
+}

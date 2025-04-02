@@ -16,7 +16,7 @@ class Circle(BaseModel):
     radius: float = Field(default=50, ge=0, description="Radius of the circle (px)")
 
 
-class VideoMatrixWriter(rig.cameras.VideoWriter):
+class VideoMatrixWriter(BaseModel):
     video_writer_type: Literal["VideoMatrixWriter"] = Field(default="VideoMatrixWriter")
     container_extension: str = Field(default="bin", description="Container extension")
     layout: Literal["RawMajor", "ColumnMajor"] = Field(default="ColumnMajor", description="Layout of the video matrix")

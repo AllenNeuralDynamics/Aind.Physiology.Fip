@@ -7,7 +7,7 @@ __version__ = "0.1.0"
 
 
 class AindPhysioFipParameters(TaskParameters):
-    example_parameter: float = Field(default=0, title="Example parameter", description="This is an example parameter")
+    pass
 
 
 class AindPhysioFipTaskLogic(AindBehaviorTaskLogicModel):
@@ -15,4 +15,6 @@ class AindPhysioFipTaskLogic(AindBehaviorTaskLogicModel):
 
     name: Literal["AindPhysiologyFip"] = Field(default="AindPhysiologyFip", title="Name of the task logic", frozen=True)
     version: Literal[__version__] = __version__
-    task_parameters: AindPhysioFipParameters = Field(..., title="Task parameters", validate_default=True)
+    task_parameters: AindPhysioFipParameters = Field(
+        AindPhysioFipParameters(), title="Task parameters", validate_default=True
+    )

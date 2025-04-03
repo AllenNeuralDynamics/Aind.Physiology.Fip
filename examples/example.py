@@ -50,7 +50,7 @@ def mock_rig() -> AindPhysioFipRig:
         cuttlefish_fip=HarpCuttlefishFip(
             port_name="COM1",
             additional_settings=HarpCuttlefishFipSettings(
-                green_light_source_duty_cyle=10, red_light_source_duty_cycle=20
+                green_light_source_duty_cycle=10, red_light_source_duty_cycle=20
             ),
         ),
     )

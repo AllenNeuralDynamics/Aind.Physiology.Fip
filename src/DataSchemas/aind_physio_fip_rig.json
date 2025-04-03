@@ -220,12 +220,12 @@
     },
     "HarpCuttlefishFipSettings": {
       "properties": {
-        "green_light_source_duty_cyle": {
+        "green_light_source_duty_cycle": {
           "default": 1,
           "description": "Green light source power (0-100%)",
           "maximum": 100,
           "minimum": 0,
-          "title": "Green Light Source Duty Cyle",
+          "title": "Green Light Source Duty Cycle",
           "type": "integer"
         },
         "red_light_source_duty_cycle": {

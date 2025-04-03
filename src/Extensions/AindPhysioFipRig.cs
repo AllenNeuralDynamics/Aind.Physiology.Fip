@@ -634,7 +634,7 @@ namespace AindPhysiologyFip.Rig
     public partial class HarpCuttlefishFipSettings
     {
     
-        private int _greenLightSourceDutyCyle = 1;
+        private int _greenLightSourceDutyCycle = 1;
     
         private int _redLightSourceDutyCycle = 1;
     
@@ -644,24 +644,24 @@ namespace AindPhysiologyFip.Rig
     
         protected HarpCuttlefishFipSettings(HarpCuttlefishFipSettings other)
         {
-            _greenLightSourceDutyCyle = other._greenLightSourceDutyCyle;
+            _greenLightSourceDutyCycle = other._greenLightSourceDutyCycle;
             _redLightSourceDutyCycle = other._redLightSourceDutyCycle;
         }
     
         /// <summary>
         /// Green light source power (0-100%)
         /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("green_light_source_duty_cyle")]
+        [Newtonsoft.Json.JsonPropertyAttribute("green_light_source_duty_cycle")]
         [System.ComponentModel.DescriptionAttribute("Green light source power (0-100%)")]
-        public int GreenLightSourceDutyCyle
+        public int GreenLightSourceDutyCycle
         {
             get
             {
-                return _greenLightSourceDutyCyle;
+                return _greenLightSourceDutyCycle;
             }
             set
             {
-                _greenLightSourceDutyCyle = value;
+                _greenLightSourceDutyCycle = value;
             }
         }
     
@@ -694,7 +694,7 @@ namespace AindPhysiologyFip.Rig
     
         protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
         {
-            stringBuilder.Append("green_light_source_duty_cyle = " + _greenLightSourceDutyCyle + ", ");
+            stringBuilder.Append("green_light_source_duty_cycle = " + _greenLightSourceDutyCycle + ", ");
             stringBuilder.Append("red_light_source_duty_cycle = " + _redLightSourceDutyCycle);
             return true;
         }

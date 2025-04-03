@@ -58,7 +58,7 @@ class RoiSettings(BaseModel):
 
 
 class HarpCuttlefishFipSettings(BaseModel):
-    green_light_source_duty_cyle: int = Field(default=1, ge=0, le=100, description="Green light source power (0-100%)")
+    green_light_source_duty_cycle: int = Field(default=1, ge=0, le=100, description="Green light source power (0-100%)")
     red_light_source_duty_cycle: int = Field(default=1, ge=0, le=100, description="Red light source power (0-100%)")
     # TODO light source tasks...
 

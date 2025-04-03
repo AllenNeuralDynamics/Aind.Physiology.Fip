@@ -634,9 +634,9 @@ namespace AindPhysiologyFip.Rig
     public partial class HarpCuttlefishFipSettings
     {
     
-        private int _greenLightSourcePower = 0;
+        private int _greenLightSourceDutyCyle = 1;
     
-        private int _redLightSourcePower = 0;
+        private int _redLightSourceDutyCycle = 1;
     
         public HarpCuttlefishFipSettings()
         {
@@ -644,41 +644,41 @@ namespace AindPhysiologyFip.Rig
     
         protected HarpCuttlefishFipSettings(HarpCuttlefishFipSettings other)
         {
-            _greenLightSourcePower = other._greenLightSourcePower;
-            _redLightSourcePower = other._redLightSourcePower;
+            _greenLightSourceDutyCyle = other._greenLightSourceDutyCyle;
+            _redLightSourceDutyCycle = other._redLightSourceDutyCycle;
         }
     
         /// <summary>
         /// Green light source power (0-100%)
         /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("green_light_source_power")]
+        [Newtonsoft.Json.JsonPropertyAttribute("green_light_source_duty_cyle")]
         [System.ComponentModel.DescriptionAttribute("Green light source power (0-100%)")]
-        public int GreenLightSourcePower
+        public int GreenLightSourceDutyCyle
         {
             get
             {
-                return _greenLightSourcePower;
+                return _greenLightSourceDutyCyle;
             }
             set
             {
-                _greenLightSourcePower = value;
+                _greenLightSourceDutyCyle = value;
             }
         }
     
         /// <summary>
         /// Red light source power (0-100%)
         /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("red_light_source_power")]
+        [Newtonsoft.Json.JsonPropertyAttribute("red_light_source_duty_cycle")]
         [System.ComponentModel.DescriptionAttribute("Red light source power (0-100%)")]
-        public int RedLightSourcePower
+        public int RedLightSourceDutyCycle
         {
             get
             {
-                return _redLightSourcePower;
+                return _redLightSourceDutyCycle;
             }
             set
             {
-                _redLightSourcePower = value;
+                _redLightSourceDutyCycle = value;
             }
         }
     
@@ -694,8 +694,8 @@ namespace AindPhysiologyFip.Rig
     
         protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
         {
-            stringBuilder.Append("green_light_source_power = " + _greenLightSourcePower + ", ");
-            stringBuilder.Append("red_light_source_power = " + _redLightSourcePower);
+            stringBuilder.Append("green_light_source_duty_cyle = " + _greenLightSourceDutyCyle + ", ");
+            stringBuilder.Append("red_light_source_duty_cycle = " + _redLightSourceDutyCycle);
             return true;
         }
     

@@ -7,8 +7,11 @@ Welcome to the Aind Physiology Fip project documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   self
    api
    json-schemas
+   articles/*
+   GitHub Source Code <https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip>
 
 Indices and tables
 ==================

@@ -5,6 +5,7 @@ from pathlib import Path
 from types import ModuleType
 
 EXAMPLES_DIR = Path(__file__).parents[1] / "examples"
+JSON_ROOT = Path("./local").resolve()
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())

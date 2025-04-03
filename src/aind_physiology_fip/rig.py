@@ -58,12 +58,12 @@ class RoiSettings(BaseModel):
 
 
 class HarpCuttlefishFipSettings(BaseModel):
-    green_light_source_power: int = Field(default=0, ge=0, le=100, description="Green light source power (0-100%)")
-    red_light_source_power: int = Field(default=0, ge=0, le=100, description="Red light source power (0-100%)")
+    green_light_source_duty_cyle: int = Field(default=1, ge=0, le=100, description="Green light source power (0-100%)")
+    red_light_source_duty_cycle: int = Field(default=1, ge=0, le=100, description="Red light source power (0-100%)")
     # TODO light source tasks...
 
 
-class HarpCuttlefishFip(rig._harp_gen._HarpDeviceBase):
+class HarpCuttlefishFip(rig.harp._HarpDeviceBase):
     device_type: Literal["cuTTLefishFip"] = "cuTTLefishFip"
     who_am_i: Literal[1407] = 1407
     additional_settings: HarpCuttlefishFipSettings = Field(

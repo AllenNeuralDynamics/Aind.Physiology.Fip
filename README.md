@@ -5,6 +5,96 @@
 For FIP photometry data acquisition and hardware control.
 *corresponding protocols.io will be soon available.
 
+# Fiber Photometry System Configuration
+
+## Overview
+
+The FIP (Frame-projected Independent Photometry) system is a low-cost, scalable photometry setup designed for chronic recording of optical signals from behaving mice during daily training. The system is based on a modified design of Frame-projected Independent Photometry (Kim et al., 2016), using inexpensive, commercially available, off-the-shelf components.
+
+![FIP System Light Path](assets/images/fip_light_path.png)
+
+For more information, see the [AIND Fiber Photometry Platform Page](https://www.allenneuraldynamics.org/platforms/fiber-photometry)
+
+## Wavelength Information
+
+The table below summarizes the photometry system's optical configuration, showing the relationship between emission channels and their corresponding excitation sources.
+
+<table>
+  <tr>
+    <th colspan="3">Excitation</th>
+    <th style="border-left: 1px solid #ccc;"></th>
+    <th colspan="3">Emission</th>
+  </tr>
+  <tr>
+    <th>name</th>
+    <th>wavelength</th>
+    <th>led_name</th>
+    <th style="border-left: 1px solid #ccc;"></th>
+    <th>name</th>
+    <th>wavelength</th>
+    <th>detector_name</th>
+  </tr>
+  <tr>
+    <td>yellow</td>
+    <td>565</td>
+    <td>565nm LED</td>
+    <td style="border-left: 1px solid #ccc;"></td>
+    <td>red</td>
+    <td>?</td>
+    <td>Red CMOS</td>
+  </tr>
+  <tr>
+    <td>blue</td>
+    <td>470</td>
+    <td>470nm LED</td>
+    <td style="border-left: 1px solid #ccc;"></td>
+    <td>green</td>
+    <td>?</td>
+    <td>Green CMOS</td>
+  </tr>
+  <tr>
+    <td>uv</td>
+    <td>415</td>
+    <td>415nm LED</td>
+    <td style="border-left: 1px solid #ccc;"></td>
+    <td>isosbestic</td>
+    <td>?</td>
+    <td>Green CMOS</td>
+  </tr>
+</table>
+
+## Signal Detection
+
+- **Green Channel**: Primarily used for calcium indicators (e.g., GCaMP)
+- **Red Channel**: Primarily used for neuromodulator indicators (e.g., dLight)
+- **Isosbestic Channel**: Used as a control measurement; shares same emission path as green but with different excitation
+
+The system uses dedicated CMOS cameras for the red and green emissions, with the isosbestic signal being captured by the green camera under different excitation conditions.
+
+## Temporal Multiplexing
+
+The system employs temporal multiplexing to acquire signals from multiple fluorescent indicators through the same optical fiber. This is achieved by rapidly cycling through different excitation wavelengths while synchronizing camera acquisitions:
+
+```
+Blue LED(470)   ████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░
+
+UV LED (415)    ░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░
+
+Yellow LED (560)░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░
+
+Green CMOS      ████░████░░░░░░████░████░░░░░░████░████░░░░░░████░████░░░░░░████░████░░░░░░  (captures 470/415)
+Red CMOS        ░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░  (captures 560)
+                ───────────────────────────────────────────────────────────────────────────►
+                                    Time
+```
+
+The temporal multiplexing sequence:
+1. Blue LED (470nm) activation -> Green CMOS camera captures GCaMP fluorescence
+2. UV LED (415nm) activation -> Green CMOS camera captures isosbestic signal
+3. Yellow LED (560nm) activation -> Red CMOS camera captures red indicator fluorescence
+
+This cycling occurs at high frequency (XX Hz), allowing near-simultaneous measurement of multiple signals while preventing crosstalk between channels. Each LED is activated in sequence and cameras are synchronized to capture data only during their respective LED's ON period.
+
 ## Installation
 1. Arduino/Teensy
 2. Bonsai:
@@ -19,10 +109,6 @@ For FIP photometry data acquisition and hardware control.
 		  - On FLIR website: `Download > archive > 1.29.0.5 > SpinnakerSDK_FULL_1.29.0.5_x64.exe`
 
 3. Copy paste 4 CSV files in the LocalDependency folder to Users\svc_aind_behavior\Documents\FIPSettings and change the CameraSerial based on FLIR cameras used in the rig.
-
-
-
-
 
 ## Contributing
 Describe how other software developers can contribute to the codebase.

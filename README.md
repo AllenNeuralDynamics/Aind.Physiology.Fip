@@ -65,8 +65,8 @@ The table below summarizes the photometry system's optical configuration, showin
 
 ## Signal Detection
 
-- **Green Channel**: Primarily used for calcium indicators (e.g., GCaMP)
-- **Red Channel**: Primarily used for neuromodulator indicators (e.g., dLight)
+- **Green Channel**: Used for green GFP based indicators
+- **Red Channel**: Used for red mApple based indicators
 - **Isosbestic Channel**: Used as a control measurement; shares same emission path as green but with different excitation
 
 The system uses dedicated CMOS cameras for the red and green emissions, with the isosbestic signal being captured by the green camera under different excitation conditions.
@@ -89,11 +89,11 @@ Red CMOS        ░░░░░░░░░░████░░░░░░░�
 ```
 
 The temporal multiplexing sequence:
-1. Blue LED (470nm) activation -> Green CMOS camera captures GCaMP fluorescence
+1. Blue LED (470nm) activation -> Green CMOS camera captures output of green GFP based sensors
 2. UV LED (415nm) activation -> Green CMOS camera captures isosbestic signal
-3. Yellow LED (560nm) activation -> Red CMOS camera captures red indicator fluorescence
+3. Yellow LED (560nm) activation -> Red CMOS camera captures red mApple based sensors
 
-This cycling occurs at high frequency (XX Hz), allowing near-simultaneous measurement of multiple signals while preventing crosstalk between channels. Each LED is activated in sequence and cameras are synchronized to capture data only during their respective LED's ON period.
+This cycling occurs at 20 Hz, allowing near-simultaneous measurement of multiple signals while preventing crosstalk between channels. Each LED is activated in sequence and cameras are synchronized to capture data only during their respective LED's ON period.
 
 ## Installation
 1. Arduino/Teensy

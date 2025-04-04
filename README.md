@@ -3,7 +3,8 @@
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 
 For FIP photometry data acquisition and hardware control.
-*corresponding protocols.io will be soon available.
+Protocol for system assembly: https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2
+Protocol for system triggering setup: https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2
 
 # Fiber Photometry System Configuration
 

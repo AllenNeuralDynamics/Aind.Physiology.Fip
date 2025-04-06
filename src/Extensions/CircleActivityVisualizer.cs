@@ -18,14 +18,9 @@ using Size = OpenCV.Net.Size;
 
 namespace Bonsai.Vision.Design
 {
-    /// <summary>
-    /// Provides a type visualizer that displays a collection of polygonal regions
-    /// of interest and their activity measurements.
-    /// </summary>
+
     public class CircleActivityCollectionVisualizer : IplImageVisualizer
     {
-        const int RoiThickness = 1;
-        const float DefaultDpiWidth = 6;
         static readonly Scalar InactiveRoi = Scalar.Rgb(255, 0, 0);
         static readonly Scalar ActiveRoi = Scalar.Rgb(0, 255, 0);
 
@@ -45,8 +40,8 @@ namespace Bonsai.Vision.Design
                 for (int i = 0; i < regions.Count; i++)
                 {
                     var circle = regions[i].Circle;
-                    var color = regions[i].Activity.Val0 > 0 ? ActiveRoi : InactiveRoi;
-
+                    var c = GetColor(i);
+                    var color = new Scalar(c.B, c.G, c.R);
                     var label = i.ToString();
                     var activity = regions[i].Activity.Val0.ToString("0.##");
                     Size textSize;
@@ -61,12 +56,23 @@ namespace Bonsai.Vision.Design
             }
         }
 
+
+        private static readonly Color[] ColorPalette = new Color[]
+        {
+            Color.Red, Color.Green, Color.Blue, Color.Yellow,
+            Color.Cyan, Color.Magenta, Color.Orange, Color.Purple
+        };
+
+        private static Color GetColor(int index)
+        {
+            return ColorPalette[index % ColorPalette.Length];
+        }
+    
         public static Vector2 NormalizePoint(Point point, Size imageSize)
         {
             return new Vector2((float)point.X * 2f / (float)imageSize.Width - 1f, 0f - ((float)point.Y * 2f / (float)imageSize.Height - 1f));
         }
 
-        /// <inheritdoc/>
         protected override void RenderFrame()
         {
             GL.Color3(Color.White);
@@ -75,25 +81,23 @@ namespace Bonsai.Vision.Design
             if (regions != null)
             {
                 GL.Disable(EnableCap.Texture2D);
-                foreach (var region in regions)
+                for (int j=0; j < regions.Count; j++)
                 {
-                    var color = region.Activity.Val0 > 0 ? Color.LimeGreen : Color.Red;
+                    var region = regions[j];
+                    var color = GetColor(j);
                     GL.Color3(color);
+                    GL.LineWidth(4);
                     GL.Begin(PrimitiveType.LineLoop);
-
-                    var circle = region.Circle;
-                    const int segments = 100;
-                    for (int i = 0; i < segments; i++)
+                    var roi = region.AsPolygon();
+                    for (int i = 0; i < roi.Length; i++)
                     {
-                        var angle = 2 * Math.PI * i / segments;
-                        var x = circle.Center.X + circle.Radius * Math.Cos(angle);
-                        var y = circle.Center.Y + circle.Radius * Math.Sin(angle);
-                        GL.Vertex2(NormalizePoint(new Point((int)x, (int)y), input.Size));
+                        GL.Vertex2(NormalizePoint(roi[i], input.Size));
                     }
                     GL.End();
                 }
             }
         }
+
         public override void Load(IServiceProvider provider)
         {
             IObservable<object> observable = VisualizerHelper.ImageInput(provider);

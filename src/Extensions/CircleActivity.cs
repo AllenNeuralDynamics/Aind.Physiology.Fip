@@ -48,26 +48,16 @@ public class CircleActivityCalculator
                     if (currentCircles != null)
                     {
                         mask.SetZero();
-                        var currentRegions = currentCircles.Select(circle =>
+                        foreach (var circle in currentCircles)
                         {
-                            var points = Enumerable.Range(0, 100).Select(i =>
-                            {
-                                var angle = 2 * Math.PI * i / 100;
-                                var x = circle.Center.X + circle.Radius * Math.Cos(angle);
-                                var y = circle.Center.Y + circle.Radius * Math.Sin(angle);
-                                return new Point((int)Math.Round(x), (int)Math.Round(y));
-                            }).ToArray();
-                            return points;
-                        }).ToArray();
-                        CV.FillPoly(mask, currentRegions, Scalar.All(255));
-                        boundingRegions = currentRegions.Select(polygon =>
+                            CV.Circle(mask, new Point((int)circle.Center.X, (int)circle.Center.Y), (int)circle.Radius, Scalar.All(255), -1);
+                        }
+
+                        boundingRegions = currentCircles.Select(circle =>
                         {
-                            var points = polygon.SelectMany(point => new[] { point.X, point.Y }).ToArray();
-                            using (var mat = new Mat(1, polygon.Length, Depth.S32, 2))
-                            {
-                                Marshal.Copy(points, 0, mat.Data, points.Length);
-                                return CV.BoundingRect(mat);
-                            }
+                            var left = (int)(circle.Center.X - circle.Radius);
+                            var top = (int)(circle.Center.Y - circle.Radius);
+                            return new Rect(left, top, (int)circle.Radius*2, (int)circle.Radius*2);
                         }).ToArray();
                     }
                 }
@@ -92,6 +82,7 @@ public class CircleActivityCalculator
                         {
                             output.Add(new CircleActivity
                             {
+                                Image = img,
                                 Circle = circle,
                                 Activity = activation(region, regionMask)
                             });
@@ -175,8 +166,8 @@ public class CircleActivity
 {
     public Circle Circle { get; set; }
     public Scalar Activity { get; set; }
-    
     public IplImage Image { get; set; }
+
 
     public CircleActivity(){}
     public CircleActivity(IplImage image)
@@ -184,29 +175,26 @@ public class CircleActivity
         Image = image;
     }
 
-    public ConnectedComponent ConnectedComponent{
-        get { return ConnectedComponentFromCircle(Circle); }
-    }
-
     public override string ToString()
     {
         return string.Format("Circle: {0}, Activity: {1}", Circle, Activity);
     }
 
-    private const int nSegments = 30;
 
-    private static ConnectedComponent ConnectedComponentFromCircle(Circle circle)
-    {
+    public ConnectedComponent AsConnectedComponent(){
+        return ConnectedComponent.FromContour(SeqFromArray(AsPolygon()));
+    }
+
+    public Point[] AsPolygon(int nSegments = 30){
         var polygon = new Point[nSegments];
         for (int i = 0; i < nSegments; i++)
         {
             var angle = 2 * Math.PI * i / nSegments;
-            var x = circle.Center.X + circle.Radius * Math.Cos(angle);
-            var y = circle.Center.Y + circle.Radius * Math.Sin(angle);
+            var x = Circle.Center.X + Circle.Radius * Math.Cos(angle);
+            var y = Circle.Center.Y + Circle.Radius * Math.Sin(angle);
             polygon[i] = new Point((int)x, (int)y);
-
         }
-        return ConnectedComponent.FromContour(SeqFromArray(polygon));
+        return polygon;
     }
 
     private static Seq SeqFromArray(Point[] input)

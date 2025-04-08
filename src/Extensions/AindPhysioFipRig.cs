@@ -731,11 +731,13 @@ namespace AindPhysiologyFip.Rig
     public partial class RoiSettings
     {
     
-        private Circle _cameraGreenIso = new Circle();
+        private Circle _backgroundCameraGreenIso;
     
-        private Circle _cameraRed = new Circle();
+        private Circle _backgroundCameraRed;
     
-        private string _operation = "Avg";
+        private System.Collections.Generic.List<Circle> _roiCameraGreenIso = new System.Collections.Generic.List<Circle>();
+    
+        private System.Collections.Generic.List<Circle> _roiCameraRed = new System.Collections.Generic.List<Circle>();
     
         public RoiSettings()
         {
@@ -743,61 +745,81 @@ namespace AindPhysiologyFip.Rig
     
         protected RoiSettings(RoiSettings other)
         {
-            _cameraGreenIso = other._cameraGreenIso;
-            _cameraRed = other._cameraRed;
-            _operation = other._operation;
+            _backgroundCameraGreenIso = other._backgroundCameraGreenIso;
+            _backgroundCameraRed = other._backgroundCameraRed;
+            _roiCameraGreenIso = other._roiCameraGreenIso;
+            _roiCameraRed = other._roiCameraRed;
         }
     
         /// <summary>
-        /// Region of interest to be applied to the green and iso camera channel
+        /// ROI to compute the background for the green/iso camera channel
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("camera_green_iso", Required=Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DescriptionAttribute("Region of interest to be applied to the green and iso camera channel")]
-        public Circle CameraGreenIso
+        [Newtonsoft.Json.JsonPropertyAttribute("background_camera_green_iso")]
+        [System.ComponentModel.DescriptionAttribute("ROI to compute the background for the green/iso camera channel")]
+        public Circle BackgroundCameraGreenIso
         {
             get
             {
-                return _cameraGreenIso;
+                return _backgroundCameraGreenIso;
             }
             set
             {
-                _cameraGreenIso = value;
+                _backgroundCameraGreenIso = value;
             }
         }
     
         /// <summary>
-        /// Region of interest to be applied to the red camera channel
+        /// ROI to compute the background for the red camera channel
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("camera_red", Required=Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DescriptionAttribute("Region of interest to be applied to the red camera channel")]
-        public Circle CameraRed
+        [Newtonsoft.Json.JsonPropertyAttribute("background_camera_red")]
+        [System.ComponentModel.DescriptionAttribute("ROI to compute the background for the red camera channel")]
+        public Circle BackgroundCameraRed
         {
             get
             {
-                return _cameraRed;
+                return _backgroundCameraRed;
             }
             set
             {
-                _cameraRed = value;
+                _backgroundCameraRed = value;
             }
         }
     
         /// <summary>
-        /// Operation to be applied to the region of interest
+        /// ROI for the green/iso camera channel
         /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("operation")]
-        [System.ComponentModel.DescriptionAttribute("Operation to be applied to the region of interest")]
-        public string Operation
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("roi_camera_green_iso")]
+        [System.ComponentModel.DescriptionAttribute("ROI for the green/iso camera channel")]
+        public System.Collections.Generic.List<Circle> RoiCameraGreenIso
         {
             get
             {
-                return _operation;
+                return _roiCameraGreenIso;
             }
             set
             {
-                _operation = value;
+                _roiCameraGreenIso = value;
+            }
+        }
+    
+        /// <summary>
+        /// ROI for the red camera channel
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("roi_camera_red")]
+        [System.ComponentModel.DescriptionAttribute("ROI for the red camera channel")]
+        public System.Collections.Generic.List<Circle> RoiCameraRed
+        {
+            get
+            {
+                return _roiCameraRed;
+            }
+            set
+            {
+                _roiCameraRed = value;
             }
         }
     
@@ -813,9 +835,10 @@ namespace AindPhysiologyFip.Rig
     
         protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
         {
-            stringBuilder.Append("camera_green_iso = " + _cameraGreenIso + ", ");
-            stringBuilder.Append("camera_red = " + _cameraRed + ", ");
-            stringBuilder.Append("operation = " + _operation);
+            stringBuilder.Append("background_camera_green_iso = " + _backgroundCameraGreenIso + ", ");
+            stringBuilder.Append("background_camera_red = " + _backgroundCameraRed + ", ");
+            stringBuilder.Append("roi_camera_green_iso = " + _roiCameraGreenIso + ", ");
+            stringBuilder.Append("roi_camera_red = " + _roiCameraRed);
             return true;
         }
     
@@ -930,7 +953,7 @@ namespace AindPhysiologyFip.Rig
     
         private FipCamera _cameraRed = new FipCamera();
     
-        private System.Collections.Generic.List<RoiSettings> _roiSettings = new System.Collections.Generic.List<RoiSettings>();
+        private RoiSettings _roiSettings;
     
         private HarpCuttlefishFip _cuttlefishFip = new HarpCuttlefishFip();
     
@@ -1055,7 +1078,7 @@ namespace AindPhysiologyFip.Rig
         [System.Xml.Serialization.XmlIgnoreAttribute()]
         [Newtonsoft.Json.JsonPropertyAttribute("roi_settings")]
         [System.ComponentModel.DescriptionAttribute("Region of interest settings")]
-        public System.Collections.Generic.List<RoiSettings> RoiSettings
+        public RoiSettings RoiSettings
         {
             get
             {

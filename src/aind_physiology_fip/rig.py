@@ -15,16 +15,31 @@ class Circle(BaseModel):
     center: Point2f = Field(default=Point2f(x=0, y=0), description="Center of the circle (px)", validate_default=True)
     radius: float = Field(default=50, ge=0, description="Radius of the circle (px)")
 
+
 class FipCamera(rig.Device):
     device_type: Literal["FipCamera"] = "FipCamera"
     serial_number: str = Field(..., description="Camera serial number")
     gain: float = Field(default=0, ge=0, description="Gain")
     offset: Point2f = Field(default=Point2f(x=0, y=0), description="Offset (px)", validate_default=True)
 
+
+def _make_default_rois() -> List[Circle]:
+    return [Circle(center=Point2f(x=x, y=y), radius=20) for x in (50, 150) for y in (50, 150)]
+
+
 class RoiSettings(BaseModel):
-    camera_green_iso: Circle = Field(description="Region of interest to be applied to the green and iso camera channel")
-    camera_red: Circle = Field(description="Region of interest to be applied to the red camera channel")
-    operation: Literal["Avg"] = Field(default="Avg", description="Operation to be applied to the region of interest")
+    background_camera_green_iso: Circle = Field(
+        default=Circle(center=Point2f(x=10, y=10), radius=10),
+        description="ROI to compute the background for the green/iso camera channel",
+    )
+    background_camera_red: Circle = Field(
+        default=Circle(center=Point2f(x=10, y=10), radius=10),
+        description="ROI to compute the background for the red camera channel",
+    )
+    roi_camera_green_iso: List[Circle] = Field(
+        default=_make_default_rois(), description="ROI for the green/iso camera channel"
+    )
+    roi_camera_red: List[Circle] = Field(default=_make_default_rois(), description="ROI for the red camera channel")
 
 
 class HarpCuttlefishFipSettings(BaseModel):
@@ -59,8 +74,8 @@ class AindPhysioFipRig(rig.AindBehaviorRigModel):
     version: Literal[__version__] = __version__
     camera_green_iso: FipCamera = Field(title="G/Iso Camera", description="Camera for the green and iso channels")
     camera_red: FipCamera = Field(title="Red Camera", description="Red camera")
-    roi_settings: List[RoiSettings] = Field(
-        default=[], title="Region of interest settings", description="Region of interest settings"
+    roi_settings: Optional[RoiSettings] = Field(
+        default=None, title="Region of interest settings", description="Region of interest settings"
     )
     cuttlefish_fip: HarpCuttlefishFip = Field(
         title="CuttlefishFip",

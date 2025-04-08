@@ -205,26 +205,105 @@
     },
     "RoiSettings": {
       "properties": {
-        "camera_green_iso": {
+        "background_camera_green_iso": {
           "$ref": "#/definitions/Circle",
-          "description": "Region of interest to be applied to the green and iso camera channel"
+          "default": {
+            "center": {
+              "x": 10.0,
+              "y": 10.0
+            },
+            "radius": 10.0
+          },
+          "description": "ROI to compute the background for the green/iso camera channel"
         },
-        "camera_red": {
+        "background_camera_red": {
           "$ref": "#/definitions/Circle",
-          "description": "Region of interest to be applied to the red camera channel"
+          "default": {
+            "center": {
+              "x": 10.0,
+              "y": 10.0
+            },
+            "radius": 10.0
+          },
+          "description": "ROI to compute the background for the red camera channel"
         },
-        "operation": {
-          "const": "Avg",
-          "default": "Avg",
-          "description": "Operation to be applied to the region of interest",
-          "title": "Operation",
-          "type": "string"
+        "roi_camera_green_iso": {
+          "default": [
+            {
+              "center": {
+                "x": 50.0,
+                "y": 50.0
+              },
+              "radius": 20.0
+            },
+            {
+              "center": {
+                "x": 50.0,
+                "y": 150.0
+              },
+              "radius": 20.0
+            },
+            {
+              "center": {
+                "x": 150.0,
+                "y": 50.0
+              },
+              "radius": 20.0
+            },
+            {
+              "center": {
+                "x": 150.0,
+                "y": 150.0
+              },
+              "radius": 20.0
+            }
+          ],
+          "description": "ROI for the green/iso camera channel",
+          "items": {
+            "$ref": "#/definitions/Circle"
+          },
+          "title": "Roi Camera Green Iso",
+          "type": "array"
+        },
+        "roi_camera_red": {
+          "default": [
+            {
+              "center": {
+                "x": 50.0,
+                "y": 50.0
+              },
+              "radius": 20.0
+            },
+            {
+              "center": {
+                "x": 50.0,
+                "y": 150.0
+              },
+              "radius": 20.0
+            },
+            {
+              "center": {
+                "x": 150.0,
+                "y": 50.0
+              },
+              "radius": 20.0
+            },
+            {
+              "center": {
+                "x": 150.0,
+                "y": 150.0
+              },
+              "radius": 20.0
+            }
+          ],
+          "description": "ROI for the red camera channel",
+          "items": {
+            "$ref": "#/definitions/Circle"
+          },
+          "title": "Roi Camera Red",
+          "type": "array"
         }
       },
-      "required": [
-        "camera_green_iso",
-        "camera_red"
-      ],
       "title": "RoiSettings",
       "type": "object"
     },
@@ -279,13 +358,17 @@
       "title": "Red Camera"
     },
     "roi_settings": {
-      "default": [],
+      "default": null,
       "description": "Region of interest settings",
-      "items": {
-        "$ref": "#/definitions/RoiSettings"
-      },
-      "title": "Region of interest settings",
-      "type": "array"
+      "oneOf": [
+        {
+          "$ref": "#/definitions/RoiSettings"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Region of interest settings"
     },
     "cuttlefish_fip": {
       "$ref": "#/definitions/HarpCuttlefishFip",

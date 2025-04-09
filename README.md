@@ -3,8 +3,7 @@
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 
 For FIP photometry data acquisition and hardware control.
-Protocol for system assembly: https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2
-Protocol for system triggering setup: https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2
+
 
 # Fiber Photometry System Configuration
 
@@ -14,7 +13,9 @@ The FIP (Frame-projected Independent Photometry) system is a low-cost, scalable 
 
 ![FIP System Light Path](assets/images/fip_light_path.png)
 
-For more information, see the [AIND Fiber Photometry Platform Page](https://www.allenneuraldynamics.org/platforms/fiber-photometry)
+For more information, see the [AIND Fiber Photometry Platform Page](https://www.allenneuraldynamics.org/platforms/fiber-photometry) and the following protocols:  
+* Protocol for system assembly: https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2
+* Protocol for system triggering setup: https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2
 
 ## Wavelength Information
 
@@ -38,28 +39,28 @@ The table below summarizes the photometry system's optical configuration, showin
   <tr>
     <td>yellow</td>
     <td>565</td>
-    <td>565nm LED</td>
+    <td>565 nm LED</td>
     <td style="border-left: 1px solid #ccc;"></td>
     <td>red</td>
-    <td>?</td>
+    <td>~590 nm (peak)</td>
     <td>Red CMOS</td>
   </tr>
   <tr>
     <td>blue</td>
     <td>470</td>
-    <td>470nm LED</td>
+    <td>470 nm LED</td>
     <td style="border-left: 1px solid #ccc;"></td>
     <td>green</td>
-    <td>?</td>
+    <td>~510 nm (peak)</td>
     <td>Green CMOS</td>
   </tr>
   <tr>
     <td>uv</td>
     <td>415</td>
-    <td>415nm LED</td>
+    <td>415 nm LED</td>
     <td style="border-left: 1px solid #ccc;"></td>
     <td>isosbestic</td>
-    <td>?</td>
+    <td>490-540 nm (passband)</td>
     <td>Green CMOS</td>
   </tr>
 </table>

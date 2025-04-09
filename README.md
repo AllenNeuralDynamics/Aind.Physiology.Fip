@@ -21,49 +21,12 @@ For more information, see the [AIND Fiber Photometry Platform Page](https://www.
 
 The table below summarizes the photometry system's optical configuration, showing the relationship between emission channels and their corresponding excitation sources.
 
-<table>
-  <tr>
-    <th colspan="3">Excitation</th>
-    <th style="border-left: 1px solid #ccc;"></th>
-    <th colspan="3">Emission</th>
-  </tr>
-  <tr>
-    <th>name</th>
-    <th>wavelength</th>
-    <th>led_name</th>
-    <th style="border-left: 1px solid #ccc;"></th>
-    <th>name</th>
-    <th>wavelength</th>
-    <th>detector_name</th>
-  </tr>
-  <tr>
-    <td>yellow</td>
-    <td>565</td>
-    <td>565 nm LED</td>
-    <td style="border-left: 1px solid #ccc;"></td>
-    <td>red</td>
-    <td>~590 nm (peak)</td>
-    <td>Red CMOS</td>
-  </tr>
-  <tr>
-    <td>blue</td>
-    <td>470</td>
-    <td>470 nm LED</td>
-    <td style="border-left: 1px solid #ccc;"></td>
-    <td>green</td>
-    <td>~510 nm (peak)</td>
-    <td>Green CMOS</td>
-  </tr>
-  <tr>
-    <td>uv</td>
-    <td>415</td>
-    <td>415 nm LED</td>
-    <td style="border-left: 1px solid #ccc;"></td>
-    <td>isosbestic</td>
-    <td>490-540 nm (passband)</td>
-    <td>Green CMOS</td>
-  </tr>
-</table>
+| Excitation       |                     |              |   | Emission         |                      |                   |
+|------------------|---------------------|--------------|---|------------------|----------------------|-------------------|
+| **Name**         | **Wavelength (nm)** | **Led Name** |   | **name**         | **Wavelength (nm)**  | **Detector Name** |
+| Yellow           | 565                 | 565 nm LED   |   | Red              | ~590 (peak)          | Red CMOS          |
+| Blue             | 470                 | 470 nm LED   |   | Green            | ~510 (peak)          | Green CMOS        |
+| UV               | 415                 | 415 nm LED   |   | Isosbestic       | 490-540 (passband)   | Green CMOS        |
 
 ## Signal Detection
 

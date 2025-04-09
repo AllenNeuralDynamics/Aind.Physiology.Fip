@@ -78,6 +78,8 @@ The system uses dedicated CMOS cameras for the red and green emissions, with the
 The system employs temporal multiplexing to acquire signals from multiple fluorescent indicators through the same optical fiber. This is achieved by rapidly cycling through different excitation wavelengths while synchronizing camera acquisitions:
 
 ```
+            --->|   |<--- LED on duration = ??? ms (same for all excitation LEDs)
+            --->|              |<--- period = 16.67 ms
 Blue LED(470)   ████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░
 
 UV LED (415)    ░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░
@@ -86,6 +88,7 @@ Yellow LED (560)░░░░░░░░░░████░░░░░░░�
 
 Green CMOS      ████░████░░░░░░████░████░░░░░░████░████░░░░░░████░████░░░░░░████░████░░░░░░  (captures 470/415)
 Red CMOS        ░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░  (captures 560)
+            --->|   |<--- camera exposure time = ??? ms (same for all channels)
                 ───────────────────────────────────────────────────────────────────────────►
                                     Time
 ```
@@ -95,7 +98,7 @@ The temporal multiplexing sequence:
 2. UV LED (415nm) excitation -> Green CMOS camera captures isosbestic signal
 3. Yellow LED (560nm) excitation -> Red CMOS camera captures signal from RFP-based sensors
 
-This cycling occurs at 60 Hz (effectively 20 Hz per excitation channel), allowing near-simultaneous measurement of multiple signals while preventing crosstalk between channels. Each LED is activated in sequence and cameras are synchronized to capture data only during their respective LED's ON period.
+This cycling occurs at 60 Hz, allowing near-simultaneous measurement of multiple signals while preventing crosstalk between channels. Each LED is activated in sequence and cameras are synchronized to capture data only during their respective LED's ON period.
 
 ## Installation
 1. Arduino/Teensy

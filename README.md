@@ -66,8 +66,8 @@ The table below summarizes the photometry system's optical configuration, showin
 
 ## Signal Detection
 
-- **Green Channel**: Used for green GFP based indicators
-- **Red Channel**: Used for red mApple based indicators
+- **Green Channel**: Primarily used for green GFP based indicators
+- **Red Channel**: Primarily used for RFP-based indicators (e.g., RdLight)
 - **Isosbestic Channel**: Used as a control measurement; shares same emission path as green but with different excitation
 
 The system uses dedicated CMOS cameras for the red and green emissions, with the isosbestic signal being captured by the green camera under different excitation conditions.
@@ -90,9 +90,9 @@ Red CMOS        ░░░░░░░░░░████░░░░░░░�
 ```
 
 The temporal multiplexing sequence:
-1. Blue LED (470nm) activation -> Green CMOS camera captures output of green GFP based sensors
-2. UV LED (415nm) activation -> Green CMOS camera captures isosbestic signal
-3. Yellow LED (560nm) activation -> Red CMOS camera captures red mApple based sensors
+1. Blue LED (470nm) excitation -> Green CMOS camera captures signal from GFP-based sensors
+2. UV LED (415nm) excitation -> Green CMOS camera captures isosbestic signal
+3. Yellow LED (560nm) excitation -> Red CMOS camera captures signal from RFP-based sensors
 
 This cycling occurs at 60 Hz (effectively 20 Hz per excitation channel), allowing near-simultaneous measurement of multiple signals while preventing crosstalk between channels. Each LED is activated in sequence and cameras are synchronized to capture data only during their respective LED's ON period.
 

@@ -94,7 +94,7 @@ The temporal multiplexing sequence:
 2. UV LED (415nm) activation -> Green CMOS camera captures isosbestic signal
 3. Yellow LED (560nm) activation -> Red CMOS camera captures red mApple based sensors
 
-This cycling occurs at 20 Hz, allowing near-simultaneous measurement of multiple signals while preventing crosstalk between channels. Each LED is activated in sequence and cameras are synchronized to capture data only during their respective LED's ON period.
+This cycling occurs at 60 Hz (effectively 20 Hz per excitation channel), allowing near-simultaneous measurement of multiple signals while preventing crosstalk between channels. Each LED is activated in sequence and cameras are synchronized to capture data only during their respective LED's ON period.
 
 ## Installation
 1. Arduino/Teensy

@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.8.5"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:p1="clr-namespace:;assembly=Extensions"
+                 xmlns:spk="clr-namespace:Bonsai.Spinnaker;assembly=Bonsai.Spinnaker"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="p1:FipSpinnakerCapture">
+          <spk:Index xsi:nil="true" />
+          <spk:ColorProcessing>Default</spk:ColorProcessing>
+          <p1:Gain>0</p1:Gain>
+          <p1:Offset>
+            <p1:X>0</p1:X>
+            <p1:Y>0</p1:Y>
+          </p1:Offset>
+        </Combinator>
+      </Expression>
+    </Nodes>
+    <Edges />
+  </Workflow>
+</WorkflowBuilder>

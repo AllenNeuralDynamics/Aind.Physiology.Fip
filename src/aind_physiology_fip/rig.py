@@ -75,7 +75,7 @@ class AindPhysioFipRig(rig.AindBehaviorRigModel):
     camera_green_iso: FipCamera = Field(title="G/Iso Camera", description="Camera for the green and iso channels")
     camera_red: FipCamera = Field(title="Red Camera", description="Red camera")
     roi_settings: Optional[RoiSettings] = Field(
-        default=None, title="Region of interest settings", description="Region of interest settings"
+        default=None, title="Region of interest settings", description="Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program."
     )
     cuttlefish_fip: HarpCuttlefishFip = Field(
         title="CuttlefishFip",

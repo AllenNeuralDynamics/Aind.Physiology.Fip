@@ -25,19 +25,10 @@ public class LoadRoiDefault
     public IObservable<RoiSettings> Process(IObservable<RoiSettings> source)
     {
         return source.Select(value =>{
-            Console.WriteLine("")
             // 1. We attempt to load the settings from the schema file
-            if (value != null) return value;
+            if (value != null) return value.Clone() as RoiSettings;
             // 2. If 1. fails, we attempt to load the default settings via the path property
-            try{
-                var json = File.ReadAllText(path);
-                var deserialized = JsonConvert.DeserializeObject<RoiSettings>(json);
-                value = deserialized;
-                return JsonConvert.DeserializeObject<RoiSettings>(json);
-            }
-            catch (Exception e){
-                Console.WriteLine("Error loading ROI default settings: %s", e.Message);
-            }
+            value = JsonConvert.DeserializeObject<RoiSettings>(File.ReadAllText(path));
             if (value != null) return value;
             // 3. If 2 fails, we create a default RoiSettings object
             else return DefaultRoiSettings();

@@ -8,11 +8,10 @@ using System.IO;
 using System.Linq;
 
 [Combinator]
-[Description("Loads the ROI default settings from disk.")]
+[Description("Loads the ROI default settings from disk. In order of preference: 1. schema file, 2. local file, 3. default settings.")]
 [WorkflowElementCategory(ElementCategory.Transform)]
 public class LoadRoiDefault
 {
-
     private string path = "../.local/default.json";
     [Description("The path to the ROI default settings file.")]
     [FileNameFilter("JSON|*.json|All Files|*.*")]

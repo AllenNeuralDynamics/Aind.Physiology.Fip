@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Reactive.Linq;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 using Bonsai;
 
 [DefaultProperty("Circles")]
@@ -57,7 +56,11 @@ public class CircleActivityCalculator
                         {
                             var left = (int)(circle.Center.X - circle.Radius);
                             var top = (int)(circle.Center.Y - circle.Radius);
-                            return new Rect(left, top, (int)circle.Radius*2, (int)circle.Radius*2);
+                            var width = Math.Min((int)circle.Radius * 2, img.Width - left);
+                            var height = Math.Min((int)circle.Radius * 2, img.Height - top);
+                            left = Math.Max(left, 0);
+                            top = Math.Max(top, 0);
+                            return new Rect(left, top, width, height);
                         }).ToArray();
                     }
                 }

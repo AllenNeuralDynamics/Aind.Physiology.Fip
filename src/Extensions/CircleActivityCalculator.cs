@@ -85,7 +85,6 @@ public class CircleActivityCalculator
                         {
                             output.Add(new CircleActivity
                             {
-                                Image = img,
                                 Circle = circle,
                                 Activity = activation(region, regionMask)
                             });
@@ -163,20 +162,19 @@ public class CircleActivityCollection : Collection<CircleActivity>
     {
         Image = image;
     }
+
+    public Circle[] Circles
+    {
+        get { return this.Select(circleActivity => circleActivity.Circle).ToArray(); }
+    }
 }
 
 public class CircleActivity
 {
     public Circle Circle { get; set; }
     public Scalar Activity { get; set; }
-    public IplImage Image { get; set; }
-
 
     public CircleActivity(){}
-    public CircleActivity(IplImage image)
-    {
-        Image = image;
-    }
 
     public override string ToString()
     {

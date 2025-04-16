@@ -163,6 +163,138 @@
       "title": "HarpCuttlefishFipSettings",
       "type": "object"
     },
+    "LightSource": {
+      "properties": {
+        "device_type": {
+          "const": "LightSource",
+          "default": "LightSource",
+          "title": "Device Type",
+          "type": "string"
+        },
+        "additional_settings": {
+          "default": null,
+          "description": "Additional settings",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/BaseModel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "calibration": {
+          "default": null,
+          "description": "Calibration for the LightSource. If left empty, 'power' will be used as duty-cycle (0-100).",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/LightSourceCalibration"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Calibration"
+        },
+        "power": {
+          "default": 0,
+          "description": "Power (mW)",
+          "minimum": 0,
+          "title": "Power",
+          "type": "number"
+        }
+      },
+      "title": "LightSource",
+      "type": "object"
+    },
+    "LightSourceCalibration": {
+      "properties": {
+        "device_name": {
+          "description": "Name of the device being calibrated",
+          "title": "Device name",
+          "type": "string"
+        },
+        "input": {
+          "$ref": "#/definitions/LightSourceCalibrationOutput",
+          "title": "Lookup table to convert duty cycle to power (mW)"
+        },
+        "output": {
+          "default": null,
+          "oneOf": [
+            {
+              "$ref": "#/definitions/BaseModel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Output data"
+        },
+        "date": {
+          "default": null,
+          "oneOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Date"
+        },
+        "description": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Brief description of what is being calibrated"
+        },
+        "notes": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Notes"
+        }
+      },
+      "required": [
+        "device_name",
+        "input"
+      ],
+      "title": "LightSourceCalibration",
+      "type": "object"
+    },
+    "LightSourceCalibrationOutput": {
+      "properties": {
+        "power_lut": {
+          "additionalProperties": {
+            "default": 0,
+            "description": "Power (mW)",
+            "minimum": 0,
+            "type": "number"
+          },
+          "description": "Look-up table for LightSource power vs. duty cycle",
+          "title": "Power Lut",
+          "type": "object"
+        }
+      },
+      "required": [
+        "power_lut"
+      ],
+      "title": "LightSourceCalibrationOutput",
+      "type": "object"
+    },
     "Networking": {
       "properties": {
         "zmq_publisher": {
@@ -357,9 +489,24 @@
       "description": "Red camera",
       "title": "Red Camera"
     },
+    "light_source_uv": {
+      "$ref": "#/definitions/LightSource",
+      "description": "UV (415nm) light source",
+      "title": "UV light source"
+    },
+    "light_source_blue": {
+      "$ref": "#/definitions/LightSource",
+      "description": "Blue (470nm) light source",
+      "title": "Blue light source"
+    },
+    "light_source_lime": {
+      "$ref": "#/definitions/LightSource",
+      "description": "Lime (560nm) light source",
+      "title": "Lime light source"
+    },
     "roi_settings": {
       "default": null,
-      "description": "Region of interest settings",
+      "description": "Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program.",
       "oneOf": [
         {
           "$ref": "#/definitions/RoiSettings"
@@ -394,6 +541,9 @@
     "rig_name",
     "camera_green_iso",
     "camera_red",
+    "light_source_uv",
+    "light_source_blue",
+    "light_source_lime",
     "cuttlefish_fip"
   ],
   "title": "AindPhysioFipRig",

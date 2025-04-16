@@ -562,6 +562,352 @@ namespace AindPhysiologyFip.Rig
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class LightSource
+    {
+    
+        private string _deviceType = "LightSource";
+    
+        private BaseModel _additionalSettings;
+    
+        private LightSourceCalibration _calibration;
+    
+        private double _power = 0D;
+    
+        public LightSource()
+        {
+        }
+    
+        protected LightSource(LightSource other)
+        {
+            _deviceType = other._deviceType;
+            _additionalSettings = other._additionalSettings;
+            _calibration = other._calibration;
+            _power = other._power;
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("device_type")]
+        public string DeviceType
+        {
+            get
+            {
+                return _deviceType;
+            }
+            set
+            {
+                _deviceType = value;
+            }
+        }
+    
+        /// <summary>
+        /// Additional settings
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("additional_settings")]
+        [System.ComponentModel.DescriptionAttribute("Additional settings")]
+        public BaseModel AdditionalSettings
+        {
+            get
+            {
+                return _additionalSettings;
+            }
+            set
+            {
+                _additionalSettings = value;
+            }
+        }
+    
+        /// <summary>
+        /// Calibration for the LightSource. If left empty, 'power' will be used as duty-cycle (0-100).
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("calibration")]
+        [System.ComponentModel.DescriptionAttribute("Calibration for the LightSource. If left empty, \'power\' will be used as duty-cycl" +
+            "e (0-100).")]
+        public LightSourceCalibration Calibration
+        {
+            get
+            {
+                return _calibration;
+            }
+            set
+            {
+                _calibration = value;
+            }
+        }
+    
+        /// <summary>
+        /// Power (mW)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("power")]
+        [System.ComponentModel.DescriptionAttribute("Power (mW)")]
+        public double Power
+        {
+            get
+            {
+                return _power;
+            }
+            set
+            {
+                _power = value;
+            }
+        }
+    
+        public System.IObservable<LightSource> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new LightSource(this)));
+        }
+    
+        public System.IObservable<LightSource> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new LightSource(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("device_type = " + _deviceType + ", ");
+            stringBuilder.Append("additional_settings = " + _additionalSettings + ", ");
+            stringBuilder.Append("calibration = " + _calibration + ", ");
+            stringBuilder.Append("power = " + _power);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class LightSourceCalibration
+    {
+    
+        private string _deviceName;
+    
+        private LightSourceCalibrationOutput _input = new LightSourceCalibrationOutput();
+    
+        private BaseModel _output;
+    
+        private System.DateTimeOffset? _date;
+    
+        private string _description;
+    
+        private string _notes;
+    
+        public LightSourceCalibration()
+        {
+        }
+    
+        protected LightSourceCalibration(LightSourceCalibration other)
+        {
+            _deviceName = other._deviceName;
+            _input = other._input;
+            _output = other._output;
+            _date = other._date;
+            _description = other._description;
+            _notes = other._notes;
+        }
+    
+        /// <summary>
+        /// Name of the device being calibrated
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("device_name", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Name of the device being calibrated")]
+        public string DeviceName
+        {
+            get
+            {
+                return _deviceName;
+            }
+            set
+            {
+                _deviceName = value;
+            }
+        }
+    
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("input", Required=Newtonsoft.Json.Required.Always)]
+        public LightSourceCalibrationOutput Input
+        {
+            get
+            {
+                return _input;
+            }
+            set
+            {
+                _input = value;
+            }
+        }
+    
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("output")]
+        public BaseModel Output
+        {
+            get
+            {
+                return _output;
+            }
+            set
+            {
+                _output = value;
+            }
+        }
+    
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("date")]
+        public System.DateTimeOffset? Date
+        {
+            get
+            {
+                return _date;
+            }
+            set
+            {
+                _date = value;
+            }
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("description")]
+        public string Description
+        {
+            get
+            {
+                return _description;
+            }
+            set
+            {
+                _description = value;
+            }
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("notes")]
+        public string Notes
+        {
+            get
+            {
+                return _notes;
+            }
+            set
+            {
+                _notes = value;
+            }
+        }
+    
+        public System.IObservable<LightSourceCalibration> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new LightSourceCalibration(this)));
+        }
+    
+        public System.IObservable<LightSourceCalibration> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new LightSourceCalibration(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("device_name = " + _deviceName + ", ");
+            stringBuilder.Append("input = " + _input + ", ");
+            stringBuilder.Append("output = " + _output + ", ");
+            stringBuilder.Append("date = " + _date + ", ");
+            stringBuilder.Append("description = " + _description + ", ");
+            stringBuilder.Append("notes = " + _notes);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class LightSourceCalibrationOutput
+    {
+    
+        private System.Collections.Generic.IDictionary<string, double> _powerLut = new System.Collections.Generic.Dictionary<string, double>();
+    
+        public LightSourceCalibrationOutput()
+        {
+        }
+    
+        protected LightSourceCalibrationOutput(LightSourceCalibrationOutput other)
+        {
+            _powerLut = other._powerLut;
+        }
+    
+        /// <summary>
+        /// Look-up table for LightSource power vs. duty cycle
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("power_lut", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Look-up table for LightSource power vs. duty cycle")]
+        public System.Collections.Generic.IDictionary<string, double> PowerLut
+        {
+            get
+            {
+                return _powerLut;
+            }
+            set
+            {
+                _powerLut = value;
+            }
+        }
+    
+        public System.IObservable<LightSourceCalibrationOutput> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new LightSourceCalibrationOutput(this)));
+        }
+    
+        public System.IObservable<LightSourceCalibrationOutput> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new LightSourceCalibrationOutput(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("power_lut = " + _powerLut);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     public partial class Networking
     {
     
@@ -953,6 +1299,12 @@ namespace AindPhysiologyFip.Rig
     
         private FipCamera _cameraRed = new FipCamera();
     
+        private LightSource _lightSourceUv = new LightSource();
+    
+        private LightSource _lightSourceBlue = new LightSource();
+    
+        private LightSource _lightSourceLime = new LightSource();
+    
         private RoiSettings _roiSettings;
     
         private HarpCuttlefishFip _cuttlefishFip = new HarpCuttlefishFip();
@@ -971,6 +1323,9 @@ namespace AindPhysiologyFip.Rig
             _rigName = other._rigName;
             _cameraGreenIso = other._cameraGreenIso;
             _cameraRed = other._cameraRed;
+            _lightSourceUv = other._lightSourceUv;
+            _lightSourceBlue = other._lightSourceBlue;
+            _lightSourceLime = other._lightSourceLime;
             _roiSettings = other._roiSettings;
             _cuttlefishFip = other._cuttlefishFip;
             _networking = other._networking;
@@ -1073,11 +1428,66 @@ namespace AindPhysiologyFip.Rig
         }
     
         /// <summary>
-        /// Region of interest settings
+        /// UV (415nm) light source
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("light_source_uv", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("UV (415nm) light source")]
+        public LightSource LightSourceUv
+        {
+            get
+            {
+                return _lightSourceUv;
+            }
+            set
+            {
+                _lightSourceUv = value;
+            }
+        }
+    
+        /// <summary>
+        /// Blue (470nm) light source
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("light_source_blue", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Blue (470nm) light source")]
+        public LightSource LightSourceBlue
+        {
+            get
+            {
+                return _lightSourceBlue;
+            }
+            set
+            {
+                _lightSourceBlue = value;
+            }
+        }
+    
+        /// <summary>
+        /// Lime (560nm) light source
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("light_source_lime", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Lime (560nm) light source")]
+        public LightSource LightSourceLime
+        {
+            get
+            {
+                return _lightSourceLime;
+            }
+            set
+            {
+                _lightSourceLime = value;
+            }
+        }
+    
+        /// <summary>
+        /// Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program.
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
         [Newtonsoft.Json.JsonPropertyAttribute("roi_settings")]
-        [System.ComponentModel.DescriptionAttribute("Region of interest settings")]
+        [System.ComponentModel.DescriptionAttribute("Region of interest settings. Leave empty to attempt to load from local file or ma" +
+            "nually define it in the program.")]
         public RoiSettings RoiSettings
         {
             get
@@ -1144,6 +1554,9 @@ namespace AindPhysiologyFip.Rig
             stringBuilder.Append("rig_name = " + _rigName + ", ");
             stringBuilder.Append("camera_green_iso = " + _cameraGreenIso + ", ");
             stringBuilder.Append("camera_red = " + _cameraRed + ", ");
+            stringBuilder.Append("light_source_uv = " + _lightSourceUv + ", ");
+            stringBuilder.Append("light_source_blue = " + _lightSourceBlue + ", ");
+            stringBuilder.Append("light_source_lime = " + _lightSourceLime + ", ");
             stringBuilder.Append("roi_settings = " + _roiSettings + ", ");
             stringBuilder.Append("cuttlefish_fip = " + _cuttlefishFip + ", ");
             stringBuilder.Append("networking = " + _networking);
@@ -1205,6 +1618,21 @@ namespace AindPhysiologyFip.Rig
             return Process<HarpCuttlefishFipSettings>(source);
         }
 
+        public System.IObservable<string> Process(System.IObservable<LightSource> source)
+        {
+            return Process<LightSource>(source);
+        }
+
+        public System.IObservable<string> Process(System.IObservable<LightSourceCalibration> source)
+        {
+            return Process<LightSourceCalibration>(source);
+        }
+
+        public System.IObservable<string> Process(System.IObservable<LightSourceCalibrationOutput> source)
+        {
+            return Process<LightSourceCalibrationOutput>(source);
+        }
+
         public System.IObservable<string> Process(System.IObservable<Networking> source)
         {
             return Process<Networking>(source);
@@ -1244,6 +1672,9 @@ namespace AindPhysiologyFip.Rig
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipCamera>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<HarpCuttlefishFip>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<HarpCuttlefishFipSettings>))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSource>))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSourceCalibration>))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSourceCalibrationOutput>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Networking>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Point2f>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<RoiSettings>))]

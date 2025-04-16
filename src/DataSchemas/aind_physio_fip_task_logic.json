@@ -21,10 +21,24 @@
           "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
           "title": "aind_behavior_services package version",
           "type": "string"
+        },
+        "model": {
+          "$ref": "#/definitions/FipImagingMode",
+          "default": "Soma",
+          "description": "Fip imaging mode"
         }
       },
       "title": "AindPhysioFipParameters",
       "type": "object"
+    },
+    "FipImagingMode": {
+      "description": "Fip mode enum",
+      "enum": [
+        "Soma",
+        "Axon"
+      ],
+      "title": "FipImagingMode",
+      "type": "string"
     }
   },
   "additionalProperties": false,
@@ -46,7 +60,8 @@
       "$ref": "#/definitions/AindPhysioFipParameters",
       "default": {
         "rng_seed": null,
-        "aind_behavior_services_pkg_version": "0.10.2"
+        "aind_behavior_services_pkg_version": "0.10.2",
+        "model": "Soma"
       },
       "title": "Task parameters"
     },

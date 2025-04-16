@@ -1,7 +1,7 @@
-from typing import List, Literal, Optional
+from typing import Annotated, Dict, List, Literal, Optional, Self
 
-from aind_behavior_services import rig
-from pydantic import BaseModel, Field
+from aind_behavior_services import calibration, rig
+from pydantic import BaseModel, Field, model_validator
 
 __version__ = "0.1.0"
 
@@ -70,12 +70,48 @@ class Networking(BaseModel):
     )
 
 
+LightSourcePower = Annotated[float, Field(default=0, ge=0, description="Power (mW)")]
+DutyCycle = Annotated[float, Field(default=0, ge=0, le=100, description="Duty cycle (0-100%)")]
+
+
+class LightSourceCalibrationOutput(BaseModel):
+    power_lut: Dict[DutyCycle, LightSourcePower] = Field(
+        ..., description="Look-up table for LightSource power vs. duty cycle"
+    )
+
+
+class LightSourceCalibration(calibration.Calibration):
+    input: LightSourceCalibrationOutput = Field(..., title="Lookup table to convert duty cycle to power (mW)")
+
+
+class LightSource(rig.Device):
+    device_type: Literal["LightSource"] = "LightSource"
+    power: float = Field(default=0, ge=0, description="Power (mW)")
+    calibration: Optional[LightSourceCalibration] = Field(
+        default=None,
+        title="Calibration",
+        description="Calibration for the LightSource. If left empty, 'power' will be used as duty-cycle (0-100).",
+    )
+
+    @model_validator(mode="after")
+    def _validate_power(self) -> Self:
+        if self.calibration is None:
+            if self.power < 0 or self.power > 100:
+                raise ValueError("Power must be between 0 and 100 when no calibration is provided.")
+        return self
+
+
 class AindPhysioFipRig(rig.AindBehaviorRigModel):
     version: Literal[__version__] = __version__
     camera_green_iso: FipCamera = Field(title="G/Iso Camera", description="Camera for the green and iso channels")
     camera_red: FipCamera = Field(title="Red Camera", description="Red camera")
+    light_source_uv: LightSource = Field(title="UV light source", description="UV (415nm) light source")
+    light_source_blue: LightSource = Field(title="Blue light source", description="Blue (470nm) light source")
+    light_source_lime: LightSource = Field(title="Lime light source", description="Lime (560nm) light source")
     roi_settings: Optional[RoiSettings] = Field(
-        default=None, title="Region of interest settings", description="Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program."
+        default=None,
+        title="Region of interest settings",
+        description="Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program.",
     )
     cuttlefish_fip: HarpCuttlefishFip = Field(
         title="CuttlefishFip",

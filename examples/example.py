@@ -3,17 +3,17 @@ import os
 
 from aind_behavior_services.session import AindBehaviorSessionModel
 
+import aind_physiology_fip.task_logic as task_logic
 from aind_physiology_fip.rig import (
     AindPhysioFipRig,
-    Circle,
     FipCamera,
     HarpCuttlefishFip,
-    HarpCuttlefishFipSettings,
+    LightSource,
+    LightSourceCalibration,
+    LightSourceCalibrationOutput,
     Networking,
-    Point2f,
     RoiSettings,
 )
-from aind_physiology_fip.task_logic import AindPhysioFipTaskLogic
 
 
 def mock_session() -> AindBehaviorSessionModel:
@@ -32,32 +32,28 @@ def mock_session() -> AindBehaviorSessionModel:
 
 
 def mock_rig() -> AindPhysioFipRig:
+    mock_calibration = LightSourceCalibration(
+        device_name="mock_device",
+        output=LightSourceCalibrationOutput(power_lut={0: 0, 10: 10, 20: 20}),
+    )
+
     return AindPhysioFipRig(
         rig_name="test_rig",
         camera_green_iso=FipCamera(serial_number="000000"),
         camera_red=FipCamera(serial_number="000001"),
-        roi_settings=[
-            RoiSettings(
-                camera_green_iso=Circle(center=Point2f(x=0, y=0), radius=10),
-                camera_red=Circle(center=Point2f(x=0, y=0), radius=10),
-            ),
-            RoiSettings(
-                camera_green_iso=Circle(center=Point2f(x=10, y=10), radius=10),
-                camera_red=Circle(center=Point2f(x=10, y=10), radius=10),
-            ),
-        ],
+        light_source_blue=LightSource(power=10, calibration=mock_calibration),
+        light_source_lime=LightSource(power=20, calibration=mock_calibration),
+        light_source_uv=LightSource(power=5, calibration=None),
+        roi_settings=RoiSettings(),
         networking=Networking(),
         cuttlefish_fip=HarpCuttlefishFip(
             port_name="COM1",
-            additional_settings=HarpCuttlefishFipSettings(
-                green_light_source_duty_cycle=10, red_light_source_duty_cycle=20
-            ),
         ),
     )
 
 
-def mock_task_logic() -> AindPhysioFipTaskLogic:
-    return AindPhysioFipTaskLogic()
+def mock_task_logic() -> task_logic.AindPhysioFipTaskLogic:
+    return task_logic.AindPhysioFipTaskLogic()
 
 
 def main(path_seed: str = "./local/{schema}.json"):

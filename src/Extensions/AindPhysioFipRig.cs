@@ -317,7 +317,7 @@ namespace AindPhysiologyFip.Rig
     
         private string _deviceType = "cuTTLefishFip";
     
-        private HarpCuttlefishFipSettings _additionalSettings = new HarpCuttlefishFipSettings();
+        private BaseModel _additionalSettings;
     
         private BaseModel _calibration;
     
@@ -355,12 +355,12 @@ namespace AindPhysiologyFip.Rig
         }
     
         /// <summary>
-        /// Additional settings for the cuTTLefishFip device
+        /// Additional settings
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("additional_settings", Required=Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DescriptionAttribute("Additional settings for the cuTTLefishFip device")]
-        public HarpCuttlefishFipSettings AdditionalSettings
+        [Newtonsoft.Json.JsonPropertyAttribute("additional_settings")]
+        [System.ComponentModel.DescriptionAttribute("Additional settings")]
+        public BaseModel AdditionalSettings
         {
             get
             {
@@ -455,92 +455,6 @@ namespace AindPhysiologyFip.Rig
             stringBuilder.Append("who_am_i = " + _whoAmI + ", ");
             stringBuilder.Append("serial_number = " + _serialNumber + ", ");
             stringBuilder.Append("port_name = " + _portName);
-            return true;
-        }
-    
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Bonsai.CombinatorAttribute()]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class HarpCuttlefishFipSettings
-    {
-    
-        private int _greenLightSourceDutyCycle = 1;
-    
-        private int _redLightSourceDutyCycle = 1;
-    
-        public HarpCuttlefishFipSettings()
-        {
-        }
-    
-        protected HarpCuttlefishFipSettings(HarpCuttlefishFipSettings other)
-        {
-            _greenLightSourceDutyCycle = other._greenLightSourceDutyCycle;
-            _redLightSourceDutyCycle = other._redLightSourceDutyCycle;
-        }
-    
-        /// <summary>
-        /// Green light source power (0-100%)
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("green_light_source_duty_cycle")]
-        [System.ComponentModel.DescriptionAttribute("Green light source power (0-100%)")]
-        public int GreenLightSourceDutyCycle
-        {
-            get
-            {
-                return _greenLightSourceDutyCycle;
-            }
-            set
-            {
-                _greenLightSourceDutyCycle = value;
-            }
-        }
-    
-        /// <summary>
-        /// Red light source power (0-100%)
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("red_light_source_duty_cycle")]
-        [System.ComponentModel.DescriptionAttribute("Red light source power (0-100%)")]
-        public int RedLightSourceDutyCycle
-        {
-            get
-            {
-                return _redLightSourceDutyCycle;
-            }
-            set
-            {
-                _redLightSourceDutyCycle = value;
-            }
-        }
-    
-        public System.IObservable<HarpCuttlefishFipSettings> Process()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new HarpCuttlefishFipSettings(this)));
-        }
-    
-        public System.IObservable<HarpCuttlefishFipSettings> Process<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new HarpCuttlefishFipSettings(this));
-        }
-    
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("green_light_source_duty_cycle = " + _greenLightSourceDutyCycle + ", ");
-            stringBuilder.Append("red_light_source_duty_cycle = " + _redLightSourceDutyCycle);
             return true;
         }
     
@@ -694,9 +608,9 @@ namespace AindPhysiologyFip.Rig
     
         private string _deviceName;
     
-        private LightSourceCalibrationOutput _input = new LightSourceCalibrationOutput();
+        private BaseModel _input;
     
-        private BaseModel _output;
+        private LightSourceCalibrationOutput _output = new LightSourceCalibrationOutput();
     
         private System.DateTimeOffset? _date;
     
@@ -736,8 +650,8 @@ namespace AindPhysiologyFip.Rig
         }
     
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("input", Required=Newtonsoft.Json.Required.Always)]
-        public LightSourceCalibrationOutput Input
+        [Newtonsoft.Json.JsonPropertyAttribute("input")]
+        public BaseModel Input
         {
             get
             {
@@ -750,8 +664,8 @@ namespace AindPhysiologyFip.Rig
         }
     
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("output")]
-        public BaseModel Output
+        [Newtonsoft.Json.JsonPropertyAttribute("output", Required=Newtonsoft.Json.Required.Always)]
+        public LightSourceCalibrationOutput Output
         {
             get
             {
@@ -1613,11 +1527,6 @@ namespace AindPhysiologyFip.Rig
             return Process<HarpCuttlefishFip>(source);
         }
 
-        public System.IObservable<string> Process(System.IObservable<HarpCuttlefishFipSettings> source)
-        {
-            return Process<HarpCuttlefishFipSettings>(source);
-        }
-
         public System.IObservable<string> Process(System.IObservable<LightSource> source)
         {
             return Process<LightSource>(source);
@@ -1671,7 +1580,6 @@ namespace AindPhysiologyFip.Rig
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Circle>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipCamera>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<HarpCuttlefishFip>))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<HarpCuttlefishFipSettings>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSource>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSourceCalibration>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSourceCalibrationOutput>))]

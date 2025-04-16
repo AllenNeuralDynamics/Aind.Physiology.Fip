@@ -94,8 +94,16 @@
           "type": "string"
         },
         "additional_settings": {
-          "$ref": "#/definitions/HarpCuttlefishFipSettings",
-          "description": "Additional settings for the cuTTLefishFip device"
+          "default": null,
+          "description": "Additional settings",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/BaseModel"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "calibration": {
           "default": null,
@@ -135,32 +143,9 @@
         }
       },
       "required": [
-        "additional_settings",
         "port_name"
       ],
       "title": "HarpCuttlefishFip",
-      "type": "object"
-    },
-    "HarpCuttlefishFipSettings": {
-      "properties": {
-        "green_light_source_duty_cycle": {
-          "default": 1,
-          "description": "Green light source power (0-100%)",
-          "maximum": 100,
-          "minimum": 0,
-          "title": "Green Light Source Duty Cycle",
-          "type": "integer"
-        },
-        "red_light_source_duty_cycle": {
-          "default": 1,
-          "description": "Red light source power (0-100%)",
-          "maximum": 100,
-          "minimum": 0,
-          "title": "Red Light Source Duty Cycle",
-          "type": "integer"
-        }
-      },
-      "title": "HarpCuttlefishFipSettings",
       "type": "object"
     },
     "LightSource": {
@@ -215,10 +200,6 @@
           "type": "string"
         },
         "input": {
-          "$ref": "#/definitions/LightSourceCalibrationOutput",
-          "title": "Lookup table to convert duty cycle to power (mW)"
-        },
-        "output": {
           "default": null,
           "oneOf": [
             {
@@ -228,7 +209,11 @@
               "type": "null"
             }
           ],
-          "title": "Output data"
+          "title": "Input data"
+        },
+        "output": {
+          "$ref": "#/definitions/LightSourceCalibrationOutput",
+          "title": "Lookup table to convert duty cycle to power (mW)"
         },
         "date": {
           "default": null,
@@ -270,7 +255,7 @@
       },
       "required": [
         "device_name",
-        "input"
+        "output"
       ],
       "title": "LightSourceCalibration",
       "type": "object"

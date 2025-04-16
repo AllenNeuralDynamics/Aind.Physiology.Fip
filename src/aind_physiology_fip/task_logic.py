@@ -1,4 +1,3 @@
-import enum
 from typing import Literal
 
 from aind_behavior_services.task_logic import AindBehaviorTaskLogicModel, TaskParameters
@@ -7,15 +6,8 @@ from pydantic import Field
 __version__ = "0.1.0"
 
 
-class FipImagingMode(enum.StrEnum):
-    """Fip mode enum"""
-
-    SOMA = "Soma"
-    AXON = "Axon"
-
-
 class AindPhysioFipParameters(TaskParameters):
-    model: FipImagingMode = Field(default=FipImagingMode.SOMA, description="Fip imaging mode")
+    pass
 
 
 class AindPhysioFipTaskLogic(AindBehaviorTaskLogicModel):

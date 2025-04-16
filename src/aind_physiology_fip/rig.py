@@ -42,18 +42,9 @@ class RoiSettings(BaseModel):
     roi_camera_red: List[Circle] = Field(default=_make_default_rois(), description="ROI for the red camera channel")
 
 
-class HarpCuttlefishFipSettings(BaseModel):
-    green_light_source_duty_cycle: int = Field(default=1, ge=0, le=100, description="Green light source power (0-100%)")
-    red_light_source_duty_cycle: int = Field(default=1, ge=0, le=100, description="Red light source power (0-100%)")
-    # TODO light source tasks...
-
-
 class HarpCuttlefishFip(rig.harp._HarpDeviceBase):
     device_type: Literal["cuTTLefishFip"] = "cuTTLefishFip"
     who_am_i: Literal[1407] = 1407
-    additional_settings: HarpCuttlefishFipSettings = Field(
-        description="Additional settings for the cuTTLefishFip device"
-    )
 
 
 class ZmqConnection(BaseModel):
@@ -81,7 +72,7 @@ class LightSourceCalibrationOutput(BaseModel):
 
 
 class LightSourceCalibration(calibration.Calibration):
-    input: LightSourceCalibrationOutput = Field(..., title="Lookup table to convert duty cycle to power (mW)")
+    output: LightSourceCalibrationOutput = Field(..., title="Lookup table to convert duty cycle to power (mW)")
 
 
 class LightSource(rig.Device):

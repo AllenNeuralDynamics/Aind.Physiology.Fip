@@ -19,8 +19,6 @@ namespace AindPhysiologyFip.TaskLogic
     
         private string _aindBehaviorServicesPkgVersion = "0.10.2";
     
-        private FipImagingMode _model = AindPhysiologyFip.TaskLogic.FipImagingMode.Soma;
-    
         public AindPhysioFipParameters()
         {
         }
@@ -29,7 +27,6 @@ namespace AindPhysiologyFip.TaskLogic
         {
             _rngSeed = other._rngSeed;
             _aindBehaviorServicesPkgVersion = other._aindBehaviorServicesPkgVersion;
-            _model = other._model;
         }
     
         /// <summary>
@@ -63,24 +60,6 @@ namespace AindPhysiologyFip.TaskLogic
             }
         }
     
-        /// <summary>
-        /// Fip imaging mode
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("model")]
-        [System.ComponentModel.DescriptionAttribute("Fip imaging mode")]
-        public FipImagingMode Model
-        {
-            get
-            {
-                return _model;
-            }
-            set
-            {
-                _model = value;
-            }
-        }
-    
         public System.IObservable<AindPhysioFipParameters> Process()
         {
             return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new AindPhysioFipParameters(this)));
@@ -94,8 +73,7 @@ namespace AindPhysiologyFip.TaskLogic
         protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
         {
             stringBuilder.Append("rng_seed = " + _rngSeed + ", ");
-            stringBuilder.Append("aind_behavior_services_pkg_version = " + _aindBehaviorServicesPkgVersion + ", ");
-            stringBuilder.Append("model = " + _model);
+            stringBuilder.Append("aind_behavior_services_pkg_version = " + _aindBehaviorServicesPkgVersion);
             return true;
         }
     
@@ -111,22 +89,6 @@ namespace AindPhysiologyFip.TaskLogic
             stringBuilder.Append("}");
             return stringBuilder.ToString();
         }
-    }
-
-
-    /// <summary>
-    /// Fip mode enum
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-    public enum FipImagingMode
-    {
-    
-        [System.Runtime.Serialization.EnumMemberAttribute(Value="Soma")]
-        Soma = 0,
-    
-        [System.Runtime.Serialization.EnumMemberAttribute(Value="Axon")]
-        Axon = 1,
     }
 
 

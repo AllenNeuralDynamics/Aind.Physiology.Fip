@@ -36,6 +36,9 @@ namespace Bonsai.Vision.Design
             {
                 // Not sure if it may be a good or bad idea to normalize by maximum.
                 canvas = IplImageHelper.EnsureColorCopy(canvas, input);
+                double min, max;
+                CV.MinMaxLoc(input, out min, out max);
+                CV.ConvertScale(canvas, canvas, (double)UInt16.MaxValue / max);
                 int colorGain;
                 switch (canvas.Depth)
                 {

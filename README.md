@@ -3,7 +3,63 @@
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 
 For FIP photometry data acquisition and hardware control.
-*corresponding protocols.io will be soon available.
+
+
+# Fiber Photometry System Configuration
+
+## Overview
+
+The FIP (Frame-projected Independent Photometry) system is a low-cost, scalable photometry setup designed for chronic recording of optical signals from behaving mice during daily training. The system is based on a modified design of Frame-projected Independent Photometry (Kim et al., 2016), using inexpensive, commercially available, off-the-shelf components.
+
+![FIP System Light Path](assets/images/fip_light_path.png)
+
+For more information, see the [AIND Fiber Photometry Platform Page](https://www.allenneuraldynamics.org/platforms/fiber-photometry) and the following protocols:  
+* Protocol for system assembly: https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2
+* Protocol for system triggering setup: https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2
+
+## Wavelength Information
+
+The table below summarizes the photometry system's optical configuration, showing the relationship between emission channels and their corresponding excitation sources.
+
+| Excitation       |                     |              |   | Emission         |                      |                   |
+|------------------|---------------------|--------------|---|------------------|----------------------|-------------------|
+| **Name**         | **Wavelength (nm)** | **Led Name** |   | **name**         | **Wavelength (nm)**  | **Detector Name** |
+| Yellow           | 565                 | 565 nm LED   |   | Red              | ~590 (peak)          | Red CMOS          |
+| Blue             | 470                 | 470 nm LED   |   | Green            | ~510 (peak)          | Green CMOS        |
+| UV               | 415                 | 415 nm LED   |   | Isosbestic       | 490-540 (passband)   | Green CMOS        |
+
+## Signal Detection
+
+- **Green Channel**: Primarily used for green GFP based indicators
+- **Red Channel**: Primarily used for RFP-based indicators (e.g., RdLight)
+- **Isosbestic Channel**: Used as a control measurement; shares same emission path as green but with different excitation
+
+The system uses dedicated CMOS cameras for the red and green emissions, with the isosbestic signal being captured by the green camera under different excitation conditions.
+
+## Temporal Multiplexing
+
+The system employs temporal multiplexing to acquire signals from multiple fluorescent indicators through the same optical fiber. This is achieved by rapidly cycling through different excitation wavelengths while synchronizing camera acquisitions:
+
+```
+            --->|              |<--- period = 16.67 ms
+Blue LED(470)   ████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░
+
+UV LED (415)    ░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░
+
+Yellow LED (560)░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░
+
+Green CMOS      ████░████░░░░░░████░████░░░░░░████░████░░░░░░████░████░░░░░░████░████░░░░░░  (captures 470/415)
+Red CMOS        ░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░░░░░░░░░░░████░  (captures 560)
+                ───────────────────────────────────────────────────────────────────────────►
+                                    Time
+```
+
+The temporal multiplexing sequence:
+1. Blue LED (470nm) excitation -> Green CMOS camera captures signal from GFP-based sensors
+2. UV LED (415nm) excitation -> Green CMOS camera captures isosbestic signal
+3. Yellow LED (560nm) excitation -> Red CMOS camera captures signal from RFP-based sensors
+
+This cycling occurs at 60 Hz, allowing near-simultaneous measurement of multiple signals while preventing crosstalk between channels. Each LED is activated in sequence and cameras are synchronized to capture data only during their respective LED's ON period.
 
 ## Installation
 1. Arduino/Teensy
@@ -19,10 +75,6 @@ For FIP photometry data acquisition and hardware control.
 		  - On FLIR website: `Download > archive > 1.29.0.5 > SpinnakerSDK_FULL_1.29.0.5_x64.exe`
 
 3. Copy paste 4 CSV files in the LocalDependency folder to Users\svc_aind_behavior\Documents\FIPSettings and change the CameraSerial based on FLIR cameras used in the rig.
-
-
-
-
 
 ## Contributing
 Describe how other software developers can contribute to the codebase.

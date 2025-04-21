@@ -6,6 +6,7 @@ Welcome to the Aind Physiology Fip project documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+   :glob:
 
    self
    api

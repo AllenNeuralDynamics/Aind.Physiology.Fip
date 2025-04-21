@@ -14,13 +14,13 @@ This repository follows the project structure laid out in the [Aind.Behavior.Ser
 
 ## Deployment
 
-Deployment instructions can be found [here](https://github.com/AllenNeuralDynamics/Aind.Behavior.Services?tab=readme-ov-file#deployment).
+[Deployment instructions can be found here](https://github.com/AllenNeuralDynamics/Aind.Behavior.Services?tab=readme-ov-file#deployment).
 
 ---
 
 ## Prerequisites
 
-Pre-requisites for running the project can be found [here](https://github.com/AllenNeuralDynamics/Aind.Behavior.Services?tab=readme-ov-file#prerequisites).
+[Pre-requisites for running the project can be found here](https://github.com/AllenNeuralDynamics/Aind.Behavior.Services?tab=readme-ov-file#prerequisites).
 
 ---
 

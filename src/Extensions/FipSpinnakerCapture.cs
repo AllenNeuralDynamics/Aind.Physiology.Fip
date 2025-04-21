@@ -71,7 +71,7 @@ public class FipSpinnakerCapture : SpinnakerCapture
         {
             if (rect.X != 0 || rect.Y != 0 || rect.Height != 0 || rect.Width != 0)
             {
-                throw new InvalidOperationException("If Heigh or Width is 0, all size arguments must be 0.");
+                throw new InvalidOperationException("If Height or Width is 0, all size arguments must be 0.");
             }
             camera.OffsetX.Value = 0;
             camera.OffsetY.Value = 0;

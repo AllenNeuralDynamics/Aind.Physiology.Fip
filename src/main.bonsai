@@ -5,16 +5,17 @@
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
                  xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
                  xmlns:scr="clr-namespace:Bonsai.Scripting.Expressions;assembly=Bonsai.Scripting.Expressions"
-                 xmlns:p1="clr-namespace:;assembly=Extensions"
+                 xmlns:harp="clr-namespace:Bonsai.Harp;assembly=Bonsai.Harp"
+                 xmlns:p1="clr-namespace:FipExtensions;assembly=Extensions"
                  xmlns:p2="clr-namespace:AindPhysiologyFip.Session;assembly=Extensions"
                  xmlns:p3="clr-namespace:AindPhysiologyFip.TaskLogic;assembly=Extensions"
                  xmlns:p4="clr-namespace:AindPhysiologyFip.Rig;assembly=Extensions"
                  xmlns:p5="clr-namespace:System.Reactive;assembly=System.Reactive.Core"
                  xmlns:sys="clr-namespace:System;assembly=mscorlib"
-                 xmlns:spk="clr-namespace:Bonsai.Spinnaker;assembly=Bonsai.Spinnaker"
+                 xmlns:p6="clr-namespace:;assembly=Extensions"
                  xmlns:gui="clr-namespace:Bonsai.Gui;assembly=Bonsai.Gui"
                  xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
-                 xmlns:p6="clr-namespace:AllenNeuralDynamics.Core.Design;assembly=AllenNeuralDynamics.Core.Design"
+                 xmlns:p7="clr-namespace:AllenNeuralDynamics.Core.Design;assembly=AllenNeuralDynamics.Core.Design"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
     <Nodes>
@@ -64,9 +65,43 @@
         <Name>GreenIsoActivity</Name>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="p1:CircleActivityToMat">
-          <p1:BufferSize>2</p1:BufferSize>
+        <Combinator xsi:type="DoubleProperty">
+          <Value>0</Value>
         </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:Zip" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="harp:CreateTimestamped" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="p1:FipWriter">
+          <p1:Suffix>None</p1:Suffix>
+          <p1:Buffered>true</p1:Buffered>
+          <p1:Overwrite>false</p1:Overwrite>
+          <p1:ExpectedRegionCount xsi:nil="true" />
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="dsp:MatrixWriter">
+            <dsp:Suffix>None</dsp:Suffix>
+            <dsp:Overwrite>false</dsp:Overwrite>
+            <dsp:Layout>ColumnMajor</dsp:Layout>
+          </Combinator>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>GreenIsoActivity</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="p1:CircleActivityToMat">
+          <p1:BufferSize>5</p1:BufferSize>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>GreenIsoActivity</Name>
       </Expression>
       <Expression xsi:type="GroupWorkflow">
         <Name>DeserializeSchemas</Name>
@@ -245,15 +280,15 @@
                       </PropertyMappings>
                     </Expression>
                     <Expression xsi:type="Combinator">
-                      <Combinator xsi:type="p1:FipSpinnakerCapture">
-                        <spk:Index xsi:nil="true" />
-                        <spk:SerialNumber>000001</spk:SerialNumber>
-                        <spk:ColorProcessing>Default</spk:ColorProcessing>
-                        <p1:Gain>0</p1:Gain>
-                        <p1:Offset>
-                          <p1:X>0</p1:X>
-                          <p1:Y>0</p1:Y>
-                        </p1:Offset>
+                      <Combinator xsi:type="p6:FipSpinnakerCapture">
+                        <Index xsi:nil="true" xmlns="clr-namespace:Bonsai.Spinnaker;assembly=Bonsai.Spinnaker" />
+                        <SerialNumber xmlns="clr-namespace:Bonsai.Spinnaker;assembly=Bonsai.Spinnaker">000001</SerialNumber>
+                        <ColorProcessing xmlns="clr-namespace:Bonsai.Spinnaker;assembly=Bonsai.Spinnaker">Default</ColorProcessing>
+                        <p6:Gain>0</p6:Gain>
+                        <p6:Offset>
+                          <p6:X>0</p6:X>
+                          <p6:Y>0</p6:Y>
+                        </p6:Offset>
                       </Combinator>
                     </Expression>
                     <Expression xsi:type="Disable">
@@ -831,10 +866,10 @@
                                 </Combinator>
                               </Expression>
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="p6:MessageBox">
-                                  <p6:Text>Could not load local ROI settings.</p6:Text>
-                                  <p6:Title>Error</p6:Title>
-                                  <p6:MessageBoxIcon>Exclamation</p6:MessageBoxIcon>
+                                <Combinator xsi:type="p7:MessageBox">
+                                  <p7:Text>Could not load local ROI settings.</p7:Text>
+                                  <p7:Title>Error</p7:Title>
+                                  <p7:MessageBoxIcon>Exclamation</p7:MessageBoxIcon>
                                 </Combinator>
                               </Expression>
                               <Expression xsi:type="Combinator">
@@ -977,20 +1012,20 @@
                   <Expression xsi:type="ExternalizedMapping">
                     <Property Name="Value" DisplayName="GreenIsoRoi" Description="Defines the Region of Interest for the Green/Iso Camera Chanenel" Category="RegionOfInterest" />
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p1:CircleActivityCalculator,cv:Circle[]">
+                  <Expression xsi:type="PropertySource" TypeArguments="p6:CircleActivityCalculator,cv:Circle[]">
                     <MemberName>Circles</MemberName>
                     <Value>
                       <Circle>
                         <Center>
-                          <X>15</X>
-                          <Y>14</Y>
+                          <X>0</X>
+                          <Y>0</Y>
                         </Center>
-                        <Radius>13.8924437</Radius>
+                        <Radius>50</Radius>
                       </Circle>
                       <Circle>
                         <Center>
-                          <X>84</X>
-                          <Y>70</Y>
+                          <X>50</X>
+                          <Y>50</Y>
                         </Center>
                         <Radius>20</Radius>
                       </Circle>
@@ -1003,8 +1038,8 @@
                       </Circle>
                       <Circle>
                         <Center>
-                          <X>121</X>
-                          <Y>121</Y>
+                          <X>142</X>
+                          <Y>103</Y>
                         </Center>
                         <Radius>20</Radius>
                       </Circle>
@@ -1043,15 +1078,15 @@
                   <Expression xsi:type="ExternalizedMapping">
                     <Property Name="Value" DisplayName="Red" Description="Defines the Region of Interest for the Red Camera Chanenel" Category="RegionOfInterest" />
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p1:CircleActivityCalculator,cv:Circle[]">
+                  <Expression xsi:type="PropertySource" TypeArguments="p6:CircleActivityCalculator,cv:Circle[]">
                     <MemberName>Circles</MemberName>
                     <Value>
                       <Circle>
                         <Center>
-                          <X>103</X>
-                          <Y>185</Y>
+                          <X>0</X>
+                          <Y>0</Y>
                         </Center>
-                        <Radius>9.219544</Radius>
+                        <Radius>20</Radius>
                       </Circle>
                       <Circle>
                         <Center>
@@ -1295,44 +1330,7 @@
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="p1:CircleActivityCalculator">
-                <p1:Circles>
-                  <p1:Circle>
-                    <p1:Center>
-                      <p1:X>15</p1:X>
-                      <p1:Y>14</p1:Y>
-                    </p1:Center>
-                    <p1:Radius>13.8924437</p1:Radius>
-                  </p1:Circle>
-                  <p1:Circle>
-                    <p1:Center>
-                      <p1:X>84</p1:X>
-                      <p1:Y>70</p1:Y>
-                    </p1:Center>
-                    <p1:Radius>20</p1:Radius>
-                  </p1:Circle>
-                  <p1:Circle>
-                    <p1:Center>
-                      <p1:X>50</p1:X>
-                      <p1:Y>150</p1:Y>
-                    </p1:Center>
-                    <p1:Radius>20</p1:Radius>
-                  </p1:Circle>
-                  <p1:Circle>
-                    <p1:Center>
-                      <p1:X>121</p1:X>
-                      <p1:Y>121</p1:Y>
-                    </p1:Center>
-                    <p1:Radius>20</p1:Radius>
-                  </p1:Circle>
-                  <p1:Circle>
-                    <p1:Center>
-                      <p1:X>150</p1:X>
-                      <p1:Y>150</p1:Y>
-                    </p1:Center>
-                    <p1:Radius>20</p1:Radius>
-                  </p1:Circle>
-                </p1:Circles>
-                <p1:Operation>Avg</p1:Operation>
+                <p1:Operation>Sum</p1:Operation>
               </Combinator>
             </Expression>
             <Expression xsi:type="rx:PublishSubject">
@@ -1354,44 +1352,7 @@
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="p1:CircleActivityCalculator">
-                <p1:Circles>
-                  <p1:Circle>
-                    <p1:Center>
-                      <p1:X>103</p1:X>
-                      <p1:Y>185</p1:Y>
-                    </p1:Center>
-                    <p1:Radius>9.219544</p1:Radius>
-                  </p1:Circle>
-                  <p1:Circle>
-                    <p1:Center>
-                      <p1:X>50</p1:X>
-                      <p1:Y>50</p1:Y>
-                    </p1:Center>
-                    <p1:Radius>20</p1:Radius>
-                  </p1:Circle>
-                  <p1:Circle>
-                    <p1:Center>
-                      <p1:X>50</p1:X>
-                      <p1:Y>150</p1:Y>
-                    </p1:Center>
-                    <p1:Radius>20</p1:Radius>
-                  </p1:Circle>
-                  <p1:Circle>
-                    <p1:Center>
-                      <p1:X>150</p1:X>
-                      <p1:Y>50</p1:Y>
-                    </p1:Center>
-                    <p1:Radius>20</p1:Radius>
-                  </p1:Circle>
-                  <p1:Circle>
-                    <p1:Center>
-                      <p1:X>150</p1:X>
-                      <p1:Y>150</p1:Y>
-                    </p1:Center>
-                    <p1:Radius>20</p1:Radius>
-                  </p1:Circle>
-                </p1:Circles>
-                <p1:Operation>Avg</p1:Operation>
+                <p1:Operation>Sum</p1:Operation>
               </Combinator>
             </Expression>
             <Expression xsi:type="rx:PublishSubject">
@@ -1421,6 +1382,12 @@
       <Edge From="5" To="6" Label="Source1" />
       <Edge From="6" To="7" Label="Source1" />
       <Edge From="8" To="9" Label="Source1" />
+      <Edge From="8" To="10" Label="Source1" />
+      <Edge From="9" To="10" Label="Source2" />
+      <Edge From="10" To="11" Label="Source1" />
+      <Edge From="11" To="12" Label="Source1" />
+      <Edge From="12" To="13" Label="Source1" />
+      <Edge From="14" To="15" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>

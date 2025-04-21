@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using Font = OpenCV.Net.Font;
 using Point = OpenCV.Net.Point;
 using Size = OpenCV.Net.Size;
+using FipExtensions;
 [assembly: TypeVisualizer(typeof(CircleActivityCollectionVisualizer), Target = typeof(CircleActivityCollection))]
 
 namespace Bonsai.Vision.Design

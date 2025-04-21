@@ -5,42 +5,44 @@ using System.Linq;
 using System.Reactive.Linq;
 using OpenCV.Net;
 
-[Combinator]
-[Description("Returns an Mat containing buffered CircleActivityCollection.")]
-[WorkflowElementCategory(ElementCategory.Combinator)]
-public class CircleActivityToMat
+namespace FipExtensions
 {
-    private int bufferSize = 5;
-
-    [Description("The number of frames in each buffer.")]
-    public int BufferSize
+    [Combinator]
+    [Description("Returns an Mat containing buffered CircleActivityCollection.")]
+    [WorkflowElementCategory(ElementCategory.Combinator)]
+    public class CircleActivityToMat
     {
-        get { return bufferSize; }
-        set { bufferSize = value; }
-    }
+        private int bufferSize = 5;
 
-    public IObservable<Mat> Process(IObservable<CircleActivityCollection> source)
-    {
-        return source.Buffer(BufferSize, BufferSize).Select(value =>
+        [Description("The number of frames in each buffer.")]
+        public int BufferSize
         {
-            var nRegions = value.Select(x => x.Count);
+            get { return bufferSize; }
+            set { bufferSize = value; }
+        }
 
-            if (!nRegions.All(x => x > 0)) {throw new ArgumentException("One or more collections have no regions.");}
-            if (nRegions.Distinct().Count() != 1) {throw new ArgumentException("Not all collections have the same number of regions.");}
-
-            var nCh = value[0].Count;
-            var src = new double[nCh * BufferSize];
-            for (int i = 0; i < BufferSize; i++)
+        public IObservable<Mat> Process(IObservable<CircleActivityCollection> source)
+        {
+            return source.Buffer(BufferSize, BufferSize).Select(value =>
             {
-                for (int j = 0; j < nCh; j++)
+                var nRegions = value.Select(x => x.Count);
+
+                if (!nRegions.All(x => x > 0)) { throw new ArgumentException("One or more collections have no regions."); }
+                if (nRegions.Distinct().Count() != 1) { throw new ArgumentException("Not all collections have the same number of regions."); }
+
+                var nCh = value[0].Count;
+                var src = new double[nCh * BufferSize];
+                for (int i = 0; i < BufferSize; i++)
                 {
-                    src[j * BufferSize + i] = value[i][j].Activity.Val0;
+                    for (int j = 0; j < nCh; j++)
+                    {
+                        src[j * BufferSize + i] = value[i][j].Activity.Val0;
+                    }
                 }
-            }
-            Mat mat = Mat.FromArray(src, nCh, BufferSize, Depth.F64, 1);
+                Mat mat = Mat.FromArray(src, nCh, BufferSize, Depth.F64, 1);
 
-            return mat;
-        });
+                return mat;
+            });
+        }
+    }
 }
-}
-

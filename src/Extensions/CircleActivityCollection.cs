@@ -1,5 +1,4 @@
-﻿using OpenCV.Net;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using Bonsai.Vision;
 
@@ -8,10 +7,10 @@ namespace FipExtensions
 {
     public class CircleActivityCollection : Collection<CircleActivity>
     {
-        public IplImage Image { get; set; }
-        public CircleActivityCollection(IplImage image) : base()
+        public FipFrame FipFrame { get; set; }
+        public CircleActivityCollection(FipFrame fipFrame) : base()
         {
-            Image = image;
+            FipFrame = fipFrame;
         }
 
         public Circle[] Circles

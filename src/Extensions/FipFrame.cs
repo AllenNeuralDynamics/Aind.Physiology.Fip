@@ -1,27 +1,9 @@
-using Bonsai;
-using Bonsai.Spinnaker;
-using OpenCV.Net;
-using System;
 using System.ComponentModel;
-using System.Reactive.Linq;
+using OpenCV.Net;
 
 namespace FipExtensions
 {
-    [Combinator]
-    [WorkflowElementCategory(ElementCategory.Transform)]
-    [Description("Represents a frame of fiber photometry data.")]
-    public class CreateFipFrame
-    {
-
-        public FipCameraSource CameraSource { get; set; }
-
-        public IObservable<FipFrame> Process(IObservable<SpinnakerDataFrame> source)
-        {
-            if (source == null) throw new InvalidOperationException("Source must be set before processing.");
-            return source.Select(frame => new FipFrame { Image = frame.Image, Source = CameraSource, FrameNumber = frame.ChunkData.FrameID, FrameTime = frame.ChunkData.Timestamp });
-        }
-    }
-
+    [Description("Represents a camera frame from a FIP.")]
     public class FipFrame
     {
         public IplImage Image { get; set; }

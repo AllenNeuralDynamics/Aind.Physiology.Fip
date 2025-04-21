@@ -32,7 +32,7 @@ namespace Bonsai.Vision.Design
         public override void Show(object value)
         {
             regions = (CircleActivityCollection)value;
-            input = regions.Image;
+            input = regions.FipFrame.Image;
             if (input != null)
             {
                 // Not sure if it may be a good or bad idea to normalize by maximum.

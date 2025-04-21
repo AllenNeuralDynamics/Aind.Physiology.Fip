@@ -27,7 +27,7 @@ namespace FipExtensions
             set { operation = value; }
         }
 
-        public IObservable<CircleActivityCollection> Process(IObservable<IplImage> source)
+        public IObservable<CircleActivityCollection> Process(IObservable<FipFrame> source)
         {
             return Observable.Defer(() =>
             {
@@ -35,10 +35,11 @@ namespace FipExtensions
                 var mask = default(IplImage);
                 var currentCircles = default(Circle[]);
                 var boundingRegions = default(Rect[]);
-                return source.Select(img =>
+                return source.Select(frame =>
                 {
                     var operation = Operation;
-                    var output = new CircleActivityCollection(img);
+                    var output = new CircleActivityCollection(frame);
+                    var img = frame.Image;
                     mask = IplImageHelper.EnsureImageFormat(mask, img.Size, IplDepth.U8, 1);
                     if (operation != ReduceOperation.Sum) roi = null;
                     else roi = IplImageHelper.EnsureImageFormat(roi, img.Size, img.Depth, img.Channels);

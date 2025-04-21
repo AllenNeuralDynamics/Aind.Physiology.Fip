@@ -11,7 +11,7 @@ using Bonsai.Harp;
 
 [Combinator]
 [DefaultProperty("FileName")]
-[Description("Writes fip data frames into a CSV text file.")]
+[Description("Writes FIP data into a CSV text file.")]
 public class FipWriter : FileSink
 {
     public int? ExpectedRegionCount = null;
@@ -44,9 +44,15 @@ public class FipWriter : FileSink
 
         protected override StreamWriter CreateWriter(string fileName, Timestamped<CircleActivityCollection> input)
         {
+            if (Path.GetExtension(fileName) != ".csv")
+            {
+                throw new ArgumentException("File extension must be .csv");
+            }
+
             var nRegions = input.Value.Count;
 
-            if (ExpectedRegionCount == null){
+            if (ExpectedRegionCount == null)
+            {
                 ExpectedRegionCount = nRegions;
             }
             else if (ExpectedRegionCount != nRegions)
@@ -82,7 +88,8 @@ public class FipWriter : FileSink
         {
             var nRegions = input.Value.Count;
 
-            if (nRegions != ExpectedRegionCount){
+            if (nRegions != ExpectedRegionCount)
+            {
                 throw new ArgumentException("Number of regions in the input stream does not match the number of regions in the first frame.");
             }
             var values = new List<string>(MetadataOffset + nRegions);

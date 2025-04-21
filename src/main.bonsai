@@ -5,12 +5,12 @@
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
                  xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
                  xmlns:scr="clr-namespace:Bonsai.Scripting.Expressions;assembly=Bonsai.Scripting.Expressions"
-                 xmlns:p1="clr-namespace:AindPhysiologyFip.Session;assembly=Extensions"
-                 xmlns:p2="clr-namespace:AindPhysiologyFip.TaskLogic;assembly=Extensions"
-                 xmlns:p3="clr-namespace:AindPhysiologyFip.Rig;assembly=Extensions"
-                 xmlns:p4="clr-namespace:System.Reactive;assembly=System.Reactive.Core"
+                 xmlns:p1="clr-namespace:;assembly=Extensions"
+                 xmlns:p2="clr-namespace:AindPhysiologyFip.Session;assembly=Extensions"
+                 xmlns:p3="clr-namespace:AindPhysiologyFip.TaskLogic;assembly=Extensions"
+                 xmlns:p4="clr-namespace:AindPhysiologyFip.Rig;assembly=Extensions"
+                 xmlns:p5="clr-namespace:System.Reactive;assembly=System.Reactive.Core"
                  xmlns:sys="clr-namespace:System;assembly=mscorlib"
-                 xmlns:p5="clr-namespace:;assembly=Extensions"
                  xmlns:spk="clr-namespace:Bonsai.Spinnaker;assembly=Bonsai.Spinnaker"
                  xmlns:gui="clr-namespace:Bonsai.Gui;assembly=Bonsai.Gui"
                  xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
@@ -60,6 +60,14 @@
       <Expression xsi:type="rx:PublishSubject">
         <Name>Raw</Name>
       </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>GreenIsoActivity</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="p1:CircleActivityToMat">
+          <p1:BufferSize>2</p1:BufferSize>
+        </Combinator>
+      </Expression>
       <Expression xsi:type="GroupWorkflow">
         <Name>DeserializeSchemas</Name>
         <Workflow>
@@ -67,8 +75,8 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>RawSessionSchema</Name>
             </Expression>
-            <Expression xsi:type="p1:DeserializeFromJson">
-              <p1:Type xsi:type="TypeMapping" TypeArguments="p1:AindBehaviorSessionModel" />
+            <Expression xsi:type="p2:DeserializeFromJson">
+              <p2:Type xsi:type="TypeMapping" TypeArguments="p2:AindBehaviorSessionModel" />
             </Expression>
             <Expression xsi:type="rx:AsyncSubject">
               <Name>SessionSchema</Name>
@@ -76,8 +84,8 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>RawTaskLogicSchema</Name>
             </Expression>
-            <Expression xsi:type="p2:DeserializeFromJson">
-              <p2:Type xsi:type="TypeMapping" TypeArguments="p2:AindPhysioFipTaskLogic" />
+            <Expression xsi:type="p3:DeserializeFromJson">
+              <p3:Type xsi:type="TypeMapping" TypeArguments="p3:AindPhysioFipTaskLogic" />
             </Expression>
             <Expression xsi:type="rx:AsyncSubject">
               <Name>TaskLogicSchema</Name>
@@ -85,8 +93,8 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>RawRigSchema</Name>
             </Expression>
-            <Expression xsi:type="p3:DeserializeFromJson">
-              <p3:Type xsi:type="TypeMapping" TypeArguments="p3:AindPhysioFipRig" />
+            <Expression xsi:type="p4:DeserializeFromJson">
+              <p4:Type xsi:type="TypeMapping" TypeArguments="p4:AindPhysioFipRig" />
             </Expression>
             <Expression xsi:type="rx:AsyncSubject">
               <Name>RigSchema</Name>
@@ -106,16 +114,16 @@
         <Name>Init</Name>
         <Workflow>
           <Nodes>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p4:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p5:Unit">
               <rx:Name>StartExperimentShortcut</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p4:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p5:Unit">
               <rx:Name>EndExperiment</rx:Name>
             </Expression>
             <Expression xsi:type="rx:BehaviorSubject" TypeArguments="sys:String">
               <rx:Name>Annotations</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p4:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p5:Unit">
               <rx:Name>StartExperiment</rx:Name>
             </Expression>
             <Expression xsi:type="rx:BehaviorSubject" TypeArguments="cv:Circle[]">
@@ -124,7 +132,7 @@
             <Expression xsi:type="rx:BehaviorSubject" TypeArguments="cv:Circle[]">
               <rx:Name>CurrentGreenIsoRoi</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:RoiSettings">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p4:RoiSettings">
               <rx:Name>CurrentCombinedRoi</rx:Name>
             </Expression>
             <Expression xsi:type="Combinator">
@@ -237,22 +245,22 @@
                       </PropertyMappings>
                     </Expression>
                     <Expression xsi:type="Combinator">
-                      <Combinator xsi:type="p5:FipSpinnakerCapture">
+                      <Combinator xsi:type="p1:FipSpinnakerCapture">
                         <spk:Index xsi:nil="true" />
                         <spk:SerialNumber>000001</spk:SerialNumber>
                         <spk:ColorProcessing>Default</spk:ColorProcessing>
-                        <p5:Gain>0</p5:Gain>
-                        <p5:Offset>
-                          <p5:X>0</p5:X>
-                          <p5:Y>0</p5:Y>
-                        </p5:Offset>
+                        <p1:Gain>0</p1:Gain>
+                        <p1:Offset>
+                          <p1:X>0</p1:X>
+                          <p1:Y>0</p1:Y>
+                        </p1:Offset>
                       </Combinator>
                     </Expression>
                     <Expression xsi:type="Disable">
                       <Builder xsi:type="Combinator">
-                        <Combinator xsi:type="p3:FipCamera">
-                          <p3:DeviceType>FipCamera</p3:DeviceType>
-                          <p3:Gain>0</p3:Gain>
+                        <Combinator xsi:type="p4:FipCamera">
+                          <p4:DeviceType>FipCamera</p4:DeviceType>
+                          <p4:Gain>0</p4:Gain>
                         </Combinator>
                       </Builder>
                     </Expression>
@@ -282,9 +290,9 @@
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p3:AindPhysioFipRig">
-                      <p3:AindBehaviorServicesPkgVersion>0.10.2</p3:AindBehaviorServicesPkgVersion>
-                      <p3:Version>0.1.0</p3:Version>
+                    <Combinator xsi:type="p4:AindPhysioFipRig">
+                      <p4:AindBehaviorServicesPkgVersion>0.10.2</p4:AindBehaviorServicesPkgVersion>
+                      <p4:Version>0.1.0</p4:Version>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
@@ -296,8 +304,8 @@
                     <Selector>RoiSettings</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p5:LoadRoiDefault">
-                      <p5:Path>../.local/default.json</p5:Path>
+                    <Combinator xsi:type="p1:LoadRoiDefault">
+                      <p1:Path>../.local/default.json</p1:Path>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="rx:BehaviorSubject">
@@ -483,7 +491,7 @@
                         <Expression xsi:type="gui:TextBoxBuilder">
                           <gui:Enabled>true</gui:Enabled>
                           <gui:Visible>true</gui:Visible>
-                          <gui:Text>Log notes</gui:Text>
+                          <gui:Text />
                           <gui:Multiline>true</gui:Multiline>
                         </Expression>
                         <Expression xsi:type="rx:BehaviorSubject">
@@ -699,7 +707,7 @@
                                 <Name>CurrentCombinedRoi</Name>
                               </Expression>
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="p3:SerializeToJson" />
+                                <Combinator xsi:type="p4:SerializeToJson" />
                               </Expression>
                               <Expression xsi:type="SubscribeSubject">
                                 <Name>LocalRoiDefaultPath</Name>
@@ -781,11 +789,11 @@
                                   <io:Path>../.local/default.json</io:Path>
                                 </Combinator>
                               </Expression>
-                              <Expression xsi:type="p3:DeserializeFromJson">
-                                <p3:Type xsi:type="TypeMapping" TypeArguments="p3:RoiSettings" />
+                              <Expression xsi:type="p4:DeserializeFromJson">
+                                <p4:Type xsi:type="TypeMapping" TypeArguments="p4:RoiSettings" />
                               </Expression>
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="p5:RoiCircleConverter" />
+                                <Combinator xsi:type="p1:RoiCircleConverter" />
                               </Expression>
                               <Expression xsi:type="MemberSelector">
                                 <Selector>GreenIso</Selector>
@@ -905,9 +913,9 @@
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p3:AindPhysioFipRig">
-                      <p3:AindBehaviorServicesPkgVersion>0.10.2</p3:AindBehaviorServicesPkgVersion>
-                      <p3:Version>0.1.0</p3:Version>
+                    <Combinator xsi:type="p4:AindPhysioFipRig">
+                      <p4:AindBehaviorServicesPkgVersion>0.10.2</p4:AindBehaviorServicesPkgVersion>
+                      <p4:Version>0.1.0</p4:Version>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
@@ -927,12 +935,12 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p5:LoadRoiDefault">
-                      <p5:Path>../.local/default.json</p5:Path>
+                    <Combinator xsi:type="p1:LoadRoiDefault">
+                      <p1:Path>../.local/default.json</p1:Path>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p5:RoiCircleConverter" />
+                    <Combinator xsi:type="p1:RoiCircleConverter" />
                   </Expression>
                   <Expression xsi:type="MemberSelector">
                     <Selector>GreenIso</Selector>
@@ -969,20 +977,20 @@
                   <Expression xsi:type="ExternalizedMapping">
                     <Property Name="Value" DisplayName="GreenIsoRoi" Description="Defines the Region of Interest for the Green/Iso Camera Chanenel" Category="RegionOfInterest" />
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p5:CircleActivityCalculator,cv:Circle[]">
+                  <Expression xsi:type="PropertySource" TypeArguments="p1:CircleActivityCalculator,cv:Circle[]">
                     <MemberName>Circles</MemberName>
                     <Value>
                       <Circle>
                         <Center>
-                          <X>0</X>
-                          <Y>0</Y>
+                          <X>15</X>
+                          <Y>14</Y>
                         </Center>
-                        <Radius>50</Radius>
+                        <Radius>13.8924437</Radius>
                       </Circle>
                       <Circle>
                         <Center>
-                          <X>50</X>
-                          <Y>50</Y>
+                          <X>84</X>
+                          <Y>70</Y>
                         </Center>
                         <Radius>20</Radius>
                       </Circle>
@@ -995,8 +1003,8 @@
                       </Circle>
                       <Circle>
                         <Center>
-                          <X>142</X>
-                          <Y>103</Y>
+                          <X>121</X>
+                          <Y>121</Y>
                         </Center>
                         <Radius>20</Radius>
                       </Circle>
@@ -1035,15 +1043,15 @@
                   <Expression xsi:type="ExternalizedMapping">
                     <Property Name="Value" DisplayName="Red" Description="Defines the Region of Interest for the Red Camera Chanenel" Category="RegionOfInterest" />
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p5:CircleActivityCalculator,cv:Circle[]">
+                  <Expression xsi:type="PropertySource" TypeArguments="p1:CircleActivityCalculator,cv:Circle[]">
                     <MemberName>Circles</MemberName>
                     <Value>
                       <Circle>
                         <Center>
-                          <X>0</X>
-                          <Y>0</Y>
+                          <X>103</X>
+                          <Y>185</Y>
                         </Center>
-                        <Radius>20</Radius>
+                        <Radius>9.219544</Radius>
                       </Circle>
                       <Circle>
                         <Center>
@@ -1091,7 +1099,7 @@
                     <Combinator xsi:type="rx:CombineLatest" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p5:RoiCircleConverter" />
+                    <Combinator xsi:type="p1:RoiCircleConverter" />
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
                     <Name>CurrentCombinedRoi</Name>
@@ -1286,45 +1294,45 @@
               </PropertyMappings>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p5:CircleActivityCalculator">
-                <p5:Circles>
-                  <p5:Circle>
-                    <p5:Center>
-                      <p5:X>0</p5:X>
-                      <p5:Y>0</p5:Y>
-                    </p5:Center>
-                    <p5:Radius>50</p5:Radius>
-                  </p5:Circle>
-                  <p5:Circle>
-                    <p5:Center>
-                      <p5:X>50</p5:X>
-                      <p5:Y>50</p5:Y>
-                    </p5:Center>
-                    <p5:Radius>20</p5:Radius>
-                  </p5:Circle>
-                  <p5:Circle>
-                    <p5:Center>
-                      <p5:X>50</p5:X>
-                      <p5:Y>150</p5:Y>
-                    </p5:Center>
-                    <p5:Radius>20</p5:Radius>
-                  </p5:Circle>
-                  <p5:Circle>
-                    <p5:Center>
-                      <p5:X>142</p5:X>
-                      <p5:Y>103</p5:Y>
-                    </p5:Center>
-                    <p5:Radius>20</p5:Radius>
-                  </p5:Circle>
-                  <p5:Circle>
-                    <p5:Center>
-                      <p5:X>150</p5:X>
-                      <p5:Y>150</p5:Y>
-                    </p5:Center>
-                    <p5:Radius>20</p5:Radius>
-                  </p5:Circle>
-                </p5:Circles>
-                <p5:Operation>Sum</p5:Operation>
+              <Combinator xsi:type="p1:CircleActivityCalculator">
+                <p1:Circles>
+                  <p1:Circle>
+                    <p1:Center>
+                      <p1:X>15</p1:X>
+                      <p1:Y>14</p1:Y>
+                    </p1:Center>
+                    <p1:Radius>13.8924437</p1:Radius>
+                  </p1:Circle>
+                  <p1:Circle>
+                    <p1:Center>
+                      <p1:X>84</p1:X>
+                      <p1:Y>70</p1:Y>
+                    </p1:Center>
+                    <p1:Radius>20</p1:Radius>
+                  </p1:Circle>
+                  <p1:Circle>
+                    <p1:Center>
+                      <p1:X>50</p1:X>
+                      <p1:Y>150</p1:Y>
+                    </p1:Center>
+                    <p1:Radius>20</p1:Radius>
+                  </p1:Circle>
+                  <p1:Circle>
+                    <p1:Center>
+                      <p1:X>121</p1:X>
+                      <p1:Y>121</p1:Y>
+                    </p1:Center>
+                    <p1:Radius>20</p1:Radius>
+                  </p1:Circle>
+                  <p1:Circle>
+                    <p1:Center>
+                      <p1:X>150</p1:X>
+                      <p1:Y>150</p1:Y>
+                    </p1:Center>
+                    <p1:Radius>20</p1:Radius>
+                  </p1:Circle>
+                </p1:Circles>
+                <p1:Operation>Avg</p1:Operation>
               </Combinator>
             </Expression>
             <Expression xsi:type="rx:PublishSubject">
@@ -1345,45 +1353,45 @@
               </PropertyMappings>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p5:CircleActivityCalculator">
-                <p5:Circles>
-                  <p5:Circle>
-                    <p5:Center>
-                      <p5:X>0</p5:X>
-                      <p5:Y>0</p5:Y>
-                    </p5:Center>
-                    <p5:Radius>20</p5:Radius>
-                  </p5:Circle>
-                  <p5:Circle>
-                    <p5:Center>
-                      <p5:X>50</p5:X>
-                      <p5:Y>50</p5:Y>
-                    </p5:Center>
-                    <p5:Radius>20</p5:Radius>
-                  </p5:Circle>
-                  <p5:Circle>
-                    <p5:Center>
-                      <p5:X>50</p5:X>
-                      <p5:Y>150</p5:Y>
-                    </p5:Center>
-                    <p5:Radius>20</p5:Radius>
-                  </p5:Circle>
-                  <p5:Circle>
-                    <p5:Center>
-                      <p5:X>150</p5:X>
-                      <p5:Y>50</p5:Y>
-                    </p5:Center>
-                    <p5:Radius>20</p5:Radius>
-                  </p5:Circle>
-                  <p5:Circle>
-                    <p5:Center>
-                      <p5:X>150</p5:X>
-                      <p5:Y>150</p5:Y>
-                    </p5:Center>
-                    <p5:Radius>20</p5:Radius>
-                  </p5:Circle>
-                </p5:Circles>
-                <p5:Operation>Sum</p5:Operation>
+              <Combinator xsi:type="p1:CircleActivityCalculator">
+                <p1:Circles>
+                  <p1:Circle>
+                    <p1:Center>
+                      <p1:X>103</p1:X>
+                      <p1:Y>185</p1:Y>
+                    </p1:Center>
+                    <p1:Radius>9.219544</p1:Radius>
+                  </p1:Circle>
+                  <p1:Circle>
+                    <p1:Center>
+                      <p1:X>50</p1:X>
+                      <p1:Y>50</p1:Y>
+                    </p1:Center>
+                    <p1:Radius>20</p1:Radius>
+                  </p1:Circle>
+                  <p1:Circle>
+                    <p1:Center>
+                      <p1:X>50</p1:X>
+                      <p1:Y>150</p1:Y>
+                    </p1:Center>
+                    <p1:Radius>20</p1:Radius>
+                  </p1:Circle>
+                  <p1:Circle>
+                    <p1:Center>
+                      <p1:X>150</p1:X>
+                      <p1:Y>50</p1:Y>
+                    </p1:Center>
+                    <p1:Radius>20</p1:Radius>
+                  </p1:Circle>
+                  <p1:Circle>
+                    <p1:Center>
+                      <p1:X>150</p1:X>
+                      <p1:Y>150</p1:Y>
+                    </p1:Center>
+                    <p1:Radius>20</p1:Radius>
+                  </p1:Circle>
+                </p1:Circles>
+                <p1:Operation>Avg</p1:Operation>
               </Combinator>
             </Expression>
             <Expression xsi:type="rx:PublishSubject">
@@ -1412,6 +1420,7 @@
       <Edge From="4" To="5" Label="Source1" />
       <Edge From="5" To="6" Label="Source1" />
       <Edge From="6" To="7" Label="Source1" />
+      <Edge From="8" To="9" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>

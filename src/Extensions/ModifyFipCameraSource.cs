@@ -13,7 +13,12 @@ using FipExtensions;
 public class ModifyFipCameraSource
 {
     [Description("The camera source to set for the frames.")]
-    public FipCameraSource Source { get; set; } = FipCameraSource.None;
+    private FipCameraSource source = FipCameraSource.None;
+    public FipCameraSource Source 
+    {
+        get { return source; }
+        set { source = value; }
+    }
 
 
     public IObservable<Timestamped<FipFrame>> Process(IObservable<Timestamped<FipFrame>> source)

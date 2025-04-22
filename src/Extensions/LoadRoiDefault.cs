@@ -56,10 +56,10 @@ namespace FipExtensions
         {
             return new RoiSettings()
             {
-                BackgroundCameraGreenIso = makeCircle(0, 0, 20),
-                BackgroundCameraRed = makeCircle(0, 0, 20),
-                RoiCameraGreenIso = (new double[] { 50, 150 }).SelectMany(x => (new double[] { 50, 150 }).Select(y => makeCircle(x, y, 20))).ToList(),
-                RoiCameraRed = (new double[] { 50, 150 }).SelectMany(x => (new double[] { 50, 150 }).Select(y => makeCircle(x, y, 20))).ToList(),
+                CameraGreenIsoBackground = makeCircle(0, 0, 20),
+                CameraRedBackground = makeCircle(0, 0, 20),
+                CameraGreenIsoRoi = (new double[] { 50, 150 }).SelectMany(x => (new double[] { 50, 150 }).Select(y => makeCircle(x, y, 20))).ToList(),
+                CameraRedRoi = (new double[] { 50, 150 }).SelectMany(x => (new double[] { 50, 150 }).Select(y => makeCircle(x, y, 20))).ToList(),
             };
         }
     }

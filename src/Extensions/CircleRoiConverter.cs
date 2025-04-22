@@ -28,10 +28,10 @@ namespace FipExtensions
             return source.Select(value =>
             {
                 var settings = new AindPhysiologyFip.Rig.RoiSettings();
-                settings.BackgroundCameraGreenIso = value.GreenIso.Length == 0 ? null : ConvertToFipCircle(value.GreenIso[0]);
-                settings.RoiCameraGreenIso = value.GreenIso.Skip(1).Select(ConvertToFipCircle).ToList();
-                settings.BackgroundCameraRed = value.Red.Length == 0 ? null : ConvertToFipCircle(value.Red[0]);
-                settings.RoiCameraRed = value.Red.Skip(1).Select(ConvertToFipCircle).ToList();
+                settings.CameraGreenIsoBackground = value.GreenIso.Length == 0 ? null : ConvertToFipCircle(value.GreenIso[0]);
+                settings.CameraGreenIsoRoi = value.GreenIso.Skip(1).Select(ConvertToFipCircle).ToList();
+                settings.CameraRedBackground = value.Red.Length == 0 ? null : ConvertToFipCircle(value.Red[0]);
+                settings.CameraRedRoi = value.Red.Skip(1).Select(ConvertToFipCircle).ToList();
                 return settings;
             });
         }
@@ -47,13 +47,13 @@ namespace FipExtensions
             {
                 case FipCameraSource.Iso:
                 case FipCameraSource.Green:
-                    return new List<AindPhysiologyFip.Rig.Circle>() { settings.BackgroundCameraGreenIso }
-                        .Concat(settings.RoiCameraGreenIso)
+                    return new List<AindPhysiologyFip.Rig.Circle>() { settings.CameraGreenIsoBackground }
+                        .Concat(settings.CameraGreenIsoRoi)
                         .Select(circle => ConvertToBonsaiVisionCircle(circle))
                         .ToArray();
                 case FipCameraSource.Red:
-                    return new List<AindPhysiologyFip.Rig.Circle>() { settings.BackgroundCameraRed }
-                        .Concat(settings.RoiCameraRed)
+                    return new List<AindPhysiologyFip.Rig.Circle>() { settings.CameraRedBackground }
+                        .Concat(settings.CameraRedRoi)
                         .Select(circle => ConvertToBonsaiVisionCircle(circle))
                         .ToArray();
                 default:

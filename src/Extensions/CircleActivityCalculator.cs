@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.ComponentModel;
 using Bonsai;
+using Bonsai.Harp;
 
 namespace FipExtensions
 {
@@ -19,12 +20,17 @@ namespace FipExtensions
         [Editor("Bonsai.Vision.Design.IplImageCircleEditor, Bonsai.Vision.Design", DesignTypes.UITypeEditor)]
         public Circle[] Circles { get; set; }
 
-        private ReduceOperation operation = ReduceOperation.Sum;
+        private ReduceOperation operation = ReduceOperation.Avg;
         [Description("Specifies the reduction operation used to calculate activation intensity.")]
         public ReduceOperation Operation
         {
             get { return operation; }
             set { operation = value; }
+        }
+
+        public IObservable<Timestamped<CircleActivityCollection>> Process(IObservable<Timestamped<FipFrame>> source){
+            return Process(source.Select(frame => frame.Value))
+                .Zip(source, (activity, frame) => Timestamped.Create(activity, frame.Seconds));
         }
 
         public IObservable<CircleActivityCollection> Process(IObservable<FipFrame> source)

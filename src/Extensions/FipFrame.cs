@@ -11,6 +11,14 @@ namespace FipExtensions
         public FipCameraSource Source { get; set; }
         public long FrameNumber { get; set; }
         public long FrameTime { get; set; }
+
+        public FipFrame(FipFrame other){
+            if (other == null) throw new ArgumentNullException(nameof(other));
+            Image = other.Image;
+            Source = other.Source;
+            FrameNumber = other.FrameNumber;
+            FrameTime = other.FrameTime;
+        }
     }
 
     [Flags]

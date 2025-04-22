@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using OpenCV.Net;
+using System;
 
 namespace FipExtensions
 {
@@ -12,10 +13,13 @@ namespace FipExtensions
         public long FrameTime { get; set; }
     }
 
+    [Flags]
     public enum FipCameraSource
     {
-        Iso = 0,
-        Green = 1,
-        Red = 2,
+        None = 0,
+        Iso = 1 << 0,
+        Green = 1 << 1,
+        Red = 1 << 2,
+        GreenIso = Green | Iso,
     }
 }

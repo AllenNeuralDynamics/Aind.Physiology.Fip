@@ -322,7 +322,7 @@
     },
     "RoiSettings": {
       "properties": {
-        "background_camera_green_iso": {
+        "camera_green_iso_background": {
           "$ref": "#/definitions/Circle",
           "default": {
             "center": {
@@ -333,7 +333,7 @@
           },
           "description": "ROI to compute the background for the green/iso camera channel"
         },
-        "background_camera_red": {
+        "camera_red_background": {
           "$ref": "#/definitions/Circle",
           "default": {
             "center": {
@@ -344,7 +344,7 @@
           },
           "description": "ROI to compute the background for the red camera channel"
         },
-        "roi_camera_green_iso": {
+        "camera_green_iso_roi": {
           "default": [
             {
               "center": {
@@ -379,10 +379,10 @@
           "items": {
             "$ref": "#/definitions/Circle"
           },
-          "title": "Roi Camera Green Iso",
+          "title": "Camera Green Iso Roi",
           "type": "array"
         },
-        "roi_camera_red": {
+        "camera_red_roi": {
           "default": [
             {
               "center": {
@@ -417,7 +417,7 @@
           "items": {
             "$ref": "#/definitions/Circle"
           },
-          "title": "Roi Camera Red",
+          "title": "Camera Red Roi",
           "type": "array"
         }
       },

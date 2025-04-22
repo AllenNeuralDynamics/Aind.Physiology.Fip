@@ -28,18 +28,18 @@ def _make_default_rois() -> List[Circle]:
 
 
 class RoiSettings(BaseModel):
-    background_camera_green_iso: Circle = Field(
+    camera_green_iso_background: Circle = Field(
         default=Circle(center=Point2f(x=10, y=10), radius=10),
         description="ROI to compute the background for the green/iso camera channel",
     )
-    background_camera_red: Circle = Field(
+    camera_red_background: Circle = Field(
         default=Circle(center=Point2f(x=10, y=10), radius=10),
         description="ROI to compute the background for the red camera channel",
     )
-    roi_camera_green_iso: List[Circle] = Field(
+    camera_green_iso_roi: List[Circle] = Field(
         default=_make_default_rois(), description="ROI for the green/iso camera channel"
     )
-    roi_camera_red: List[Circle] = Field(default=_make_default_rois(), description="ROI for the red camera channel")
+    camera_red_roi: List[Circle] = Field(default=_make_default_rois(), description="ROI for the red camera channel")
 
 
 class HarpCuttlefishFip(rig.harp._HarpDeviceBase):

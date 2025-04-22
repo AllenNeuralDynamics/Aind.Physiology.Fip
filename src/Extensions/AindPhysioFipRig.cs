@@ -991,13 +991,13 @@ namespace AindPhysiologyFip.Rig
     public partial class RoiSettings
     {
     
-        private Circle _backgroundCameraGreenIso;
+        private Circle _cameraGreenIsoBackground;
     
-        private Circle _backgroundCameraRed;
+        private Circle _cameraRedBackground;
     
-        private System.Collections.Generic.List<Circle> _roiCameraGreenIso = new System.Collections.Generic.List<Circle>();
+        private System.Collections.Generic.List<Circle> _cameraGreenIsoRoi = new System.Collections.Generic.List<Circle>();
     
-        private System.Collections.Generic.List<Circle> _roiCameraRed = new System.Collections.Generic.List<Circle>();
+        private System.Collections.Generic.List<Circle> _cameraRedRoi = new System.Collections.Generic.List<Circle>();
     
         public RoiSettings()
         {
@@ -1005,27 +1005,27 @@ namespace AindPhysiologyFip.Rig
     
         protected RoiSettings(RoiSettings other)
         {
-            _backgroundCameraGreenIso = other._backgroundCameraGreenIso;
-            _backgroundCameraRed = other._backgroundCameraRed;
-            _roiCameraGreenIso = other._roiCameraGreenIso;
-            _roiCameraRed = other._roiCameraRed;
+            _cameraGreenIsoBackground = other._cameraGreenIsoBackground;
+            _cameraRedBackground = other._cameraRedBackground;
+            _cameraGreenIsoRoi = other._cameraGreenIsoRoi;
+            _cameraRedRoi = other._cameraRedRoi;
         }
     
         /// <summary>
         /// ROI to compute the background for the green/iso camera channel
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("background_camera_green_iso")]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_green_iso_background")]
         [System.ComponentModel.DescriptionAttribute("ROI to compute the background for the green/iso camera channel")]
-        public Circle BackgroundCameraGreenIso
+        public Circle CameraGreenIsoBackground
         {
             get
             {
-                return _backgroundCameraGreenIso;
+                return _cameraGreenIsoBackground;
             }
             set
             {
-                _backgroundCameraGreenIso = value;
+                _cameraGreenIsoBackground = value;
             }
         }
     
@@ -1033,17 +1033,17 @@ namespace AindPhysiologyFip.Rig
         /// ROI to compute the background for the red camera channel
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("background_camera_red")]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_red_background")]
         [System.ComponentModel.DescriptionAttribute("ROI to compute the background for the red camera channel")]
-        public Circle BackgroundCameraRed
+        public Circle CameraRedBackground
         {
             get
             {
-                return _backgroundCameraRed;
+                return _cameraRedBackground;
             }
             set
             {
-                _backgroundCameraRed = value;
+                _cameraRedBackground = value;
             }
         }
     
@@ -1051,17 +1051,17 @@ namespace AindPhysiologyFip.Rig
         /// ROI for the green/iso camera channel
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("roi_camera_green_iso")]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_green_iso_roi")]
         [System.ComponentModel.DescriptionAttribute("ROI for the green/iso camera channel")]
-        public System.Collections.Generic.List<Circle> RoiCameraGreenIso
+        public System.Collections.Generic.List<Circle> CameraGreenIsoRoi
         {
             get
             {
-                return _roiCameraGreenIso;
+                return _cameraGreenIsoRoi;
             }
             set
             {
-                _roiCameraGreenIso = value;
+                _cameraGreenIsoRoi = value;
             }
         }
     
@@ -1069,17 +1069,17 @@ namespace AindPhysiologyFip.Rig
         /// ROI for the red camera channel
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("roi_camera_red")]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_red_roi")]
         [System.ComponentModel.DescriptionAttribute("ROI for the red camera channel")]
-        public System.Collections.Generic.List<Circle> RoiCameraRed
+        public System.Collections.Generic.List<Circle> CameraRedRoi
         {
             get
             {
-                return _roiCameraRed;
+                return _cameraRedRoi;
             }
             set
             {
-                _roiCameraRed = value;
+                _cameraRedRoi = value;
             }
         }
     
@@ -1095,10 +1095,10 @@ namespace AindPhysiologyFip.Rig
     
         protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
         {
-            stringBuilder.Append("background_camera_green_iso = " + _backgroundCameraGreenIso + ", ");
-            stringBuilder.Append("background_camera_red = " + _backgroundCameraRed + ", ");
-            stringBuilder.Append("roi_camera_green_iso = " + _roiCameraGreenIso + ", ");
-            stringBuilder.Append("roi_camera_red = " + _roiCameraRed);
+            stringBuilder.Append("camera_green_iso_background = " + _cameraGreenIsoBackground + ", ");
+            stringBuilder.Append("camera_red_background = " + _cameraRedBackground + ", ");
+            stringBuilder.Append("camera_green_iso_roi = " + _cameraGreenIsoRoi + ", ");
+            stringBuilder.Append("camera_red_roi = " + _cameraRedRoi);
             return true;
         }
     

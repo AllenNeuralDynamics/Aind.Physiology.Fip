@@ -15,7 +15,9 @@ using Font = OpenCV.Net.Font;
 using Point = OpenCV.Net.Point;
 using Size = OpenCV.Net.Size;
 using FipExtensions;
+
 [assembly: TypeVisualizer(typeof(CircleActivityCollectionVisualizer), Target = typeof(CircleActivityCollection))]
+[assembly: TypeVisualizer(typeof(CircleActivityCollectionVisualizer), Target = typeof(Bonsai.Harp.Timestamped<CircleActivityCollection>))]
 
 namespace Bonsai.Vision.Design
 {
@@ -31,7 +33,15 @@ namespace Bonsai.Vision.Design
         /// <inheritdoc/>
         public override void Show(object value)
         {
-            regions = (CircleActivityCollection)value;
+
+            if (value is Bonsai.Harp.Timestamped<CircleActivityCollection>)
+            {
+                regions = ((Bonsai.Harp.Timestamped<CircleActivityCollection>)value).Value;
+            }
+            else
+            {
+                regions = (CircleActivityCollection)value;
+            }
             input = regions.FipFrame.Image;
             if (input != null)
             {

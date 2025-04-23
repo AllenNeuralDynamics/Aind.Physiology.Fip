@@ -8,6 +8,8 @@ using Bonsai;
 using System.ComponentModel;
 using System.Linq;
 using Bonsai.Harp;
+using Bonsai.Dsp;
+using System.Reactive.Linq;
 
 namespace FipExtensions
 {
@@ -20,14 +22,47 @@ namespace FipExtensions
 
         public IObservable<Timestamped<CircleActivityCollection>> Process(IObservable<Timestamped<CircleActivityCollection>> source)
         {
-            var sink = new FipCsvWriter(this, ExpectedRegionCount)
+            var filePath = Path.Combine(Path.GetDirectoryName(FileName), Path.GetFileNameWithoutExtension(FileName));
+            var fipCsvWriter = new FipCsvWriter(this, ExpectedRegionCount)
             {
-                FileName = FileName,
+                FileName = filePath + ".csv",
                 Suffix = Suffix,
                 Buffered = Buffered,
                 Overwrite = Overwrite,
             };
-            return sink.Process(source);
+            var fipMatrixWriter = new FipMatrixWriter()
+            {
+                Path = filePath + ".bin",
+                Suffix = Suffix,
+                Overwrite = Overwrite,
+            };
+            return source.Publish(ps =>
+            {
+                var fipCsv = fipCsvWriter.Process(ps);
+                var fipMatrix = fipMatrixWriter.Process(ps.Select(v => v.Value.FipFrame.Image.GetMat()));
+                ps.Take(1).Subscribe(f => File.WriteAllText(filePath + ".meta", f.Value.FipFrame.Image.ToString()));
+
+                var disposables = new System.Reactive.Disposables.CompositeDisposable();
+                disposables.Add(fipCsv.Subscribe());
+                disposables.Add(fipMatrix.Subscribe());
+                return ps.Finally(() => disposables.Dispose());
+            });
+        }
+
+        class FipMatrixWriter : MatrixWriter
+        {
+            [Description("Specifies the sequential memory layout used to store the sample buffers.")]
+            [Browsable(false)]
+            public new MatrixLayout Layout
+            {
+            get {return base.Layout;}
+            set {base.Layout = value;}
+            }
+
+            public FipMatrixWriter() : base()
+            {
+                Layout = MatrixLayout.ColumnMajor;
+            }
         }
 
         class FipCsvWriter : FileSink<Timestamped<CircleActivityCollection>, StreamWriter>
@@ -46,11 +81,6 @@ namespace FipExtensions
 
             protected override StreamWriter CreateWriter(string fileName, Timestamped<CircleActivityCollection> input)
             {
-                if (Path.GetExtension(fileName) != ".csv")
-                {
-                    throw new ArgumentException("File extension must be .csv");
-                }
-
                 var nRegions = input.Value.Count;
 
                 if (ExpectedRegionCount == null)
@@ -89,7 +119,6 @@ namespace FipExtensions
             protected override void Write(StreamWriter writer, Timestamped<CircleActivityCollection> input)
             {
                 var nRegions = input.Value.Count;
-
                 if (nRegions != ExpectedRegionCount)
                 {
                     throw new ArgumentException("Number of regions in the input stream does not match the number of regions in the first frame.");
@@ -108,6 +137,7 @@ namespace FipExtensions
                     values.Add(activity[i].Val0.ToString(CultureInfo.InvariantCulture));
                 }
                 var line = string.Join(",", values);
+                writer.WriteLine(line);
             }
         }
     }

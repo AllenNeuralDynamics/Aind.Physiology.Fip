@@ -11,7 +11,7 @@ namespace FipExtensions
 {
     [Combinator]
     [Description("Loads the ROI default settings from disk. In order of preference: 1. schema file, 2. local file, 3. default settings.")]
-    [WorkflowElementCategory(ElementCategory.Transform)]
+    [WorkflowElementCategory(ElementCategory.Combinator)]
     public class LoadRoiDefault
     {
         private string path = "../.local/default.json";
@@ -24,6 +24,11 @@ namespace FipExtensions
             set { path = value; }
         }
 
+
+        public IObservable<RoiSettings> Process(){
+            return Observable.Return(DefaultRoiSettings());
+        }
+
         public IObservable<RoiSettings> Process(IObservable<RoiSettings> source)
         {
             return source.Select(value =>
@@ -32,9 +37,12 @@ namespace FipExtensions
                 if (value != null) return value.Clone() as RoiSettings;
                 // 2. If 1. fails, we attempt to load the default settings via the path property
                 value = JsonConvert.DeserializeObject<RoiSettings>(File.ReadAllText(path));
-                if (value != null) return value;
+                if (value != null){
+
+                return value;}
+
                 // 3. If 2 fails, we create a default RoiSettings object
-                else return DefaultRoiSettings();
+                else{return DefaultRoiSettings();}
             });
         }
 

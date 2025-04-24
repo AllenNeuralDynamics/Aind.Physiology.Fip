@@ -42,11 +42,13 @@ public class SelectCircles
         }
     }
 
+    internal IObservable<IplImage> imageStream;
+
     public IObservable<Circle[]> Process(IObservable<IplImage> source)
     {
+        imageStream = source;
         return source.Select(value => {
-            Console.WriteLine(Circles);
             return Circles;
-        });
+            });
     }
 }

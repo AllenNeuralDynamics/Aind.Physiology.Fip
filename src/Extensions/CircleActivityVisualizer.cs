@@ -184,26 +184,3 @@ namespace Bonsai.Vision.Design
     }
 }
 
-internal static class VisualizerHelper
-{
-    internal static IObservable<object> ImageInput(IServiceProvider provider)
-    {
-        InspectBuilder inspectBuilder = null;
-        ExpressionBuilderGraph workflow = (ExpressionBuilderGraph)provider.GetService(typeof(ExpressionBuilderGraph));
-        ITypeVisualizerContext context = (ITypeVisualizerContext)provider.GetService(typeof(ITypeVisualizerContext));
-        if (workflow != null && context != null)
-        {
-            inspectBuilder = (from node in workflow
-                              where node.Value == context.Source
-                              select (from p in workflow.Predecessors(node)
-                                      select p.Value as InspectBuilder).FirstOrDefault()).FirstOrDefault();
-        }
-
-        if (inspectBuilder != null && inspectBuilder.ObservableType == typeof(IplImage))
-        {
-            return inspectBuilder.Output.Merge();
-        }
-
-        return null;
-    }
-}

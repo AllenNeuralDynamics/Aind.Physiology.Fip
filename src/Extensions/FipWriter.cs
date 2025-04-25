@@ -39,13 +39,9 @@ namespace FipExtensions
             return source.Publish(ps =>
             {
                 var fipCsv = fipCsvWriter.Process(ps);
-                var fipMatrix = fipMatrixWriter.Process(ps.Select(v => v.Value.FipFrame.Image.GetMat()));
-                ps.Take(1).Subscribe(f => File.WriteAllText(filePath + ".meta", f.Value.FipFrame.Image.ToString()));
-
-                var disposables = new System.Reactive.Disposables.CompositeDisposable();
-                disposables.Add(fipCsv.Subscribe());
-                disposables.Add(fipMatrix.Subscribe());
-                return ps.Finally(() => disposables.Dispose());
+                var fipMatrix = fipMatrixWriter.Process(ps.Select(v => v.Value.FipFrame.Image.GetMat())).IgnoreElements().Cast<Timestamped<CircleActivityCollection>>();
+                var fipMetadata = ps.Take(1).Do(f => File.WriteAllText(filePath + ".meta", f.Value.FipFrame.Image.ToString())).IgnoreElements();
+                return Observable.Merge(fipCsv, fipMatrix, fipMetadata);
             });
         }
 

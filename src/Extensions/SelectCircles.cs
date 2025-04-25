@@ -42,13 +42,27 @@ public class SelectCircles
         }
     }
 
-    internal IObservable<IplImage> imageStream;
+    // Consider using a subject to manager the image stream for visualizers
+    // internal IObservable<IplImage> imageStream;
+
+    // public IObservable<Circle[]> Process(IObservable<IplImage> source)
+    // {
+    //     return source.Publish(ps => {
+    //         imageStream = ps;
+    //         return ps.Select(value=> Circles);
+    //     });
+    // }
+
+        // public IObservable<Circle[]> Process(IObservable<IplImage> source)
+    // {
+    //     return source.Publish(ps => {
+    //         imageStream = ps;
+    //         return ps.Select(value=> Circles);
+    //     });
+    // }
 
     public IObservable<Circle[]> Process(IObservable<IplImage> source)
     {
-        imageStream = source;
-        return source.Select(value => {
-            return Circles;
-            });
+        return source.Select(value=> Circles);
     }
 }

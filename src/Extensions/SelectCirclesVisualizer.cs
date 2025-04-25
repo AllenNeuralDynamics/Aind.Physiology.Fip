@@ -9,6 +9,7 @@ using Bonsai.Design;
 using Bonsai.Expressions;
 using System.Linq;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 [assembly: TypeVisualizer(typeof(SelectCirclesVisualizer), Target = typeof(SelectCircles))]
 
@@ -41,7 +42,7 @@ public class SelectCirclesVisualizer : DialogTypeVisualizer
                 .ToArray();
         };
 
-        var imageInput = selectRegions.imageStream;
+        var imageInput = VisualizerHelper.ImageInput(provider);
         if (imageInput != null)
         {
             inputHandle = imageInput.Subscribe(value => ellipsePicker.Image = (IplImage)value);
@@ -79,24 +80,58 @@ public class SelectCirclesVisualizer : DialogTypeVisualizer
 
 static class VisualizerHelper
     {
+
         internal static IObservable<object> ImageInput(IServiceProvider provider)
         {
             InspectBuilder inspectBuilder = null;
-            ExpressionBuilderGraph workflow = (ExpressionBuilderGraph)provider.GetService(typeof(ExpressionBuilderGraph));
-            ITypeVisualizerContext context = (ITypeVisualizerContext)provider.GetService(typeof(ITypeVisualizerContext));
-            if (workflow != null && context != null)
+            WorkflowBuilder workflowBuilder = (WorkflowBuilder)provider.GetService(typeof(WorkflowBuilder));
+
+            var context = (ITypeVisualizerContext)provider.GetService(typeof(ITypeVisualizerContext));
+            var visualizerElement = ExpressionBuilder.GetVisualizerElement(context.Source);
+
+            if (workflowBuilder != null && context != null)
             {
-                inspectBuilder = (from node in workflow
-                                where node.Value == context.Source
-                                select (from p in workflow.Predecessors(node)
-                                        select p.Value as InspectBuilder).FirstOrDefault()).FirstOrDefault();
+                inspectBuilder = workflowBuilder.Workflow.DescendantNodes().FirstOrDefault(
+                    n => n.Successors.Any(s => s.Target.Value == visualizerElement)).Value as InspectBuilder;
+                        if (inspectBuilder != null && inspectBuilder.ObservableType == typeof(IplImage))
+                {
+                    return inspectBuilder.Output.Merge();
+                }
             }
 
-            if (inspectBuilder != null && inspectBuilder.ObservableType == typeof(IplImage))
-            {
-                return inspectBuilder.Output.Merge();
-            }
+
 
             return null;
+        }
+
+
+        public static IEnumerable<Node<ExpressionBuilder, ExpressionBuilderArgument>> DescendantNodes(this ExpressionBuilderGraph source)
+        {
+            var stack = new Stack<IEnumerator<Node<ExpressionBuilder, ExpressionBuilderArgument>>>();
+            stack.Push(source.GetEnumerator());
+ 
+            while (stack.Count > 0)
+            {
+                var nodeEnumerator = stack.Peek();
+                while (true)
+                {
+                    if (!nodeEnumerator.MoveNext())
+                    {
+                        stack.Pop();
+                        break;
+                    }
+ 
+                    var node = nodeEnumerator.Current;
+                    var builder = ExpressionBuilder.Unwrap(node.Value);
+                    yield return node;
+ 
+                    var workflowBuilder = builder as IWorkflowExpressionBuilder;
+                    if (workflowBuilder != null && workflowBuilder.Workflow != null)
+                    {
+                        stack.Push(workflowBuilder.Workflow.GetEnumerator());
+                        break;
+                    }
+                }
+            }
         }
     }

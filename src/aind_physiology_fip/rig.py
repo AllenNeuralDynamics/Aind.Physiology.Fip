@@ -1,8 +1,9 @@
+from enum import IntFlag
 from typing import Annotated, Dict, List, Literal, Optional, Self
 
 from aind_behavior_services import calibration, rig
 from pydantic import BaseModel, Field, model_validator
-from enum import Enum, IntFlag
+
 __version__ = "0.1.0"
 
 
@@ -86,6 +87,7 @@ class Ports(IntFlag):
     IO6 = 1 << 6
     IO7 = 1 << 7
 
+
 class FipTask(BaseModel):
     delta_1: int = Field(default=15350, ge=0, description="Delta 1 (us)")
     delta_2: int = Field(default=666, ge=0, description="Delta 2 (us)")
@@ -94,10 +96,12 @@ class FipTask(BaseModel):
     light_source_port: Ports = Field(description="Port that triggers the light source.")
     camera_port: Ports = Field(description="Port that triggers the camera.")
     events_enabled: bool = Field(
-        default=True, description="Whether to enable events for the task. If False, the task will not trigger any events."
+        default=True,
+        description="Whether to enable events for the task. If False, the task will not trigger any events.",
     )
     mute_output: bool = Field(
-        default=False, description="Whether to mute the output of the task. If True, the task will not trigger any outputs but timing will be preserved."
+        default=False,
+        description="Whether to mute the output of the task. If True, the task will not trigger any outputs but timing will be preserved.",
     )
     pwm_frequency: float = Field(default=10000, ge=10000, description="PWM frequency (Hz) of the light source output.")
 
@@ -137,8 +141,3 @@ class AindPhysioFipRig(rig.AindBehaviorRigModel):
         description="CuttlefishFip board for controlling the trigger of cameras and light-sources",
     )
     networking: Networking = Field(Networking(), title="Networking", description="Networking settings")
-
-    
-    
-
-

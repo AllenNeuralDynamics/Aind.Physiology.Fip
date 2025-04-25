@@ -13,6 +13,8 @@ from aind_physiology_fip.rig import (
     LightSourceCalibrationOutput,
     Networking,
     RoiSettings,
+    FipTask,
+    Ports,
 )
 
 
@@ -33,17 +35,32 @@ def mock_session() -> AindBehaviorSessionModel:
 
 def mock_rig() -> AindPhysioFipRig:
     mock_calibration = LightSourceCalibration(
-        device_name="mock_device",
-        output=LightSourceCalibrationOutput(power_lut={0: 0, 10: 10, 20: 20}),
+        device_name="mock_device", output=LightSourceCalibrationOutput(power_lut={0: 0, 0.1: 10, 0.2: 20})
     )
 
     return AindPhysioFipRig(
         rig_name="test_rig",
         camera_green_iso=FipCamera(serial_number="000000"),
         camera_red=FipCamera(serial_number="000001"),
-        light_source_blue=LightSource(power=10, calibration=mock_calibration),
-        light_source_lime=LightSource(power=20, calibration=mock_calibration),
-        light_source_uv=LightSource(power=5, calibration=None),
+        light_source_blue=LightSource(
+            power=10,
+            calibration=mock_calibration,
+            task=FipTask(
+                camera_port=Ports.IO3,
+                light_source_port=Ports.IO2,
+            ),
+        ),
+        light_source_lime=LightSource(
+            power=20,
+            calibration=mock_calibration,
+            task=FipTask(
+                camera_port=Ports.IO5,
+                light_source_port=Ports.IO4,
+            ),
+        ),
+        light_source_uv=LightSource(
+            power=5, calibration=None, task=FipTask(camera_port=Ports.IO1, light_source_port=Ports.IO0)
+        ),
         roi_settings=RoiSettings(),
         networking=Networking(),
         cuttlefish_fip=HarpCuttlefishFip(

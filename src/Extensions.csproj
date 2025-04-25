@@ -13,5 +13,7 @@
         <PackageReference Include="Bonsai.Spinnaker" Version="0.7.1" />
         <PackageReference Include="Bonsai.Dsp.Design" Version="2.8.0" />
         <PackageReference Include="Bonsai.Harp" Version="3.5.2" />
+        <PackageReference Include="AllenNeuralDynamics.CuttlefishFip" Version="0.1.0-preview2025042502" />
+        <PackageReference Include="Bonsai.Numerics" Version="0.9.0" />
     </ItemGroup>
 </Project>

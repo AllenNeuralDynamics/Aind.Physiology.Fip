@@ -312,6 +312,243 @@ namespace AindPhysiologyFip.Rig
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class FipTask
+    {
+    
+        private int _delta1 = 15350;
+    
+        private int _delta2 = 666;
+    
+        private int _delta3 = 600;
+    
+        private int _delta4 = 50;
+    
+        private Ports _lightSourcePort;
+    
+        private Ports _cameraPort;
+    
+        private bool _eventsEnabled = true;
+    
+        private bool _muteOutput = false;
+    
+        private double _pwmFrequency = 10000D;
+    
+        public FipTask()
+        {
+        }
+    
+        protected FipTask(FipTask other)
+        {
+            _delta1 = other._delta1;
+            _delta2 = other._delta2;
+            _delta3 = other._delta3;
+            _delta4 = other._delta4;
+            _lightSourcePort = other._lightSourcePort;
+            _cameraPort = other._cameraPort;
+            _eventsEnabled = other._eventsEnabled;
+            _muteOutput = other._muteOutput;
+            _pwmFrequency = other._pwmFrequency;
+        }
+    
+        /// <summary>
+        /// Delta 1 (us)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("delta_1")]
+        [System.ComponentModel.DescriptionAttribute("Delta 1 (us)")]
+        public int Delta1
+        {
+            get
+            {
+                return _delta1;
+            }
+            set
+            {
+                _delta1 = value;
+            }
+        }
+    
+        /// <summary>
+        /// Delta 2 (us)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("delta_2")]
+        [System.ComponentModel.DescriptionAttribute("Delta 2 (us)")]
+        public int Delta2
+        {
+            get
+            {
+                return _delta2;
+            }
+            set
+            {
+                _delta2 = value;
+            }
+        }
+    
+        /// <summary>
+        /// Delta 3 (us)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("delta_3")]
+        [System.ComponentModel.DescriptionAttribute("Delta 3 (us)")]
+        public int Delta3
+        {
+            get
+            {
+                return _delta3;
+            }
+            set
+            {
+                _delta3 = value;
+            }
+        }
+    
+        /// <summary>
+        /// Delta 4 (us)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("delta_4")]
+        [System.ComponentModel.DescriptionAttribute("Delta 4 (us)")]
+        public int Delta4
+        {
+            get
+            {
+                return _delta4;
+            }
+            set
+            {
+                _delta4 = value;
+            }
+        }
+    
+        /// <summary>
+        /// Port that triggers the light source.
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("light_source_port", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Port that triggers the light source.")]
+        public Ports LightSourcePort
+        {
+            get
+            {
+                return _lightSourcePort;
+            }
+            set
+            {
+                _lightSourcePort = value;
+            }
+        }
+    
+        /// <summary>
+        /// Port that triggers the camera.
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_port", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Port that triggers the camera.")]
+        public Ports CameraPort
+        {
+            get
+            {
+                return _cameraPort;
+            }
+            set
+            {
+                _cameraPort = value;
+            }
+        }
+    
+        /// <summary>
+        /// Whether to enable events for the task. If False, the task will not trigger any events.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("events_enabled")]
+        [System.ComponentModel.DescriptionAttribute("Whether to enable events for the task. If False, the task will not trigger any ev" +
+            "ents.")]
+        public bool EventsEnabled
+        {
+            get
+            {
+                return _eventsEnabled;
+            }
+            set
+            {
+                _eventsEnabled = value;
+            }
+        }
+    
+        /// <summary>
+        /// Whether to mute the output of the task. If True, the task will not trigger any outputs but timing will be preserved.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("mute_output")]
+        [System.ComponentModel.DescriptionAttribute("Whether to mute the output of the task. If True, the task will not trigger any ou" +
+            "tputs but timing will be preserved.")]
+        public bool MuteOutput
+        {
+            get
+            {
+                return _muteOutput;
+            }
+            set
+            {
+                _muteOutput = value;
+            }
+        }
+    
+        /// <summary>
+        /// PWM frequency (Hz) of the light source output.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("pwm_frequency")]
+        [System.ComponentModel.DescriptionAttribute("PWM frequency (Hz) of the light source output.")]
+        public double PwmFrequency
+        {
+            get
+            {
+                return _pwmFrequency;
+            }
+            set
+            {
+                _pwmFrequency = value;
+            }
+        }
+    
+        public System.IObservable<FipTask> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new FipTask(this)));
+        }
+    
+        public System.IObservable<FipTask> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new FipTask(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("delta_1 = " + _delta1 + ", ");
+            stringBuilder.Append("delta_2 = " + _delta2 + ", ");
+            stringBuilder.Append("delta_3 = " + _delta3 + ", ");
+            stringBuilder.Append("delta_4 = " + _delta4 + ", ");
+            stringBuilder.Append("light_source_port = " + _lightSourcePort + ", ");
+            stringBuilder.Append("camera_port = " + _cameraPort + ", ");
+            stringBuilder.Append("events_enabled = " + _eventsEnabled + ", ");
+            stringBuilder.Append("mute_output = " + _muteOutput + ", ");
+            stringBuilder.Append("pwm_frequency = " + _pwmFrequency);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     public partial class HarpCuttlefishFip
     {
     
@@ -487,6 +724,8 @@ namespace AindPhysiologyFip.Rig
     
         private double _power = 0D;
     
+        private FipTask _task = new FipTask();
+    
         public LightSource()
         {
         }
@@ -497,6 +736,7 @@ namespace AindPhysiologyFip.Rig
             _additionalSettings = other._additionalSettings;
             _calibration = other._calibration;
             _power = other._power;
+            _task = other._task;
         }
     
         [Newtonsoft.Json.JsonPropertyAttribute("device_type")]
@@ -566,6 +806,24 @@ namespace AindPhysiologyFip.Rig
             }
         }
     
+        /// <summary>
+        /// Task for the light source
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("task", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Task for the light source")]
+        public FipTask Task
+        {
+            get
+            {
+                return _task;
+            }
+            set
+            {
+                _task = value;
+            }
+        }
+    
         public System.IObservable<LightSource> Process()
         {
             return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new LightSource(this)));
@@ -581,7 +839,8 @@ namespace AindPhysiologyFip.Rig
             stringBuilder.Append("device_type = " + _deviceType + ", ");
             stringBuilder.Append("additional_settings = " + _additionalSettings + ", ");
             stringBuilder.Append("calibration = " + _calibration + ", ");
-            stringBuilder.Append("power = " + _power);
+            stringBuilder.Append("power = " + _power + ", ");
+            stringBuilder.Append("task = " + _task);
             return true;
         }
     
@@ -982,6 +1241,39 @@ namespace AindPhysiologyFip.Rig
             stringBuilder.Append("}");
             return stringBuilder.ToString();
         }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    public enum Ports
+    {
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="0")]
+        None = 0,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="1")]
+        Io0 = 1,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="2")]
+        Io1 = 2,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="4")]
+        Io2 = 4,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="8")]
+        Io3 = 8,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="16")]
+        Io4 = 16,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="32")]
+        Io5 = 32,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="64")]
+        Io6 = 64,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="128")]
+        Io7 = 128,
     }
 
 
@@ -1522,6 +1814,11 @@ namespace AindPhysiologyFip.Rig
             return Process<FipCamera>(source);
         }
 
+        public System.IObservable<string> Process(System.IObservable<FipTask> source)
+        {
+            return Process<FipTask>(source);
+        }
+
         public System.IObservable<string> Process(System.IObservable<HarpCuttlefishFip> source)
         {
             return Process<HarpCuttlefishFip>(source);
@@ -1579,6 +1876,7 @@ namespace AindPhysiologyFip.Rig
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<BaseModel>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Circle>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipCamera>))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipTask>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<HarpCuttlefishFip>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSource>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSourceCalibration>))]

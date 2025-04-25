@@ -2,7 +2,7 @@ from typing import Annotated, Dict, List, Literal, Optional, Self
 
 from aind_behavior_services import calibration, rig
 from pydantic import BaseModel, Field, model_validator
-
+from enum import Enum, IntFlag
 __version__ = "0.1.0"
 
 
@@ -75,6 +75,33 @@ class LightSourceCalibration(calibration.Calibration):
     output: LightSourceCalibrationOutput = Field(..., title="Lookup table to convert duty cycle to power (mW)")
 
 
+class Ports(IntFlag):
+    NONE = 0
+    IO0 = 1 << 0
+    IO1 = 1 << 1
+    IO2 = 1 << 2
+    IO3 = 1 << 3
+    IO4 = 1 << 4
+    IO5 = 1 << 5
+    IO6 = 1 << 6
+    IO7 = 1 << 7
+
+class FipTask(BaseModel):
+    delta_1: int = Field(default=15350, ge=0, description="Delta 1 (us)")
+    delta_2: int = Field(default=666, ge=0, description="Delta 2 (us)")
+    delta_3: int = Field(default=600, ge=0, description="Delta 3 (us)")
+    delta_4: int = Field(default=50, ge=0, description="Delta 4 (us)")
+    light_source_port: Ports = Field(description="Port that triggers the light source.")
+    camera_port: Ports = Field(description="Port that triggers the camera.")
+    events_enabled: bool = Field(
+        default=True, description="Whether to enable events for the task. If False, the task will not trigger any events."
+    )
+    mute_output: bool = Field(
+        default=False, description="Whether to mute the output of the task. If True, the task will not trigger any outputs but timing will be preserved."
+    )
+    pwm_frequency: float = Field(default=10000, ge=10000, description="PWM frequency (Hz) of the light source output.")
+
+
 class LightSource(rig.Device):
     device_type: Literal["LightSource"] = "LightSource"
     power: float = Field(default=0, ge=0, description="Power (mW)")
@@ -83,6 +110,7 @@ class LightSource(rig.Device):
         title="Calibration",
         description="Calibration for the LightSource. If left empty, 'power' will be used as duty-cycle (0-100).",
     )
+    task: FipTask = Field(title="Task", description="Task for the light source")
 
     @model_validator(mode="after")
     def _validate_power(self) -> Self:
@@ -109,3 +137,8 @@ class AindPhysioFipRig(rig.AindBehaviorRigModel):
         description="CuttlefishFip board for controlling the trigger of cameras and light-sources",
     )
     networking: Networking = Field(Networking(), title="Networking", description="Networking settings")
+
+    
+    
+
+

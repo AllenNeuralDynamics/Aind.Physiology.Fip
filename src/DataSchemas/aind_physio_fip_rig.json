@@ -85,6 +85,71 @@
       "title": "FipCamera",
       "type": "object"
     },
+    "FipTask": {
+      "properties": {
+        "delta_1": {
+          "default": 15350,
+          "description": "Delta 1 (us)",
+          "minimum": 0,
+          "title": "Delta 1",
+          "type": "integer"
+        },
+        "delta_2": {
+          "default": 666,
+          "description": "Delta 2 (us)",
+          "minimum": 0,
+          "title": "Delta 2",
+          "type": "integer"
+        },
+        "delta_3": {
+          "default": 600,
+          "description": "Delta 3 (us)",
+          "minimum": 0,
+          "title": "Delta 3",
+          "type": "integer"
+        },
+        "delta_4": {
+          "default": 50,
+          "description": "Delta 4 (us)",
+          "minimum": 0,
+          "title": "Delta 4",
+          "type": "integer"
+        },
+        "light_source_port": {
+          "$ref": "#/definitions/Ports",
+          "description": "Port that triggers the light source."
+        },
+        "camera_port": {
+          "$ref": "#/definitions/Ports",
+          "description": "Port that triggers the camera."
+        },
+        "events_enabled": {
+          "default": true,
+          "description": "Whether to enable events for the task. If False, the task will not trigger any events.",
+          "title": "Events Enabled",
+          "type": "boolean"
+        },
+        "mute_output": {
+          "default": false,
+          "description": "Whether to mute the output of the task. If True, the task will not trigger any outputs but timing will be preserved.",
+          "title": "Mute Output",
+          "type": "boolean"
+        },
+        "pwm_frequency": {
+          "default": 10000,
+          "description": "PWM frequency (Hz) of the light source output.",
+          "minimum": 10000,
+          "title": "Pwm Frequency",
+          "type": "number"
+        }
+      },
+      "required": [
+        "light_source_port",
+        "camera_port"
+      ],
+      "title": "FipTask",
+      "type": "object"
+    },
     "HarpCuttlefishFip": {
       "properties": {
         "device_type": {
@@ -187,8 +252,16 @@
           "minimum": 0,
           "title": "Power",
           "type": "number"
+        },
+        "task": {
+          "$ref": "#/definitions/FipTask",
+          "description": "Task for the light source",
+          "title": "Task"
         }
       },
+      "required": [
+        "task"
+      ],
       "title": "LightSource",
       "type": "object"
     },
@@ -319,6 +392,32 @@
       ],
       "title": "Point2f",
       "type": "object"
+    },
+    "Ports": {
+      "enum": [
+        0,
+        1,
+        2,
+        4,
+        8,
+        16,
+        32,
+        64,
+        128
+      ],
+      "title": "Ports",
+      "type": "integer",
+      "x-enumNames": [
+        "None",
+        "Io0",
+        "Io1",
+        "Io2",
+        "Io3",
+        "Io4",
+        "Io5",
+        "Io6",
+        "Io7"
+      ]
     },
     "RoiSettings": {
       "properties": {

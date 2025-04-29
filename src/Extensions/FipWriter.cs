@@ -15,7 +15,7 @@ namespace FipExtensions
 {
     [Combinator]
     [DefaultProperty("FileName")]
-    [Description("Writes FIP data into a CSV text file.")]
+    [Description("Writes a timestamped stream of Fip data to disk.")]
     public class FipWriter : FileSink
     {
         public int? ExpectedRegionCount = null;
@@ -51,8 +51,8 @@ namespace FipExtensions
             [Browsable(false)]
             public new MatrixLayout Layout
             {
-            get {return base.Layout;}
-            set {base.Layout = value;}
+                get { return base.Layout; }
+                set { base.Layout = value; }
             }
 
             public FipMatrixWriter() : base()
@@ -92,12 +92,10 @@ namespace FipExtensions
                 var writer = new StreamWriter(fileName, false, Encoding.ASCII);
                 var columns = new List<string>(MetadataOffset + nRegions)
             {
-                //columns.Add(nameof(input.FrameCounter));
-                //columns.Add(nameof(input.Timestamp));
-                "Metadata0",
-                "Metadata1",
-                "Metadata2",
-                "Background" // We assume that the first region is always the background
+                "ReferenceTime",
+                "CameraFrameNumber",
+                "CameraFrameTime",
+                "Background", // We assume the first region is always the background region
             };
 
                 if (nRegions > 0)
@@ -119,12 +117,12 @@ namespace FipExtensions
                 {
                     throw new ArgumentException("Number of regions in the input stream does not match the number of regions in the first frame.");
                 }
-                var values = new List<string>(MetadataOffset + nRegions);
-
-                for (int i = 0; i < MetadataOffset; i++)
+                var values = new List<string>(MetadataOffset + nRegions)
                 {
-                    values.Add("DummyMetadata_" + i.ToString(CultureInfo.InvariantCulture));
-                }
+                    input.Seconds.ToString(CultureInfo.InvariantCulture),
+                    input.Value.FipFrame.FrameNumber.ToString(CultureInfo.InvariantCulture),
+                    input.Value.FipFrame.FrameTime.ToString(CultureInfo.InvariantCulture)
+                };
 
                 var activity = input.Value.Select(x => x.Activity).ToArray();
 

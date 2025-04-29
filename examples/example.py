@@ -7,14 +7,14 @@ import aind_physiology_fip.task_logic as task_logic
 from aind_physiology_fip.rig import (
     AindPhysioFipRig,
     FipCamera,
+    FipTask,
     HarpCuttlefishFip,
     LightSource,
     LightSourceCalibration,
     LightSourceCalibrationOutput,
     Networking,
-    RoiSettings,
-    FipTask,
     Ports,
+    RoiSettings,
 )
 
 

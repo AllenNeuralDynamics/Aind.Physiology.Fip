@@ -576,6 +576,19 @@
                         <Expression xsi:type="rx:BehaviorSubject" TypeArguments="harp:HarpMessage">
                           <rx:Name>CuttlefishFipCommands</rx:Name>
                         </Expression>
+                        <Expression xsi:type="Disable">
+                          <Builder xsi:type="Combinator">
+                            <Combinator xsi:type="p8:Device">
+                              <harp:OperationMode>Active</harp:OperationMode>
+                              <harp:OperationLed>On</harp:OperationLed>
+                              <harp:DumpRegisters>true</harp:DumpRegisters>
+                              <harp:VisualIndicators>Off</harp:VisualIndicators>
+                              <harp:Heartbeat>Enabled</harp:Heartbeat>
+                              <harp:IgnoreErrors>false</harp:IgnoreErrors>
+                              <harp:PortName>COMx</harp:PortName>
+                            </Combinator>
+                          </Builder>
+                        </Expression>
                         <Expression xsi:type="SubscribeSubject">
                           <Name>RigSchema</Name>
                         </Expression>
@@ -588,12 +601,12 @@
                           </PropertyMappings>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p8:Device">
+                          <Combinator xsi:type="harp:Device">
                             <harp:OperationMode>Active</harp:OperationMode>
                             <harp:OperationLed>On</harp:OperationLed>
                             <harp:DumpRegisters>true</harp:DumpRegisters>
-                            <harp:VisualIndicators>Off</harp:VisualIndicators>
-                            <harp:Heartbeat>Enabled</harp:Heartbeat>
+                            <harp:VisualIndicators>On</harp:VisualIndicators>
+                            <harp:Heartbeat>Disabled</harp:Heartbeat>
                             <harp:IgnoreErrors>false</harp:IgnoreErrors>
                             <harp:PortName>COMx</harp:PortName>
                           </Combinator>
@@ -672,33 +685,19 @@
                         <Expression xsi:type="MulticastSubject">
                           <Name>CuttlefishFipCommands</Name>
                         </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p8:ConfigureTask">
-                            <p8:MessageType>Write</p8:MessageType>
-                            <p8:PwmPort>IO0</p8:PwmPort>
-                            <p8:DutyCycle>0.1</p8:DutyCycle>
-                            <p8:Frequency>10000</p8:Frequency>
-                            <p8:TriggerPorts>IO1</p8:TriggerPorts>
-                            <p8:EventsEnabled>true</p8:EventsEnabled>
-                            <p8:IsMuted>false</p8:IsMuted>
-                            <p8:Delta1>0</p8:Delta1>
-                            <p8:Delta2>0</p8:Delta2>
-                            <p8:Delta3>0</p8:Delta3>
-                            <p8:Delta4>0</p8:Delta4>
-                          </Combinator>
-                        </Expression>
                       </Nodes>
                       <Edges>
-                        <Edge From="0" To="4" Label="Source1" />
-                        <Edge From="1" To="2" Label="Source1" />
+                        <Edge From="0" To="1" Label="Source1" />
+                        <Edge From="1" To="5" Label="Source1" />
                         <Edge From="2" To="3" Label="Source1" />
-                        <Edge From="3" To="4" Label="Source2" />
-                        <Edge From="4" To="5" Label="Source1" />
-                        <Edge From="6" To="7" Label="Source1" />
+                        <Edge From="3" To="4" Label="Source1" />
+                        <Edge From="4" To="5" Label="Source2" />
+                        <Edge From="5" To="6" Label="Source1" />
                         <Edge From="7" To="8" Label="Source1" />
-                        <Edge From="9" To="10" Label="Source1" />
+                        <Edge From="8" To="9" Label="Source1" />
                         <Edge From="10" To="11" Label="Source1" />
                         <Edge From="11" To="12" Label="Source1" />
+                        <Edge From="12" To="13" Label="Source1" />
                       </Edges>
                     </Workflow>
                   </Expression>
@@ -1352,7 +1351,7 @@
                     <Combinator xsi:type="rx:WithLatestFrom" />
                   </Expression>
                   <Expression xsi:type="Format">
-                    <Format>{state: {1}, timestamp: {0}}</Format>
+                    <Format>{{state: {1}, timestamp: {0}}}</Format>
                     <Selector>Item1,Item2</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
@@ -1399,7 +1398,7 @@
                     <Combinator xsi:type="rx:WithLatestFrom" />
                   </Expression>
                   <Expression xsi:type="Format">
-                    <Format>{start: 1, timestamp: {0}}</Format>
+                    <Format>{{start: 1, timestamp: {0}}}</Format>
                     <Selector>Item1,Item2</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
@@ -1446,7 +1445,7 @@
                     <Combinator xsi:type="rx:WithLatestFrom" />
                   </Expression>
                   <Expression xsi:type="Format">
-                    <Format>{end: 1, timestamp: {0}}</Format>
+                    <Format>{{end: 1, timestamp: {0}}}</Format>
                     <Selector>Item1,Item2</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">

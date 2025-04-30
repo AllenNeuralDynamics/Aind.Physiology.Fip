@@ -19,47 +19,52 @@ public class CreateTaskFromLightSource
             if (value== null) throw new ArgumentNullException("Input is null.");
             var calibrationData = value.Calibration == null ? null : value.Calibration.Output.PowerLut;
 
-            IInterpolation interpolator = null;
-
+            Tuple<IInterpolation, IInterpolation> interpolator = null;
+            // dutyCycle: power
             if (calibrationData != null){
                 Dictionary<double, double> lut = calibrationData.ToDictionary(
                     entry => double.Parse(entry.Key),
                     entry => entry.Value
                 );
-                interpolator = MakeInterpolator(lut);
+                interpolator = MakeInterpolators(lut);
             }
             else{
                 var unityLut = new Dictionary<double, double> { { 0, 0 }, { 1, 1 } };
-                interpolator = MakeInterpolator(unityLut);
+                interpolator = MakeInterpolators(unityLut);
             }
 
             // Interpolate the power:
             var power = value.Power;
-            var calibratedDutyCycle = interpolator.Interpolate(power);
-            return new CalibratedLightSource(value, interpolator, calibratedDutyCycle);
+            var calibratedDutyCycle = interpolator.Item2.Interpolate(power);
+            return new CalibratedLightSource(value, interpolator.Item2, interpolator.Item1, calibratedDutyCycle);
             }
         );
     }
 
 
-    private static IInterpolation MakeInterpolator(Dictionary<double, double> lut)
+    private static Tuple<IInterpolation, IInterpolation> MakeInterpolators(Dictionary<double, double> lut)
     {
         var sortedKeys = lut.Keys.OrderBy(k => k).ToArray();
         var sortedValues = sortedKeys.Select(k => lut[k]).ToArray();
 
-        return MathNet.Numerics.Interpolate.Linear(sortedKeys, sortedValues);
+        return Tuple.Create(MathNet.Numerics.Interpolate.Linear(sortedKeys, sortedValues), MathNet.Numerics.Interpolate.Linear(sortedValues, sortedKeys));
     }
 }
 
 public class CalibratedLightSource{
 
-    public CalibratedLightSource(LightSource lightSource, IInterpolation interpolator, double calibratedDutyCycle)
+    public CalibratedLightSource(LightSource lightSource, IInterpolation powerInterpolator, IInterpolation dutyCycleInterpolator, double calibratedDutyCycle)
     {
-        this.LightSource = lightSource;
-        this.Interpolator = interpolator;
-        this.CalibratedDutyCycle = calibratedDutyCycle;
+        LightSource = lightSource;
+        DutyCycleToPower = powerInterpolator;
+        PowerToDutyCycle = dutyCycleInterpolator;
+        CalibratedDutyCycle = calibratedDutyCycle;
     }
     public readonly LightSource LightSource;
-    public readonly IInterpolation Interpolator;
+    public readonly IInterpolation DutyCycleToPower;
+    public readonly IInterpolation PowerToDutyCycle;
     public readonly double CalibratedDutyCycle;
+
+    public double CalibratedPower {get { return DutyCycleToPower.Interpolate(CalibratedDutyCycle); } }
+
 }

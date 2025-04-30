@@ -61,7 +61,7 @@ namespace AindPhysiologyFip.Rig
     
         private Point2f _center;
     
-        private double _radius = 50D;
+        private double _radius = 1D;
     
         public Circle()
         {
@@ -1429,7 +1429,11 @@ namespace AindPhysiologyFip.Rig
             _topic = other._topic;
         }
     
+        /// <summary>
+        /// The connection string for the ZMQ socket.
+        /// </summary>
         [Newtonsoft.Json.JsonPropertyAttribute("connection_string")]
+        [System.ComponentModel.DescriptionAttribute("The connection string for the ZMQ socket.")]
         public string ConnectionString
         {
             get

@@ -18,7 +18,7 @@ classifiers = [
 ]
 
 dependencies = [
-  "aind_behavior_services",
+"aind_behavior_services @ git+https://github.com/AllenNeuralDynamics/Aind.Behavior.Services@main",
 ]
 
 [project.urls]

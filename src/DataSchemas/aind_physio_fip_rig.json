@@ -16,7 +16,7 @@
           "description": "Center of the circle (px)"
         },
         "radius": {
-          "default": 50,
+          "default": 1,
           "description": "Radius of the circle (px)",
           "minimum": 0,
           "title": "Radius",
@@ -527,6 +527,7 @@
       "properties": {
         "connection_string": {
           "default": "@tcp://localhost:5556",
+          "description": "The connection string for the ZMQ socket.",
           "title": "Connection String",
           "type": "string"
         },

@@ -2,19 +2,11 @@ from enum import IntFlag
 from typing import Annotated, Dict, List, Literal, Optional, Self
 
 from aind_behavior_services import calibration, rig
+from aind_behavior_services.rig.cameras import Circle, Point2f
+from aind_behavior_services.rig.network import ZmqConnection
 from pydantic import BaseModel, Field, model_validator
 
 __version__ = "0.1.0"
-
-
-class Point2f(BaseModel):
-    x: float = Field(description="X coordinate of the point (px)")
-    y: float = Field(description="Y coordinate of the point (px)")
-
-
-class Circle(BaseModel):
-    center: Point2f = Field(default=Point2f(x=0, y=0), description="Center of the circle (px)", validate_default=True)
-    radius: float = Field(default=50, ge=0, description="Radius of the circle (px)")
 
 
 class FipCamera(rig.Device):
@@ -46,11 +38,6 @@ class RoiSettings(BaseModel):
 class HarpCuttlefishFip(rig.harp._HarpDeviceBase):
     device_type: Literal["cuTTLefishFip"] = "cuTTLefishFip"
     who_am_i: Literal[1407] = 1407
-
-
-class ZmqConnection(BaseModel):
-    connection_string: str = Field(default="@tcp://localhost:5556")
-    topic: str = Field(default="")
 
 
 class Networking(BaseModel):

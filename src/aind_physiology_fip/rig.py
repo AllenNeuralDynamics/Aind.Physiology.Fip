@@ -50,7 +50,7 @@ class Networking(BaseModel):
 
 
 LightSourcePower = Annotated[float, Field(default=0, ge=0, description="Power (mW)")]
-DutyCycle = Annotated[float, Field(default=0, ge=0, le=100, description="Duty cycle (0-100%)")]
+DutyCycle = Annotated[float, Field(default=0, ge=0, le=1, description="Duty cycle (0-100%)")]
 
 
 class LightSourceCalibrationOutput(BaseModel):
@@ -106,8 +106,8 @@ class LightSource(rig.Device):
     @model_validator(mode="after")
     def _validate_power(self) -> Self:
         if self.calibration is None:
-            if self.power < 0 or self.power > 100:
-                raise ValueError("Power must be between 0 and 100 when no calibration is provided.")
+            if self.power < 0 or self.power > 1:
+                raise ValueError("Power must be between 0 and 1 when no calibration is provided.")
         return self
 
 

@@ -46,7 +46,7 @@ def mock_rig() -> AindPhysioFipRig:
             power=10,
             calibration=mock_calibration,
             task=FipTask(
-                camera_port=Ports.IO3,
+                camera_port=Ports.IO1,
                 light_source_port=Ports.IO2,
             ),
         ),

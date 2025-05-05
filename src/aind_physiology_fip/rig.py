@@ -13,7 +13,7 @@ class FipCamera(rig.Device):
     device_type: Literal["FipCamera"] = "FipCamera"
     serial_number: str = Field(..., description="Camera serial number")
     gain: float = Field(default=0, ge=0, description="Gain")
-    offset: Point2f = Field(default=Point2f(x=0, y=0), description="Offset (px)", validate_default=True)
+    offset: Point2f = Field(default=Point2f(x=200, y=150), description="Offset (px)", validate_default=True)
 
 
 def _make_default_rois() -> List[Circle]:

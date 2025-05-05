@@ -3064,23 +3064,23 @@
                           <Combinator xsi:type="rx:Zip" />
                         </Expression>
                         <Expression xsi:type="gui:LabelBuilder">
-                          <gui:Name>RedCamera</gui:Name>
+                          <gui:Name>GreenCamera</gui:Name>
                           <gui:Enabled>true</gui:Enabled>
                           <gui:Visible>true</gui:Visible>
-                          <gui:Text>RedCamera</gui:Text>
+                          <gui:Text>Green</gui:Text>
                         </Expression>
                         <Expression xsi:type="VisualizerMapping" />
                         <Expression xsi:type="SubscribeSubject">
-                          <Name>RedImage</Name>
+                          <Name>GreenImage</Name>
                         </Expression>
                         <Expression xsi:type="MemberSelector">
                           <Selector>Value.FipFrame.Image</Selector>
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
-                          <Name>CurrentRedRoi</Name>
+                          <Name>CurrentGreenIsoRoi</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="rx:DistinctUntilChanged" />
+                          <Combinator xsi:type="p7:CircleArrayDistinctUntilChanged" />
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="BooleanProperty">
@@ -3145,10 +3145,10 @@
                                 <Name>Source1</Name>
                               </Expression>
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:DistinctUntilChanged" />
+                                <Combinator xsi:type="p7:CircleArrayDistinctUntilChanged" />
                               </Expression>
                               <Expression xsi:type="MulticastSubject">
-                                <Name>CurrentRedRoi</Name>
+                                <Name>CurrentGreenIsoRoi</Name>
                               </Expression>
                               <Expression xsi:type="WorkflowOutput" />
                             </Nodes>
@@ -3180,23 +3180,23 @@
                         </Expression>
                         <Expression xsi:type="VisualizerMapping" />
                         <Expression xsi:type="gui:LabelBuilder">
-                          <gui:Name>GreenCamera</gui:Name>
+                          <gui:Name>RedCamera</gui:Name>
                           <gui:Enabled>true</gui:Enabled>
                           <gui:Visible>true</gui:Visible>
-                          <gui:Text>Green</gui:Text>
+                          <gui:Text>RedCamera</gui:Text>
                         </Expression>
                         <Expression xsi:type="VisualizerMapping" />
                         <Expression xsi:type="SubscribeSubject">
-                          <Name>GreenImage</Name>
+                          <Name>RedImage</Name>
                         </Expression>
                         <Expression xsi:type="MemberSelector">
                           <Selector>Value.FipFrame.Image</Selector>
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
-                          <Name>CurrentGreenIsoRoi</Name>
+                          <Name>CurrentRedRoi</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="rx:DistinctUntilChanged" />
+                          <Combinator xsi:type="p7:CircleArrayDistinctUntilChanged" />
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="BooleanProperty">
@@ -3261,10 +3261,10 @@
                                 <Name>Source1</Name>
                               </Expression>
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:DistinctUntilChanged" />
+                                <Combinator xsi:type="p7:CircleArrayDistinctUntilChanged" />
                               </Expression>
                               <Expression xsi:type="MulticastSubject">
-                                <Name>CurrentGreenIsoRoi</Name>
+                                <Name>CurrentRedRoi</Name>
                               </Expression>
                               <Expression xsi:type="WorkflowOutput" />
                             </Nodes>

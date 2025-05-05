@@ -3789,7 +3789,7 @@
                   </Expression>
                   <Expression xsi:type="Format">
                     <Format>{0}/{1}_{2}</Format>
-                    <Selector>Item1, Item2</Selector>
+                    <Selector>Item1, Item2, Item3</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Take">
@@ -3962,6 +3962,14 @@
                         <Expression xsi:type="MemberSelector">
                           <Selector>Value.Seconds,Value.Value.FrameNumber,Value.Value.FrameTime,Timestamp.UtcDateTime</Selector>
                         </Expression>
+                        <Expression xsi:type="scr:ExpressionTransform">
+                          <scr:Name>ReLabel</scr:Name>
+                          <scr:Expression>new(
+Item1 as ReferenceTime,
+Item2 as CameraFrameNumber,
+Item3 as CameraFrameTime,
+Item4 as CpuTime)</scr:Expression>
+                        </Expression>
                         <Expression xsi:type="SubscribeSubject">
                           <Name>CameraName</Name>
                         </Expression>
@@ -3994,11 +4002,12 @@
                         <Edge From="9" To="10" Label="Source1" />
                         <Edge From="10" To="11" Label="Source1" />
                         <Edge From="11" To="12" Label="Source1" />
-                        <Edge From="12" To="16" Label="Source1" />
-                        <Edge From="13" To="14" Label="Source1" />
+                        <Edge From="12" To="13" Label="Source1" />
+                        <Edge From="13" To="17" Label="Source1" />
                         <Edge From="14" To="15" Label="Source1" />
-                        <Edge From="15" To="16" Label="Source2" />
-                        <Edge From="16" To="17" Label="Source1" />
+                        <Edge From="15" To="16" Label="Source1" />
+                        <Edge From="16" To="17" Label="Source2" />
+                        <Edge From="17" To="18" Label="Source1" />
                       </Edges>
                     </Workflow>
                   </Expression>
@@ -4074,35 +4083,6 @@
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Merge" />
                   </Expression>
-                  <Expression xsi:type="SubscribeSubject">
-                    <Name>CurrentCombinedRoi</Name>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="rx:Take">
-                      <rx:Count>1</rx:Count>
-                    </Combinator>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p3:SerializeToJson" />
-                  </Expression>
-                  <Expression xsi:type="SubscribeSubject">
-                    <Name>RootLoggingPath</Name>
-                  </Expression>
-                  <Expression xsi:type="Format">
-                    <Format>[0}/regions.json</Format>
-                    <Selector>it</Selector>
-                  </Expression>
-                  <Expression xsi:type="PropertyMapping">
-                    <PropertyMappings>
-                      <Property Name="Path" />
-                    </PropertyMappings>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="io:WriteAllText">
-                      <io:Overwrite>false</io:Overwrite>
-                      <io:Append>false</io:Append>
-                    </Combinator>
-                  </Expression>
                   <Expression xsi:type="GroupWorkflow">
                     <Name>SoftwareEvents</Name>
                     <Workflow>
@@ -4153,7 +4133,7 @@
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="p11:CreateSoftwareEvent">
-                            <p11:EventName>CurrentRoiSettings</p11:EventName>
+                            <p11:EventName>Regions</p11:EventName>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
@@ -4188,12 +4168,6 @@
                   <Edge From="10" To="11" Label="Source1" />
                   <Edge From="12" To="13" Label="Source1" />
                   <Edge From="13" To="14" Label="Source1" />
-                  <Edge From="15" To="16" Label="Source1" />
-                  <Edge From="16" To="17" Label="Source1" />
-                  <Edge From="17" To="21" Label="Source1" />
-                  <Edge From="18" To="19" Label="Source1" />
-                  <Edge From="19" To="20" Label="Source1" />
-                  <Edge From="20" To="21" Label="Source2" />
                 </Edges>
               </Workflow>
             </Expression>

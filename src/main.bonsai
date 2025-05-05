@@ -3974,7 +3974,7 @@ Item4 as CpuTime)</scr:Expression>
                           <Name>CameraName</Name>
                         </Expression>
                         <Expression xsi:type="Format">
-                          <Format>camera_{0}_metadata.csv</Format>
+                          <Format>camera_{0}_metadata</Format>
                           <Selector>it</Selector>
                         </Expression>
                         <Expression xsi:type="PropertyMapping">

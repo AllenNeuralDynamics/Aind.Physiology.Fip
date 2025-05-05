@@ -28,8 +28,6 @@ namespace FipExtensions
         {
             try { camera.AcquisitionStop.Execute(); }
             catch { }
-            camera.PixelFormat.Value = PixelFormatEnums.Mono16.ToString();
-            camera.AdcBitDepth.Value = AdcBitDepthEnums.Bit10.ToString();
 
             camera.BinningSelector.Value = BinningSelectorEnums.All.ToString();
             camera.BinningHorizontalMode.Value = BinningHorizontalModeEnums.Sum.ToString();
@@ -58,6 +56,9 @@ namespace FipExtensions
             camera.GainAuto.Value = GainAutoEnums.Off.ToString();
             camera.Gain.Value = Gain;
             camera.GammaEnable.Value = false;
+
+            camera.PixelFormat.Value = PixelFormatEnums.Mono16.ToString();
+            camera.AdcBitDepth.Value = AdcBitDepthEnums.Bit10.ToString();
 
             SetRegionOfInterest(camera, new Rect(0, 0, width, height));
 

@@ -1159,7 +1159,7 @@
                                         <p8:TriggerPorts>None</p8:TriggerPorts>
                                         <p8:EventsEnabled>false</p8:EventsEnabled>
                                         <p8:IsMuted>false</p8:IsMuted>
-                                        <p8:Delta1>1000000</p8:Delta1>
+                                        <p8:Delta1>10000</p8:Delta1>
                                         <p8:Delta2>0</p8:Delta2>
                                         <p8:Delta3>0</p8:Delta3>
                                         <p8:Delta4>0</p8:Delta4>

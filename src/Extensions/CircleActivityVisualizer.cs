@@ -27,7 +27,6 @@ namespace Bonsai.Vision.Design
         Font font;
         IplImage input;
         IplImage canvas;
-        IDisposable inputHandle;
         CircleActivityCollection regions;
 
         /// <inheritdoc/>
@@ -147,15 +146,6 @@ namespace Bonsai.Vision.Design
 
         public override void Load(IServiceProvider provider)
         {
-            IObservable<object> observable = VisualizerHelper.ImageInput(provider);
-            if (observable != null)
-            {
-                inputHandle = observable.Subscribe(delegate (object value)
-                {
-                    input = (IplImage)value;
-                });
-            }
-
             base.Load(provider);
             font = new OpenCV.Net.Font(1.0);
             ((UserControl)VisualizerCanvas).Load += delegate
@@ -171,12 +161,6 @@ namespace Bonsai.Vision.Design
             {
                 canvas.Close();
                 canvas = null;
-            }
-
-            if (inputHandle != null)
-            {
-                inputHandle.Dispose();
-                inputHandle = null;
             }
 
             base.Unload();

@@ -73,8 +73,8 @@
         "offset": {
           "$ref": "#/definitions/Point2f",
           "default": {
-            "x": 0.0,
-            "y": 0.0
+            "x": 200.0,
+            "y": 150.0
           },
           "description": "Offset (px)"
         }

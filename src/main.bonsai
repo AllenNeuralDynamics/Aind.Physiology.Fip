@@ -2818,7 +2818,7 @@
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="p10:FipSignalVisualizerSource">
-                            <p10:Capacity>100</p10:Capacity>
+                            <p10:Capacity>10</p10:Capacity>
                             <p10:Color>
                               <p10:Val0>0</p10:Val0>
                               <p10:Val1>0</p10:Val1>
@@ -2844,7 +2844,7 @@
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="p10:FipSignalVisualizerSource">
-                            <p10:Capacity>100</p10:Capacity>
+                            <p10:Capacity>10</p10:Capacity>
                             <p10:Color>
                               <p10:Val0>0</p10:Val0>
                               <p10:Val1>255</p10:Val1>
@@ -2870,7 +2870,7 @@
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="p10:FipSignalVisualizerSource">
-                            <p10:Capacity>100</p10:Capacity>
+                            <p10:Capacity>10</p10:Capacity>
                             <p10:Color>
                               <p10:Val0>255</p10:Val0>
                               <p10:Val1>0</p10:Val1>
@@ -2888,9 +2888,26 @@
                           <gui:Enabled>true</gui:Enabled>
                           <gui:Visible>true</gui:Visible>
                           <gui:ColumnCount>1</gui:ColumnCount>
-                          <gui:RowCount>3</gui:RowCount>
+                          <gui:RowCount>4</gui:RowCount>
                           <gui:ColumnStyles />
-                          <gui:RowStyles />
+                          <gui:RowStyles>
+                            <gui:RowStyle>
+                              <gui:SizeType>Percent</gui:SizeType>
+                              <gui:Height>0.1</gui:Height>
+                            </gui:RowStyle>
+                            <gui:RowStyle>
+                              <gui:SizeType>Percent</gui:SizeType>
+                              <gui:Height>0.3</gui:Height>
+                            </gui:RowStyle>
+                            <gui:RowStyle>
+                              <gui:SizeType>Percent</gui:SizeType>
+                              <gui:Height>0.3</gui:Height>
+                            </gui:RowStyle>
+                            <gui:RowStyle>
+                              <gui:SizeType>Percent</gui:SizeType>
+                              <gui:Height>0.3</gui:Height>
+                            </gui:RowStyle>
+                          </gui:RowStyles>
                           <gui:CellSpans />
                         </Expression>
                         <Expression xsi:type="WorkflowOutput" />

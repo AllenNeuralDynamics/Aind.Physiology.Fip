@@ -23,7 +23,7 @@ using System.Xml.Serialization;
 public class FipSignalVisualizerSource
 {
     private int selectedChannel = 0;
-    private double capacity = 100;
+    private double capacity = 10;
     private Scalar color = new Scalar(0, 0, 255, 255);
     private string title = "Photometry Signal";
 
@@ -203,7 +203,6 @@ public class FipTimeSeries : UserControl
         };
 
         plotModel = new PlotModel();
-        plotModel.Title = Title;
 
         xAxis = new LinearAxis
         {
@@ -217,7 +216,7 @@ public class FipTimeSeries : UserControl
         yAxis = new LinearAxis
         {
             Position = AxisPosition.Left,
-            Title = "PixelIntensity",
+            Title = Title,
             FontSize = 12
         };
 

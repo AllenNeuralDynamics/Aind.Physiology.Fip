@@ -1,0 +1,514 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.8.5"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
+                 xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns:p1="clr-namespace:;assembly=Extensions"
+                 xmlns:scr="clr-namespace:Bonsai.Scripting.Expressions;assembly=Bonsai.Scripting.Expressions"
+                 xmlns:harp="clr-namespace:Bonsai.Harp;assembly=Bonsai.Harp"
+                 xmlns:p2="clr-namespace:FipExtensions;assembly=Extensions"
+                 xmlns:zg="clr-namespace:Bonsai.Gui.ZedGraph;assembly=Bonsai.Gui.ZedGraph"
+                 xmlns:gui="clr-namespace:Bonsai.Gui;assembly=Bonsai.Gui"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="cv:CameraCapture">
+          <cv:Index>0</cv:Index>
+          <cv:CaptureProperties />
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="dsp:ConvertScale">
+          <dsp:Depth>U16</dsp:Depth>
+          <dsp:Scale>1</dsp:Scale>
+          <dsp:Shift>0</dsp:Shift>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="cv:Grayscale" />
+      </Expression>
+      <Expression xsi:type="rx:PublishSubject">
+        <Name>raw</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="p1:TestFipFrame" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:ElementIndex" />
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Index</Selector>
+      </Expression>
+      <Expression xsi:type="scr:ExpressionTransform">
+        <scr:Expression>double(it)</scr:Expression>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:Zip" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="harp:CreateTimestamped" />
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>raw</Name>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>raw</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="BooleanProperty">
+          <Value>true</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="Refresh" />
+        </PropertyMappings>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="p1:SelectCircles">
+          <p1:Circles>
+            <p1:Circle>
+              <p1:Center>
+                <p1:X>162</p1:X>
+                <p1:Y>130</p1:Y>
+              </p1:Center>
+              <p1:Radius>45.6946373</p1:Radius>
+            </p1:Circle>
+            <p1:Circle>
+              <p1:Center>
+                <p1:X>429</p1:X>
+                <p1:Y>295</p1:Y>
+              </p1:Center>
+              <p1:Radius>35</p1:Radius>
+            </p1:Circle>
+            <p1:Circle>
+              <p1:Center>
+                <p1:X>191</p1:X>
+                <p1:Y>359</p1:Y>
+              </p1:Center>
+              <p1:Radius>31</p1:Radius>
+            </p1:Circle>
+            <p1:Circle>
+              <p1:Center>
+                <p1:X>387</p1:X>
+                <p1:Y>261</p1:Y>
+              </p1:Center>
+              <p1:Radius>1</p1:Radius>
+            </p1:Circle>
+            <p1:Circle>
+              <p1:Center>
+                <p1:X>371</p1:X>
+                <p1:Y>151</p1:Y>
+              </p1:Center>
+              <p1:Radius>17</p1:Radius>
+            </p1:Circle>
+            <p1:Circle>
+              <p1:Center>
+                <p1:X>323</p1:X>
+                <p1:Y>265</p1:Y>
+              </p1:Center>
+              <p1:Radius>33</p1:Radius>
+            </p1:Circle>
+          </p1:Circles>
+          <p1:Refresh>false</p1:Refresh>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="p2:CircleArrayDistinctUntilChanged" />
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="Circles" />
+        </PropertyMappings>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="p2:CircleActivityCalculator">
+          <p2:Circles>
+            <p2:Circle>
+              <p2:Center>
+                <p2:X>162</p2:X>
+                <p2:Y>130</p2:Y>
+              </p2:Center>
+              <p2:Radius>45.6946373</p2:Radius>
+            </p2:Circle>
+            <p2:Circle>
+              <p2:Center>
+                <p2:X>429</p2:X>
+                <p2:Y>295</p2:Y>
+              </p2:Center>
+              <p2:Radius>35</p2:Radius>
+            </p2:Circle>
+            <p2:Circle>
+              <p2:Center>
+                <p2:X>191</p2:X>
+                <p2:Y>359</p2:Y>
+              </p2:Center>
+              <p2:Radius>31</p2:Radius>
+            </p2:Circle>
+            <p2:Circle>
+              <p2:Center>
+                <p2:X>387</p2:X>
+                <p2:Y>261</p2:Y>
+              </p2:Center>
+              <p2:Radius>1</p2:Radius>
+            </p2:Circle>
+            <p2:Circle>
+              <p2:Center>
+                <p2:X>371</p2:X>
+                <p2:Y>151</p2:Y>
+              </p2:Center>
+              <p2:Radius>17</p2:Radius>
+            </p2:Circle>
+            <p2:Circle>
+              <p2:Center>
+                <p2:X>323</p2:X>
+                <p2:Y>265</p2:Y>
+              </p2:Center>
+              <p2:Radius>33</p2:Radius>
+            </p2:Circle>
+          </p2:Circles>
+          <p2:Operation>Avg</p2:Operation>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Value</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="p2:CircleActivityToMat">
+          <p2:BufferSize>5</p2:BufferSize>
+          <p2:SkipSize>5</p2:SkipSize>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="rx:PublishSubject">
+        <Name>Activity</Name>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="IntProperty">
+            <Value>0</Value>
+          </Combinator>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="SubscribeSubject">
+          <Name>Channel</Name>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="rx:Skip">
+            <rx:Count>1</rx:Count>
+          </Combinator>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="rx:TakeUntil" />
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="rx:Visualizer">
+          <Workflow>
+            <Nodes>
+              <Expression xsi:type="SubscribeSubject">
+                <Name>Activity</Name>
+              </Expression>
+              <Expression xsi:type="rx:PublishSubject">
+                <Name>input</Name>
+              </Expression>
+              <Expression xsi:type="SubscribeSubject">
+                <Name>input</Name>
+              </Expression>
+              <Expression xsi:type="MemberSelector">
+                <Selector>Value</Selector>
+              </Expression>
+              <Expression xsi:type="SubscribeSubject">
+                <Name>Channel</Name>
+              </Expression>
+              <Expression xsi:type="MemberSelector">
+                <Selector>Item1</Selector>
+              </Expression>
+              <Expression xsi:type="PropertyMapping">
+                <PropertyMappings>
+                  <Property Name="Value" />
+                </PropertyMappings>
+              </Expression>
+              <Expression xsi:type="Index">
+                <Operand xsi:type="IntProperty">
+                  <Value>2</Value>
+                </Operand>
+              </Expression>
+              <Expression xsi:type="MemberSelector">
+                <Selector>Activity.Val0</Selector>
+              </Expression>
+              <Expression xsi:type="MemberSelector">
+                <Selector>Seconds</Selector>
+              </Expression>
+              <Expression xsi:type="Combinator">
+                <Combinator xsi:type="rx:Zip" />
+              </Expression>
+              <Expression xsi:type="Combinator">
+                <Combinator xsi:type="harp:CreateTimestamped" />
+              </Expression>
+              <Expression xsi:type="scr:ExpressionTransform">
+                <scr:Expression>new(
+Value as PixelIntensity,
+Seconds as Seconds)</scr:Expression>
+              </Expression>
+              <Expression xsi:type="zg:LineGraphBuilder">
+                <zg:IndexSelector>Seconds</zg:IndexSelector>
+                <zg:ValueSelector>Seconds,PixelIntensity</zg:ValueSelector>
+                <zg:SymbolType>None</zg:SymbolType>
+                <zg:LineWidth>4</zg:LineWidth>
+                <zg:CurveSettings>
+                  <zg:CurveConfiguration>
+                    <zg:Label>Isobestic</zg:Label>
+                    <zg:Color>Blue</zg:Color>
+                  </zg:CurveConfiguration>
+                </zg:CurveSettings>
+                <zg:Capacity xsi:nil="true" />
+                <zg:XMin xsi:nil="true" />
+                <zg:XMax xsi:nil="true" />
+                <zg:YMin xsi:nil="true" />
+                <zg:YMax xsi:nil="true" />
+              </Expression>
+              <Expression xsi:type="VisualizerMapping">
+                <VisualizerType xsi:type="TypeMapping" TypeArguments="zg:LineGraphVisualizer" />
+              </Expression>
+              <Expression xsi:type="SubscribeSubject">
+                <Name>input</Name>
+              </Expression>
+              <Expression xsi:type="MemberSelector">
+                <Selector>Value</Selector>
+              </Expression>
+              <Expression xsi:type="SubscribeSubject">
+                <Name>Channel</Name>
+              </Expression>
+              <Expression xsi:type="MemberSelector">
+                <Selector>Item1</Selector>
+              </Expression>
+              <Expression xsi:type="PropertyMapping">
+                <PropertyMappings>
+                  <Property Name="Value" />
+                </PropertyMappings>
+              </Expression>
+              <Expression xsi:type="Index">
+                <Operand xsi:type="IntProperty">
+                  <Value>2</Value>
+                </Operand>
+              </Expression>
+              <Expression xsi:type="MemberSelector">
+                <Selector>Activity.Val0</Selector>
+              </Expression>
+              <Expression xsi:type="MemberSelector">
+                <Selector>Seconds</Selector>
+              </Expression>
+              <Expression xsi:type="Combinator">
+                <Combinator xsi:type="rx:Zip" />
+              </Expression>
+              <Expression xsi:type="Combinator">
+                <Combinator xsi:type="harp:CreateTimestamped" />
+              </Expression>
+              <Expression xsi:type="scr:ExpressionTransform">
+                <scr:Expression>new(
+Value as PixelIntensity,
+Seconds as Seconds)</scr:Expression>
+              </Expression>
+              <Expression xsi:type="zg:LineGraphBuilder">
+                <zg:IndexSelector>Seconds</zg:IndexSelector>
+                <zg:ValueSelector>Seconds,PixelIntensity</zg:ValueSelector>
+                <zg:SymbolType>None</zg:SymbolType>
+                <zg:LineWidth>4</zg:LineWidth>
+                <zg:CurveSettings>
+                  <zg:CurveConfiguration>
+                    <zg:Label>Isobestic</zg:Label>
+                    <zg:Color>Blue</zg:Color>
+                  </zg:CurveConfiguration>
+                </zg:CurveSettings>
+                <zg:Capacity xsi:nil="true" />
+                <zg:XMin xsi:nil="true" />
+                <zg:XMax xsi:nil="true" />
+                <zg:YMin xsi:nil="true" />
+                <zg:YMax xsi:nil="true" />
+              </Expression>
+              <Expression xsi:type="VisualizerMapping">
+                <VisualizerType xsi:type="TypeMapping" TypeArguments="zg:LineGraphVisualizer" />
+              </Expression>
+              <Expression xsi:type="gui:TableLayoutPanelBuilder">
+                <gui:Enabled>true</gui:Enabled>
+                <gui:Visible>true</gui:Visible>
+                <gui:ColumnCount>1</gui:ColumnCount>
+                <gui:RowCount>2</gui:RowCount>
+                <gui:ColumnStyles />
+                <gui:RowStyles />
+                <gui:CellSpans />
+              </Expression>
+              <Expression xsi:type="WorkflowOutput" />
+            </Nodes>
+            <Edges>
+              <Edge From="0" To="1" Label="Source1" />
+              <Edge From="2" To="3" Label="Source1" />
+              <Edge From="2" To="9" Label="Source1" />
+              <Edge From="3" To="7" Label="Source1" />
+              <Edge From="4" To="5" Label="Source1" />
+              <Edge From="5" To="6" Label="Source1" />
+              <Edge From="6" To="7" Label="Source2" />
+              <Edge From="7" To="8" Label="Source1" />
+              <Edge From="8" To="10" Label="Source1" />
+              <Edge From="9" To="10" Label="Source2" />
+              <Edge From="10" To="11" Label="Source1" />
+              <Edge From="11" To="12" Label="Source1" />
+              <Edge From="12" To="13" Label="Source1" />
+              <Edge From="13" To="14" Label="Source1" />
+              <Edge From="14" To="28" Label="Source1" />
+              <Edge From="15" To="16" Label="Source1" />
+              <Edge From="15" To="22" Label="Source1" />
+              <Edge From="16" To="20" Label="Source1" />
+              <Edge From="17" To="18" Label="Source1" />
+              <Edge From="18" To="19" Label="Source1" />
+              <Edge From="19" To="20" Label="Source2" />
+              <Edge From="20" To="21" Label="Source1" />
+              <Edge From="21" To="23" Label="Source1" />
+              <Edge From="22" To="23" Label="Source2" />
+              <Edge From="23" To="24" Label="Source1" />
+              <Edge From="24" To="25" Label="Source1" />
+              <Edge From="25" To="26" Label="Source1" />
+              <Edge From="26" To="27" Label="Source1" />
+              <Edge From="27" To="28" Label="Source2" />
+              <Edge From="28" To="29" Label="Source1" />
+            </Edges>
+          </Workflow>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="rx:Repeat" />
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="VisualizerMapping" />
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="SubscribeSubject">
+          <Name>Activity</Name>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="MemberSelector">
+          <Selector>Value</Selector>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="MemberSelector">
+          <Selector>Count</Selector>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="rx:DistinctUntilChanged" />
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="rx:SelectMany">
+          <Workflow>
+            <Nodes>
+              <Expression xsi:type="WorkflowInput">
+                <Name>Source1</Name>
+              </Expression>
+              <Expression xsi:type="PropertyMapping">
+                <PropertyMappings>
+                  <Property Name="Count" />
+                </PropertyMappings>
+              </Expression>
+              <Expression xsi:type="Combinator">
+                <Combinator xsi:type="rx:Range">
+                  <rx:Start>0</rx:Start>
+                  <rx:Count>6</rx:Count>
+                </Combinator>
+              </Expression>
+              <Expression xsi:type="Format">
+                <Format>Channel{0}</Format>
+                <Selector>it</Selector>
+              </Expression>
+              <Expression xsi:type="Combinator">
+                <Combinator xsi:type="rx:Zip" />
+              </Expression>
+              <Expression xsi:type="Combinator">
+                <Combinator xsi:type="rx:ToList" />
+              </Expression>
+              <Expression xsi:type="WorkflowOutput" />
+            </Nodes>
+            <Edges>
+              <Edge From="0" To="1" Label="Source1" />
+              <Edge From="1" To="2" Label="Source1" />
+              <Edge From="2" To="3" Label="Source1" />
+              <Edge From="2" To="4" Label="Source1" />
+              <Edge From="3" To="4" Label="Source2" />
+              <Edge From="4" To="5" Label="Source1" />
+              <Edge From="5" To="6" Label="Source1" />
+            </Edges>
+          </Workflow>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="rx:BehaviorSubject">
+          <Name>CurrentList</Name>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="gui:ComboBoxDataSourceBuilder">
+          <gui:Enabled>true</gui:Enabled>
+          <gui:Visible>true</gui:Visible>
+          <gui:DisplayMember>Item2</gui:DisplayMember>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="MemberSelector" />
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="rx:BehaviorSubject">
+          <Name>Channel</Name>
+        </Builder>
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="1" Label="Source1" />
+      <Edge From="0" To="5" Label="Source1" />
+      <Edge From="1" To="2" Label="Source1" />
+      <Edge From="2" To="3" Label="Source1" />
+      <Edge From="3" To="4" Label="Source1" />
+      <Edge From="4" To="8" Label="Source1" />
+      <Edge From="5" To="6" Label="Source1" />
+      <Edge From="6" To="7" Label="Source1" />
+      <Edge From="7" To="8" Label="Source2" />
+      <Edge From="8" To="9" Label="Source1" />
+      <Edge From="9" To="17" Label="Source1" />
+      <Edge From="10" To="14" Label="Source1" />
+      <Edge From="11" To="12" Label="Source1" />
+      <Edge From="12" To="13" Label="Source1" />
+      <Edge From="13" To="14" Label="Source2" />
+      <Edge From="14" To="15" Label="Source1" />
+      <Edge From="15" To="16" Label="Source1" />
+      <Edge From="16" To="17" Label="Source2" />
+      <Edge From="17" To="18" Label="Source1" />
+      <Edge From="18" To="19" Label="Source1" />
+      <Edge From="19" To="20" Label="Source1" />
+      <Edge From="21" To="24" Label="Source1" />
+      <Edge From="22" To="23" Label="Source1" />
+      <Edge From="23" To="24" Label="Source2" />
+      <Edge From="24" To="25" Label="Source1" />
+      <Edge From="25" To="26" Label="Source1" />
+      <Edge From="25" To="27" Label="Source1" />
+      <Edge From="28" To="29" Label="Source1" />
+      <Edge From="29" To="30" Label="Source1" />
+      <Edge From="30" To="31" Label="Source1" />
+      <Edge From="31" To="32" Label="Source1" />
+      <Edge From="32" To="33" Label="Source1" />
+      <Edge From="33" To="34" Label="Source1" />
+      <Edge From="34" To="35" Label="Source1" />
+      <Edge From="35" To="36" Label="Source1" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>

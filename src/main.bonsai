@@ -177,7 +177,7 @@
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="StringProperty">
-                <Value>../.local/default.json</Value>
+                <Value>../local/default.json</Value>
               </Combinator>
             </Expression>
             <Expression xsi:type="Combinator">
@@ -2868,7 +2868,7 @@
                                     </Expression>
                                     <Expression xsi:type="Combinator">
                                       <Combinator xsi:type="io:WriteAllText">
-                                        <io:Path>../.local/default.json</io:Path>
+                                        <io:Path>../local/default.json</io:Path>
                                         <io:Overwrite>true</io:Overwrite>
                                         <io:Append>false</io:Append>
                                       </Combinator>
@@ -2926,7 +2926,7 @@
                                     </Expression>
                                     <Expression xsi:type="Combinator">
                                       <Combinator xsi:type="io:ReadAllText">
-                                        <io:Path>../.local/default.json</io:Path>
+                                        <io:Path>../local/default.json</io:Path>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="p3:DeserializeFromJson">
@@ -3031,7 +3031,7 @@
                                   <Nodes>
                                     <Expression xsi:type="Combinator">
                                       <Combinator xsi:type="p7:LoadRoiDefault">
-                                        <p7:Path>../.local/default.json</p7:Path>
+                                        <p7:Path>../local/default.json</p7:Path>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
@@ -3145,7 +3145,7 @@
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="p7:LoadRoiDefault">
-                            <p7:Path>../.local/default.json</p7:Path>
+                            <p7:Path>../local/default.json</p7:Path>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="Combinator">

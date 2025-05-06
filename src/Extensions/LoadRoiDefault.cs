@@ -14,7 +14,7 @@ namespace FipExtensions
     [WorkflowElementCategory(ElementCategory.Combinator)]
     public class LoadRoiDefault
     {
-        private string path = "../.local/default.json";
+        private string path = "../local/default.json";
         [Description("The path to the ROI default settings file.")]
         [FileNameFilter("JSON|*.json|All Files|*.*")]
         [Editor("Bonsai.Design.OpenFileNameEditor, Bonsai.Design", DesignTypes.UITypeEditor)]

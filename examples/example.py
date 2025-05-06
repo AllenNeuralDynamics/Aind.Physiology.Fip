@@ -8,7 +8,6 @@ from aind_physiology_fip.rig import (
     AindPhysioFipRig,
     FipCamera,
     FipTask,
-    HarpCuttlefishFip,
     LightSource,
     LightSourceCalibration,
     LightSourceCalibrationOutput,
@@ -16,6 +15,8 @@ from aind_physiology_fip.rig import (
     Ports,
     RoiSettings,
 )
+
+from aind_behavior_services.rig.harp import HarpCuttlefishfip
 
 
 def mock_session() -> AindBehaviorSessionModel:
@@ -63,7 +64,7 @@ def mock_rig() -> AindPhysioFipRig:
         ),
         roi_settings=RoiSettings(),
         networking=Networking(),
-        cuttlefish_fip=HarpCuttlefishFip(
+        cuttlefish_fip=HarpCuttlefishfip(
             port_name="COM1",
         ),
     )

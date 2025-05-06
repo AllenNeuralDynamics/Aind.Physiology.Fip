@@ -35,11 +35,6 @@ class RoiSettings(BaseModel):
     camera_red_roi: List[Circle] = Field(default=_make_default_rois(), description="ROI for the red camera channel")
 
 
-class HarpCuttlefishFip(rig.harp._HarpDeviceBase):
-    device_type: Literal["cuTTLefishFip"] = "cuTTLefishFip"
-    who_am_i: Literal[1407] = 1407
-
-
 class Networking(BaseModel):
     zmq_publisher: ZmqConnection = Field(
         default=ZmqConnection(connection_string="@tcp://localhost:5556", topic="fip"), validate_default=True
@@ -123,7 +118,7 @@ class AindPhysioFipRig(rig.AindBehaviorRigModel):
         title="Region of interest settings",
         description="Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program.",
     )
-    cuttlefish_fip: HarpCuttlefishFip = Field(
+    cuttlefish_fip: rig.harp.HarpCuttlefishfip = Field(
         title="CuttlefishFip",
         description="CuttlefishFip board for controlling the trigger of cameras and light-sources",
     )

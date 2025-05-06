@@ -150,7 +150,7 @@
       "title": "FipTask",
       "type": "object"
     },
-    "HarpCuttlefishFip": {
+    "HarpCuttlefishfip": {
       "properties": {
         "device_type": {
           "const": "cuTTLefishFip",
@@ -210,7 +210,7 @@
       "required": [
         "port_name"
       ],
-      "title": "HarpCuttlefishFip",
+      "title": "HarpCuttlefishfip",
       "type": "object"
     },
     "LightSource": {
@@ -603,7 +603,7 @@
       "title": "Region of interest settings"
     },
     "cuttlefish_fip": {
-      "$ref": "#/definitions/HarpCuttlefishFip",
+      "$ref": "#/definitions/HarpCuttlefishfip",
       "description": "CuttlefishFip board for controlling the trigger of cameras and light-sources",
       "title": "CuttlefishFip"
     },

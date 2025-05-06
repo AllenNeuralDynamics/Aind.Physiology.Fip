@@ -549,7 +549,7 @@ namespace AindPhysiologyFip.Rig
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class HarpCuttlefishFip
+    public partial class HarpCuttlefishfip
     {
     
         private string _deviceType = "cuTTLefishFip";
@@ -564,11 +564,11 @@ namespace AindPhysiologyFip.Rig
     
         private string _portName;
     
-        public HarpCuttlefishFip()
+        public HarpCuttlefishfip()
         {
         }
     
-        protected HarpCuttlefishFip(HarpCuttlefishFip other)
+        protected HarpCuttlefishfip(HarpCuttlefishfip other)
         {
             _deviceType = other._deviceType;
             _additionalSettings = other._additionalSettings;
@@ -674,14 +674,14 @@ namespace AindPhysiologyFip.Rig
             }
         }
     
-        public System.IObservable<HarpCuttlefishFip> Process()
+        public System.IObservable<HarpCuttlefishfip> Process()
         {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new HarpCuttlefishFip(this)));
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new HarpCuttlefishfip(this)));
         }
     
-        public System.IObservable<HarpCuttlefishFip> Process<TSource>(System.IObservable<TSource> source)
+        public System.IObservable<HarpCuttlefishfip> Process<TSource>(System.IObservable<TSource> source)
         {
-            return System.Reactive.Linq.Observable.Select(source, _ => new HarpCuttlefishFip(this));
+            return System.Reactive.Linq.Observable.Select(source, _ => new HarpCuttlefishfip(this));
         }
     
         protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
@@ -1517,7 +1517,7 @@ namespace AindPhysiologyFip.Rig
     
         private RoiSettings _roiSettings;
     
-        private HarpCuttlefishFip _cuttlefishFip = new HarpCuttlefishFip();
+        private HarpCuttlefishfip _cuttlefishFip = new HarpCuttlefishfip();
     
         private Networking _networking;
     
@@ -1716,7 +1716,7 @@ namespace AindPhysiologyFip.Rig
         [System.Xml.Serialization.XmlIgnoreAttribute()]
         [Newtonsoft.Json.JsonPropertyAttribute("cuttlefish_fip", Required=Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DescriptionAttribute("CuttlefishFip board for controlling the trigger of cameras and light-sources")]
-        public HarpCuttlefishFip CuttlefishFip
+        public HarpCuttlefishfip CuttlefishFip
         {
             get
             {
@@ -1823,9 +1823,9 @@ namespace AindPhysiologyFip.Rig
             return Process<FipTask>(source);
         }
 
-        public System.IObservable<string> Process(System.IObservable<HarpCuttlefishFip> source)
+        public System.IObservable<string> Process(System.IObservable<HarpCuttlefishfip> source)
         {
-            return Process<HarpCuttlefishFip>(source);
+            return Process<HarpCuttlefishfip>(source);
         }
 
         public System.IObservable<string> Process(System.IObservable<LightSource> source)
@@ -1881,7 +1881,7 @@ namespace AindPhysiologyFip.Rig
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Circle>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipCamera>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipTask>))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<HarpCuttlefishFip>))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<HarpCuttlefishfip>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSource>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSourceCalibration>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSourceCalibrationOutput>))]

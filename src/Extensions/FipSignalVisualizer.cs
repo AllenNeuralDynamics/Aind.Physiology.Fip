@@ -122,7 +122,7 @@ public class FipSignalVisualizer : BufferedVisualizer
             (byte)source.Color.Val2,
             (byte)source.Color.Val1,
             (byte)source.Color.Val0));
-        lineSeries.StrokeThickness = 5;
+        lineSeries.StrokeThickness = 2;
         lineSeries.Title = lineSeriesName;
 
         timeSeries.ResetLineSeries(lineSeries);

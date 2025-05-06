@@ -2470,7 +2470,7 @@
                     <Combinator xsi:type="rx:Merge" />
                   </Expression>
                   <Expression xsi:type="Format">
-                    <Format>{0:HH:mm:ss:fff}</Format>
+                    <Format>{0:T}</Format>
                     <Selector>it</Selector>
                   </Expression>
                   <Expression xsi:type="PropertyMapping">

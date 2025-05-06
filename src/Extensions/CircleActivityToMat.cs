@@ -14,6 +14,8 @@ namespace FipExtensions
     {
         private int bufferSize = 5;
 
+        private int skipSize = 5;
+
         [Description("The number of frames in each buffer.")]
         public int BufferSize
         {
@@ -21,9 +23,17 @@ namespace FipExtensions
             set { bufferSize = value; }
         }
 
+
+        [Description("The number of frames in each buffer.")]
+        public int SkipSize
+        {
+            get { return skipSize; }
+            set { skipSize = value; }
+        }
+
         public IObservable<Mat> Process(IObservable<CircleActivityCollection> source)
         {
-            return source.Buffer(BufferSize, BufferSize).Select(value =>
+            return source.Buffer(BufferSize, SkipSize).Select(value =>
             {
                 var nRegions = value.Select(x => x.Count);
 

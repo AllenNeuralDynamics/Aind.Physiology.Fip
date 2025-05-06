@@ -24,7 +24,6 @@
                  xmlns:gui="clr-namespace:Bonsai.Gui;assembly=Bonsai.Gui"
                  xmlns:p13="clr-namespace:Bonsai.Vision.Design;assembly=Extensions"
                  xmlns:num="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
-                 xmlns:zg="clr-namespace:Bonsai.Gui.ZedGraph;assembly=Bonsai.Gui.ZedGraph"
                  xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
@@ -2685,7 +2684,7 @@
                     <gui:RowStyles />
                     <gui:CellSpans />
                   </Expression>
-                  <Expression xsi:type="WorkflowOutput" />
+                  <Expression xsi:type="VisualizerMapping" />
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="IntProperty">
                       <Value>0</Value>
@@ -2809,128 +2808,81 @@
                         <Expression xsi:type="SubscribeSubject">
                           <Name>IsoActivity</Name>
                         </Expression>
-                        <Expression xsi:type="GroupWorkflow">
-                          <Name>MakeActivityPlot</Name>
-                          <Workflow>
-                            <Nodes>
-                              <Expression xsi:type="WorkflowInput">
-                                <Name>Source1</Name>
-                              </Expression>
-                              <Expression xsi:type="MemberSelector">
-                                <Selector>Value</Selector>
-                              </Expression>
-                              <Expression xsi:type="SubscribeSubject">
-                                <Name>SelectedChannel</Name>
-                              </Expression>
-                              <Expression xsi:type="PropertyMapping">
-                                <PropertyMappings>
-                                  <Property Name="Value" />
-                                </PropertyMappings>
-                              </Expression>
-                              <Expression xsi:type="Index">
-                                <Operand xsi:type="IntProperty">
-                                  <Value>3</Value>
-                                </Operand>
-                              </Expression>
-                              <Expression xsi:type="MemberSelector">
-                                <Selector>Activity.Val0</Selector>
-                              </Expression>
-                              <Expression xsi:type="MemberSelector">
-                                <Selector>Seconds</Selector>
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Zip" />
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="harp:CreateTimestamped" />
-                              </Expression>
-                              <Expression xsi:type="scr:ExpressionTransform">
-                                <scr:Expression>new(
-Value as PixelIntensity,
-Seconds as Seconds)</scr:Expression>
-                              </Expression>
-                              <Expression xsi:type="ExternalizedMapping">
-                                <Property Name="CurveSettings" />
-                              </Expression>
-                              <Expression xsi:type="zg:LineGraphBuilder">
-                                <zg:IndexSelector>Seconds</zg:IndexSelector>
-                                <zg:ValueSelector>Seconds,PixelIntensity</zg:ValueSelector>
-                                <zg:SymbolType>None</zg:SymbolType>
-                                <zg:LineWidth>4</zg:LineWidth>
-                                <zg:CurveSettings>
-                                  <zg:CurveConfiguration>
-                                    <zg:Label>Isosbestic</zg:Label>
-                                    <zg:Color>Purple</zg:Color>
-                                  </zg:CurveConfiguration>
-                                </zg:CurveSettings>
-                                <zg:Capacity>100</zg:Capacity>
-                                <zg:XMin xsi:nil="true" />
-                                <zg:XMax xsi:nil="true" />
-                                <zg:YMin xsi:nil="true" />
-                                <zg:YMax xsi:nil="true" />
-                              </Expression>
-                              <Expression xsi:type="SubscribeSubject">
-                                <Name>SelectedChannel</Name>
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Skip">
-                                  <rx:Count>1</rx:Count>
-                                </Combinator>
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:TakeUntil" />
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Repeat" />
-                              </Expression>
-                              <Expression xsi:type="WorkflowOutput" />
-                            </Nodes>
-                            <Edges>
-                              <Edge From="0" To="1" Label="Source1" />
-                              <Edge From="0" To="6" Label="Source1" />
-                              <Edge From="1" To="4" Label="Source1" />
-                              <Edge From="2" To="3" Label="Source1" />
-                              <Edge From="3" To="4" Label="Source2" />
-                              <Edge From="4" To="5" Label="Source1" />
-                              <Edge From="5" To="7" Label="Source1" />
-                              <Edge From="6" To="7" Label="Source2" />
-                              <Edge From="7" To="8" Label="Source1" />
-                              <Edge From="8" To="9" Label="Source1" />
-                              <Edge From="9" To="11" Label="Source1" />
-                              <Edge From="10" To="11" Label="Source2" />
-                              <Edge From="11" To="14" Label="Source1" />
-                              <Edge From="12" To="13" Label="Source1" />
-                              <Edge From="13" To="14" Label="Source2" />
-                              <Edge From="14" To="15" Label="Source1" />
-                              <Edge From="15" To="16" Label="Source1" />
-                            </Edges>
-                          </Workflow>
+                        <Expression xsi:type="SubscribeSubject">
+                          <Name>SelectedChannel</Name>
                         </Expression>
-                        <Expression xsi:type="VisualizerMapping" />
+                        <Expression xsi:type="PropertyMapping">
+                          <PropertyMappings>
+                            <Property Name="SelectedChannel" />
+                          </PropertyMappings>
+                        </Expression>
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="p10:FipSignalVisualizerSource">
+                            <p10:Capacity>100</p10:Capacity>
+                            <p10:Color>
+                              <p10:Val0>0</p10:Val0>
+                              <p10:Val1>0</p10:Val1>
+                              <p10:Val2>255</p10:Val2>
+                              <p10:Val3>255</p10:Val3>
+                            </p10:Color>
+                            <p10:Title>Isosbestic</p10:Title>
+                          </Combinator>
+                        </Expression>
+                        <Expression xsi:type="VisualizerMapping">
+                          <VisualizerType xsi:type="TypeMapping" TypeArguments="p10:FipSignalVisualizer" />
+                        </Expression>
                         <Expression xsi:type="SubscribeSubject">
                           <Name>GreenActivity</Name>
                         </Expression>
-                        <Expression xsi:type="IncludeWorkflow" Path="Extensions\MakeActivityPlot.bonsai">
-                          <CurveSettings>
-                            <CurveConfiguration>
-                              <Label>Green</Label>
-                              <Color>SeaGreen</Color>
-                            </CurveConfiguration>
-                          </CurveSettings>
+                        <Expression xsi:type="SubscribeSubject">
+                          <Name>SelectedChannel</Name>
                         </Expression>
-                        <Expression xsi:type="VisualizerMapping" />
+                        <Expression xsi:type="PropertyMapping">
+                          <PropertyMappings>
+                            <Property Name="SelectedChannel" />
+                          </PropertyMappings>
+                        </Expression>
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="p10:FipSignalVisualizerSource">
+                            <p10:Capacity>100</p10:Capacity>
+                            <p10:Color>
+                              <p10:Val0>0</p10:Val0>
+                              <p10:Val1>255</p10:Val1>
+                              <p10:Val2>0</p10:Val2>
+                              <p10:Val3>255</p10:Val3>
+                            </p10:Color>
+                            <p10:Title>Green</p10:Title>
+                          </Combinator>
+                        </Expression>
+                        <Expression xsi:type="VisualizerMapping">
+                          <VisualizerType xsi:type="TypeMapping" TypeArguments="p10:FipSignalVisualizer" />
+                        </Expression>
                         <Expression xsi:type="SubscribeSubject">
                           <Name>RedActivity</Name>
                         </Expression>
-                        <Expression xsi:type="IncludeWorkflow" Path="Extensions\MakeActivityPlot.bonsai">
-                          <CurveSettings>
-                            <CurveConfiguration>
-                              <Label>Red</Label>
-                              <Color>OrangeRed</Color>
-                            </CurveConfiguration>
-                          </CurveSettings>
+                        <Expression xsi:type="SubscribeSubject">
+                          <Name>SelectedChannel</Name>
                         </Expression>
-                        <Expression xsi:type="VisualizerMapping" />
+                        <Expression xsi:type="PropertyMapping">
+                          <PropertyMappings>
+                            <Property Name="SelectedChannel" />
+                          </PropertyMappings>
+                        </Expression>
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="p10:FipSignalVisualizerSource">
+                            <p10:Capacity>100</p10:Capacity>
+                            <p10:Color>
+                              <p10:Val0>255</p10:Val0>
+                              <p10:Val1>0</p10:Val1>
+                              <p10:Val2>0</p10:Val2>
+                              <p10:Val3>255</p10:Val3>
+                            </p10:Color>
+                            <p10:Title>Isosbestic</p10:Title>
+                          </Combinator>
+                        </Expression>
+                        <Expression xsi:type="VisualizerMapping">
+                          <VisualizerType xsi:type="TypeMapping" TypeArguments="p10:FipSignalVisualizer" />
+                        </Expression>
                         <Expression xsi:type="gui:TableLayoutPanelBuilder">
                           <gui:Name>Activity</gui:Name>
                           <gui:Enabled>true</gui:Enabled>
@@ -2941,6 +2893,7 @@ Seconds as Seconds)</scr:Expression>
                           <gui:RowStyles />
                           <gui:CellSpans />
                         </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
                       </Nodes>
                       <Edges>
                         <Edge From="0" To="1" Label="Source1" />
@@ -2954,18 +2907,37 @@ Seconds as Seconds)</scr:Expression>
                         <Edge From="9" To="10" Label="Source1" />
                         <Edge From="10" To="11" Label="Source1" />
                         <Edge From="11" To="12" Label="Source1" />
-                        <Edge From="13" To="14" Label="Source1" />
+                        <Edge From="13" To="16" Label="Source1" />
                         <Edge From="14" To="15" Label="Source1" />
-                        <Edge From="15" To="22" Label="Source1" />
+                        <Edge From="15" To="16" Label="Source2" />
                         <Edge From="16" To="17" Label="Source1" />
-                        <Edge From="17" To="18" Label="Source1" />
-                        <Edge From="18" To="22" Label="Source2" />
+                        <Edge From="17" To="28" Label="Source1" />
+                        <Edge From="18" To="21" Label="Source1" />
                         <Edge From="19" To="20" Label="Source1" />
-                        <Edge From="20" To="21" Label="Source1" />
-                        <Edge From="21" To="22" Label="Source3" />
+                        <Edge From="20" To="21" Label="Source2" />
+                        <Edge From="21" To="22" Label="Source1" />
+                        <Edge From="22" To="28" Label="Source2" />
+                        <Edge From="23" To="26" Label="Source1" />
+                        <Edge From="24" To="25" Label="Source1" />
+                        <Edge From="25" To="26" Label="Source2" />
+                        <Edge From="26" To="27" Label="Source1" />
+                        <Edge From="27" To="28" Label="Source3" />
+                        <Edge From="28" To="29" Label="Source1" />
                       </Edges>
                     </Workflow>
                   </Expression>
+                  <Expression xsi:type="VisualizerMapping" />
+                  <Expression xsi:type="gui:TableLayoutPanelBuilder">
+                    <gui:Name>FipVisualizer</gui:Name>
+                    <gui:Enabled>true</gui:Enabled>
+                    <gui:Visible>true</gui:Visible>
+                    <gui:ColumnCount>1</gui:ColumnCount>
+                    <gui:RowCount>2</gui:RowCount>
+                    <gui:ColumnStyles />
+                    <gui:RowStyles />
+                    <gui:CellSpans />
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
                 </Nodes>
                 <Edges>
                   <Edge From="0" To="1" Label="Source1" />
@@ -2990,7 +2962,11 @@ Seconds as Seconds)</scr:Expression>
                   <Edge From="19" To="20" Label="Source1" />
                   <Edge From="20" To="21" Label="Source4" />
                   <Edge From="21" To="22" Label="Source1" />
+                  <Edge From="22" To="26" Label="Source1" />
                   <Edge From="23" To="24" Label="Source1" />
+                  <Edge From="24" To="25" Label="Source1" />
+                  <Edge From="25" To="26" Label="Source2" />
+                  <Edge From="26" To="27" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>

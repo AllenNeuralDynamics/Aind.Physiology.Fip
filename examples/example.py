@@ -1,6 +1,7 @@
 import datetime
 import os
 
+from aind_behavior_services.rig.harp import HarpCuttlefishfip
 from aind_behavior_services.session import AindBehaviorSessionModel
 
 import aind_physiology_fip.task_logic as task_logic
@@ -15,8 +16,6 @@ from aind_physiology_fip.rig import (
     Ports,
     RoiSettings,
 )
-
-from aind_behavior_services.rig.harp import HarpCuttlefishfip
 
 
 def mock_session() -> AindBehaviorSessionModel:

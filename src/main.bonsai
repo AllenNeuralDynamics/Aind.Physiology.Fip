@@ -14,9 +14,9 @@
                  xmlns:spk="clr-namespace:Bonsai.Spinnaker;assembly=Bonsai.Spinnaker"
                  xmlns:harp="clr-namespace:Bonsai.Harp;assembly=Bonsai.Harp"
                  xmlns:p8="clr-namespace:AllenNeuralDynamics.CuttlefishFip;assembly=AllenNeuralDynamics.CuttlefishFip"
+                 xmlns:p9="clr-namespace:;assembly=Extensions"
                  xmlns:zmq="clr-namespace:Bonsai.ZeroMQ;assembly=Bonsai.ZeroMQ"
-                 xmlns:p9="clr-namespace:NetMQ;assembly=NetMQ"
-                 xmlns:p10="clr-namespace:;assembly=Extensions"
+                 xmlns:p10="clr-namespace:NetMQ;assembly=NetMQ"
                  xmlns:scr="clr-namespace:Bonsai.Scripting.Expressions;assembly=Bonsai.Scripting.Expressions"
                  xmlns:p11="clr-namespace:AllenNeuralDynamics.Core;assembly=AllenNeuralDynamics.Core"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
@@ -444,6 +444,11 @@
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="p9:FlipInPlace">
+                      <p9:FlipMode>Horizontal</p9:FlipMode>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
                     <Combinator xsi:type="p7:ToFipFrame">
                       <p7:CameraSource>Red</p7:CameraSource>
                     </Combinator>
@@ -560,7 +565,7 @@
                   <Edge From="18" To="19" Label="Source1" />
                   <Edge From="19" To="20" Label="Source2" />
                   <Edge From="20" To="21" Label="Source1" />
-                  <Edge From="21" To="39" Label="Source1" />
+                  <Edge From="21" To="40" Label="Source1" />
                   <Edge From="22" To="23" Label="Source1" />
                   <Edge From="23" To="24" Label="Source1" />
                   <Edge From="24" To="28" Label="Source1" />
@@ -568,19 +573,20 @@
                   <Edge From="26" To="27" Label="Source1" />
                   <Edge From="27" To="28" Label="Source2" />
                   <Edge From="28" To="29" Label="Source1" />
-                  <Edge From="29" To="37" Label="Source1" />
-                  <Edge From="30" To="31" Label="Source1" />
+                  <Edge From="29" To="30" Label="Source1" />
+                  <Edge From="30" To="38" Label="Source1" />
                   <Edge From="31" To="32" Label="Source1" />
                   <Edge From="32" To="33" Label="Source1" />
-                  <Edge From="32" To="35" Label="Source2" />
                   <Edge From="33" To="34" Label="Source1" />
+                  <Edge From="33" To="36" Label="Source2" />
                   <Edge From="34" To="35" Label="Source1" />
                   <Edge From="35" To="36" Label="Source1" />
-                  <Edge From="36" To="37" Label="Source2" />
-                  <Edge From="37" To="38" Label="Source1" />
-                  <Edge From="38" To="39" Label="Source2" />
-                  <Edge From="39" To="40" Label="Source1" />
+                  <Edge From="36" To="37" Label="Source1" />
+                  <Edge From="37" To="38" Label="Source2" />
+                  <Edge From="38" To="39" Label="Source1" />
+                  <Edge From="39" To="40" Label="Source2" />
                   <Edge From="40" To="41" Label="Source1" />
+                  <Edge From="41" To="42" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -707,7 +713,7 @@
                   <Expression xsi:type="rx:PublishSubject">
                     <Name>SocketResponse</Name>
                   </Expression>
-                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p9:NetMQMessage">
+                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p10:NetMQMessage">
                     <rx:Name>SocketRequest</rx:Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
@@ -751,7 +757,7 @@
                     <Selector>LightSourceUv</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p10:CreateTaskFromLightSource" />
+                    <Combinator xsi:type="p9:CreateTaskFromLightSource" />
                   </Expression>
                   <Expression xsi:type="PropertySource" TypeArguments="p7:ToFipFrame,p7:FipCameraSource">
                     <MemberName>CameraSource</MemberName>
@@ -767,7 +773,7 @@
                     <Selector>LightSourceBlue</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p10:CreateTaskFromLightSource" />
+                    <Combinator xsi:type="p9:CreateTaskFromLightSource" />
                   </Expression>
                   <Expression xsi:type="PropertySource" TypeArguments="p7:ToFipFrame,p7:FipCameraSource">
                     <MemberName>CameraSource</MemberName>
@@ -783,7 +789,7 @@
                     <Selector>LightSourceLime</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p10:CreateTaskFromLightSource" />
+                    <Combinator xsi:type="p9:CreateTaskFromLightSource" />
                   </Expression>
                   <Expression xsi:type="PropertySource" TypeArguments="p7:ToFipFrame,p7:FipCameraSource">
                     <MemberName>CameraSource</MemberName>
@@ -1557,8 +1563,8 @@
               <Combinator xsi:type="harp:CreateTimestamped" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p10:ModifyFipCameraSource">
-                <p10:Source>Iso</p10:Source>
+              <Combinator xsi:type="p9:ModifyFipCameraSource">
+                <p9:Source>Iso</p9:Source>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -1657,8 +1663,8 @@
               <Combinator xsi:type="harp:CreateTimestamped" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p10:ModifyFipCameraSource">
-                <p10:Source>Green</p10:Source>
+              <Combinator xsi:type="p9:ModifyFipCameraSource">
+                <p9:Source>Green</p9:Source>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -1757,8 +1763,8 @@
               <Combinator xsi:type="harp:CreateTimestamped" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p10:ModifyFipCameraSource">
-                <p10:Source>Red</p10:Source>
+              <Combinator xsi:type="p9:ModifyFipCameraSource">
+                <p9:Source>Red</p9:Source>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -3243,45 +3249,45 @@
                           </PropertyMappings>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p10:SelectCircles">
-                            <p10:Circles>
-                              <p10:Circle>
-                                <p10:Center>
-                                  <p10:X>10</p10:X>
-                                  <p10:Y>10</p10:Y>
-                                </p10:Center>
-                                <p10:Radius>10</p10:Radius>
-                              </p10:Circle>
-                              <p10:Circle>
-                                <p10:Center>
-                                  <p10:X>50</p10:X>
-                                  <p10:Y>50</p10:Y>
-                                </p10:Center>
-                                <p10:Radius>20</p10:Radius>
-                              </p10:Circle>
-                              <p10:Circle>
-                                <p10:Center>
-                                  <p10:X>50</p10:X>
-                                  <p10:Y>150</p10:Y>
-                                </p10:Center>
-                                <p10:Radius>20</p10:Radius>
-                              </p10:Circle>
-                              <p10:Circle>
-                                <p10:Center>
-                                  <p10:X>150</p10:X>
-                                  <p10:Y>50</p10:Y>
-                                </p10:Center>
-                                <p10:Radius>20</p10:Radius>
-                              </p10:Circle>
-                              <p10:Circle>
-                                <p10:Center>
-                                  <p10:X>150</p10:X>
-                                  <p10:Y>150</p10:Y>
-                                </p10:Center>
-                                <p10:Radius>20</p10:Radius>
-                              </p10:Circle>
-                            </p10:Circles>
-                            <p10:Refresh>false</p10:Refresh>
+                          <Combinator xsi:type="p9:SelectCircles">
+                            <p9:Circles>
+                              <p9:Circle>
+                                <p9:Center>
+                                  <p9:X>10</p9:X>
+                                  <p9:Y>10</p9:Y>
+                                </p9:Center>
+                                <p9:Radius>10</p9:Radius>
+                              </p9:Circle>
+                              <p9:Circle>
+                                <p9:Center>
+                                  <p9:X>50</p9:X>
+                                  <p9:Y>50</p9:Y>
+                                </p9:Center>
+                                <p9:Radius>20</p9:Radius>
+                              </p9:Circle>
+                              <p9:Circle>
+                                <p9:Center>
+                                  <p9:X>50</p9:X>
+                                  <p9:Y>150</p9:Y>
+                                </p9:Center>
+                                <p9:Radius>20</p9:Radius>
+                              </p9:Circle>
+                              <p9:Circle>
+                                <p9:Center>
+                                  <p9:X>150</p9:X>
+                                  <p9:Y>50</p9:Y>
+                                </p9:Center>
+                                <p9:Radius>20</p9:Radius>
+                              </p9:Circle>
+                              <p9:Circle>
+                                <p9:Center>
+                                  <p9:X>150</p9:X>
+                                  <p9:Y>150</p9:Y>
+                                </p9:Center>
+                                <p9:Radius>20</p9:Radius>
+                              </p9:Circle>
+                            </p9:Circles>
+                            <p9:Refresh>false</p9:Refresh>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="rx:Sink">
@@ -3359,45 +3365,45 @@
                           </PropertyMappings>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p10:SelectCircles">
-                            <p10:Circles>
-                              <p10:Circle>
-                                <p10:Center>
-                                  <p10:X>10</p10:X>
-                                  <p10:Y>10</p10:Y>
-                                </p10:Center>
-                                <p10:Radius>10</p10:Radius>
-                              </p10:Circle>
-                              <p10:Circle>
-                                <p10:Center>
-                                  <p10:X>50</p10:X>
-                                  <p10:Y>50</p10:Y>
-                                </p10:Center>
-                                <p10:Radius>20</p10:Radius>
-                              </p10:Circle>
-                              <p10:Circle>
-                                <p10:Center>
-                                  <p10:X>50</p10:X>
-                                  <p10:Y>150</p10:Y>
-                                </p10:Center>
-                                <p10:Radius>20</p10:Radius>
-                              </p10:Circle>
-                              <p10:Circle>
-                                <p10:Center>
-                                  <p10:X>150</p10:X>
-                                  <p10:Y>50</p10:Y>
-                                </p10:Center>
-                                <p10:Radius>20</p10:Radius>
-                              </p10:Circle>
-                              <p10:Circle>
-                                <p10:Center>
-                                  <p10:X>150</p10:X>
-                                  <p10:Y>150</p10:Y>
-                                </p10:Center>
-                                <p10:Radius>20</p10:Radius>
-                              </p10:Circle>
-                            </p10:Circles>
-                            <p10:Refresh>false</p10:Refresh>
+                          <Combinator xsi:type="p9:SelectCircles">
+                            <p9:Circles>
+                              <p9:Circle>
+                                <p9:Center>
+                                  <p9:X>10</p9:X>
+                                  <p9:Y>10</p9:Y>
+                                </p9:Center>
+                                <p9:Radius>10</p9:Radius>
+                              </p9:Circle>
+                              <p9:Circle>
+                                <p9:Center>
+                                  <p9:X>50</p9:X>
+                                  <p9:Y>50</p9:Y>
+                                </p9:Center>
+                                <p9:Radius>20</p9:Radius>
+                              </p9:Circle>
+                              <p9:Circle>
+                                <p9:Center>
+                                  <p9:X>50</p9:X>
+                                  <p9:Y>150</p9:Y>
+                                </p9:Center>
+                                <p9:Radius>20</p9:Radius>
+                              </p9:Circle>
+                              <p9:Circle>
+                                <p9:Center>
+                                  <p9:X>150</p9:X>
+                                  <p9:Y>50</p9:Y>
+                                </p9:Center>
+                                <p9:Radius>20</p9:Radius>
+                              </p9:Circle>
+                              <p9:Circle>
+                                <p9:Center>
+                                  <p9:X>150</p9:X>
+                                  <p9:Y>150</p9:Y>
+                                </p9:Center>
+                                <p9:Radius>20</p9:Radius>
+                              </p9:Circle>
+                            </p9:Circles>
+                            <p9:Refresh>false</p9:Refresh>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="rx:Sink">
@@ -3600,15 +3606,15 @@
                   <Expression xsi:type="rx:BehaviorSubject">
                     <Name>Power</Name>
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p10:ModifyFipCameraSource,p7:FipCameraSource">
+                  <Expression xsi:type="PropertySource" TypeArguments="p9:ModifyFipCameraSource,p7:FipCameraSource">
                     <MemberName>Source</MemberName>
                     <Value>Iso</Value>
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p10:ModifyFipCameraSource,p7:FipCameraSource">
+                  <Expression xsi:type="PropertySource" TypeArguments="p9:ModifyFipCameraSource,p7:FipCameraSource">
                     <MemberName>Source</MemberName>
                     <Value>Green</Value>
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p10:ModifyFipCameraSource,p7:FipCameraSource">
+                  <Expression xsi:type="PropertySource" TypeArguments="p9:ModifyFipCameraSource,p7:FipCameraSource">
                     <MemberName>Source</MemberName>
                     <Value>Red</Value>
                   </Expression>
@@ -3992,19 +3998,19 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p10:FipSignalVisualizerSource">
-                      <p10:Capacity>10</p10:Capacity>
-                      <p10:Color>
-                        <p10:Val0>255</p10:Val0>
-                        <p10:Val1>0</p10:Val1>
-                        <p10:Val2>0</p10:Val2>
-                        <p10:Val3>255</p10:Val3>
-                      </p10:Color>
-                      <p10:Title>Isosbestic</p10:Title>
+                    <Combinator xsi:type="p9:FipSignalVisualizerSource">
+                      <p9:Capacity>10</p9:Capacity>
+                      <p9:Color>
+                        <p9:Val0>255</p9:Val0>
+                        <p9:Val1>0</p9:Val1>
+                        <p9:Val2>0</p9:Val2>
+                        <p9:Val3>255</p9:Val3>
+                      </p9:Color>
+                      <p9:Title>Isosbestic</p9:Title>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="VisualizerMapping">
-                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p10:FipSignalVisualizer" />
+                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p9:FipSignalVisualizer" />
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>GreenActivity</Name>
@@ -4018,19 +4024,19 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p10:FipSignalVisualizerSource">
-                      <p10:Capacity>10</p10:Capacity>
-                      <p10:Color>
-                        <p10:Val0>0</p10:Val0>
-                        <p10:Val1>255</p10:Val1>
-                        <p10:Val2>0</p10:Val2>
-                        <p10:Val3>255</p10:Val3>
-                      </p10:Color>
-                      <p10:Title>Green</p10:Title>
+                    <Combinator xsi:type="p9:FipSignalVisualizerSource">
+                      <p9:Capacity>10</p9:Capacity>
+                      <p9:Color>
+                        <p9:Val0>0</p9:Val0>
+                        <p9:Val1>255</p9:Val1>
+                        <p9:Val2>0</p9:Val2>
+                        <p9:Val3>255</p9:Val3>
+                      </p9:Color>
+                      <p9:Title>Green</p9:Title>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="VisualizerMapping">
-                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p10:FipSignalVisualizer" />
+                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p9:FipSignalVisualizer" />
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>RedActivity</Name>
@@ -4044,19 +4050,19 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p10:FipSignalVisualizerSource">
-                      <p10:Capacity>10</p10:Capacity>
-                      <p10:Color>
-                        <p10:Val0>0</p10:Val0>
-                        <p10:Val1>0</p10:Val1>
-                        <p10:Val2>255</p10:Val2>
-                        <p10:Val3>255</p10:Val3>
-                      </p10:Color>
-                      <p10:Title>Red</p10:Title>
+                    <Combinator xsi:type="p9:FipSignalVisualizerSource">
+                      <p9:Capacity>10</p9:Capacity>
+                      <p9:Color>
+                        <p9:Val0>0</p9:Val0>
+                        <p9:Val1>0</p9:Val1>
+                        <p9:Val2>255</p9:Val2>
+                        <p9:Val3>255</p9:Val3>
+                      </p9:Color>
+                      <p9:Title>Red</p9:Title>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="VisualizerMapping">
-                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p10:FipSignalVisualizer" />
+                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p9:FipSignalVisualizer" />
                   </Expression>
                   <Expression xsi:type="gui:TableLayoutPanelBuilder">
                     <gui:Name>Activity</gui:Name>

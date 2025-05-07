@@ -60,16 +60,16 @@ namespace FipExtensions
             camera.PixelFormat.Value = PixelFormatEnums.Mono16.ToString();
             camera.AdcBitDepth.Value = AdcBitDepthEnums.Bit10.ToString();
 
-            SetRegionOfInterest(camera, new Rect(0, 0, width, height));
+            SetRegionOfInterest(camera, new Rect(Offset.X, Offset.Y, width, height));
 
             base.Configure(camera);
         }
 
-        private void SetRegionOfInterest(IManagedCamera camera, Rect rect)
+        private static void SetRegionOfInterest(IManagedCamera camera, Rect crop)
         {
-            if ((rect.Height == 0) || (rect.Width == 0))
+            if ((crop.Height == 0) || (crop.Width == 0))
             {
-                if (rect.X != 0 || rect.Y != 0 || rect.Height != 0 || rect.Width != 0)
+                if (crop.X != 0 || crop.Y != 0 || crop.Height != 0 || crop.Width != 0)
                 {
                     throw new InvalidOperationException("If Height or Width is 0, all size arguments must be 0.");
                 }
@@ -80,10 +80,10 @@ namespace FipExtensions
             }
             else
             {
-                camera.Width.Value = rect.Width;
-                camera.Height.Value = rect.Height;
-                camera.OffsetX.Value = rect.X;
-                camera.OffsetY.Value = rect.Y;
+                camera.Width.Value = crop.Width;
+                camera.Height.Value = crop.Height;
+                camera.OffsetX.Value = crop.X;
+                camera.OffsetY.Value = crop.Y;
             }
         }
     }

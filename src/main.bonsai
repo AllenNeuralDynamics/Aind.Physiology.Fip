@@ -444,13 +444,13 @@
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p9:FlipInPlace">
-                      <p9:FlipMode>Horizontal</p9:FlipMode>
+                    <Combinator xsi:type="p7:ToFipFrame">
+                      <p7:CameraSource>Red</p7:CameraSource>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p7:ToFipFrame">
-                      <p7:CameraSource>Red</p7:CameraSource>
+                    <Combinator xsi:type="p9:FlipInPlace">
+                      <p9:FlipMode>Horizontal</p9:FlipMode>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">

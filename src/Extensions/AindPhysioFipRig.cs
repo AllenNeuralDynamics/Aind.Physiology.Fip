@@ -315,11 +315,11 @@ namespace AindPhysiologyFip.Rig
     public partial class FipTask
     {
     
-        private int _delta1 = 15350;
+        private int _delta1 = 15650;
     
         private int _delta2 = 666;
     
-        private int _delta3 = 600;
+        private int _delta3 = 300;
     
         private int _delta4 = 50;
     

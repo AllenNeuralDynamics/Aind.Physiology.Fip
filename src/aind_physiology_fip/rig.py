@@ -71,9 +71,9 @@ class Ports(IntFlag):
 
 
 class FipTask(BaseModel):
-    delta_1: int = Field(default=15350, ge=0, description="Delta 1 (us)")
+    delta_1: int = Field(default=15650, ge=0, description="Delta 1 (us)")
     delta_2: int = Field(default=666, ge=0, description="Delta 2 (us)")
-    delta_3: int = Field(default=600, ge=0, description="Delta 3 (us)")
+    delta_3: int = Field(default=300, ge=0, description="Delta 3 (us)")
     delta_4: int = Field(default=50, ge=0, description="Delta 4 (us)")
     light_source_port: Ports = Field(description="Port that triggers the light source.")
     camera_port: Ports = Field(description="Port that triggers the camera.")

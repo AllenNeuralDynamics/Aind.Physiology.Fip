@@ -88,7 +88,7 @@
     "FipTask": {
       "properties": {
         "delta_1": {
-          "default": 15350,
+          "default": 15650,
           "description": "Delta 1 (us)",
           "minimum": 0,
           "title": "Delta 1",
@@ -102,7 +102,7 @@
           "type": "integer"
         },
         "delta_3": {
-          "default": 600,
+          "default": 300,
           "description": "Delta 3 (us)",
           "minimum": 0,
           "title": "Delta 3",

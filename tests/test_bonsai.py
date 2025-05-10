@@ -26,7 +26,6 @@ class BonsaiTests(unittest.TestCase):
         models_to_test = [
             TestModel(bonsai_property="SessionPath", json_root=JSON_ROOT, model=AindBehaviorSessionModel),
             TestModel(bonsai_property="RigPath", json_root=JSON_ROOT, model=AindPhysioFipRig),
-            TestModel(bonsai_property="TaskLogicPath", json_root=JSON_ROOT, model=AindPhysioFipTaskLogic),
         ]
 
         workflow_props = {

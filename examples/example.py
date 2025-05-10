@@ -4,7 +4,6 @@ import os
 from aind_behavior_services.rig.harp import HarpCuttlefishfip
 from aind_behavior_services.session import AindBehaviorSessionModel
 
-import aind_physiology_fip.task_logic as task_logic
 from aind_physiology_fip.rig import (
     AindPhysioFipRig,
     FipCamera,
@@ -69,18 +68,13 @@ def mock_rig() -> AindPhysioFipRig:
     )
 
 
-def mock_task_logic() -> task_logic.AindPhysioFipTaskLogic:
-    return task_logic.AindPhysioFipTaskLogic()
-
-
 def main(path_seed: str = "./local/{schema}.json"):
     example_session = mock_session()
     example_rig = mock_rig()
-    example_task_logic = mock_task_logic()
 
     os.makedirs(os.path.dirname(path_seed), exist_ok=True)
 
-    for model in [example_task_logic, example_session, example_rig]:
+    for model in [example_session, example_rig]:
         with open(path_seed.format(schema=model.__class__.__name__), "w", encoding="utf-8") as f:
             f.write(model.model_dump_json(indent=2))
 

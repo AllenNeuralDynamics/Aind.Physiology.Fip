@@ -1,6 +1,10 @@
 # FIP_DAQ_Control
 
+![CI](https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/actions/workflows/ci.yml/badge.svg)
+<!-- [![PyPI - Version](https://img.shields.io/pypi/v/aind-behavior-experiment-launcher)](https://pypi.org/project/aind_physiology_fip/) -->
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
+[![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 For FIP photometry data acquisition and hardware control.
 
@@ -76,6 +80,19 @@ This cycling occurs at 60 Hz, allowing near-simultaneous measurement of multiple
 
 3. Copy paste 4 CSV files in the LocalDependency folder to Users\svc_aind_behavior\Documents\FIPSettings and change the CameraSerial based on FLIR cameras used in the rig.
 
+### Deployment
+
+[Deployment instructions can be found here](https://github.com/AllenNeuralDynamics/Aind.Behavior.Services?tab=readme-ov-file#deployment).
+
+
+### Prerequisites
+
+[Pre-requisites for running the project can be found here](https://github.com/AllenNeuralDynamics/Aind.Behavior.Services?tab=readme-ov-file#prerequisites).
+
+
 ## Contributing
-Describe how other software developers can contribute to the codebase.
+
+## Regenerating schemas
+
+Instructions for regenerating schemas can be found [here](https://github.com/AllenNeuralDynamics/Aind.Behavior.Services?tab=readme-ov-file#regenerating-schemas).
 

@@ -1,0 +1,75 @@
+{
+  "definitions": {
+    "AindPhysioFipParameters": {
+      "additionalProperties": true,
+      "properties": {
+        "rng_seed": {
+          "default": null,
+          "description": "Seed of the random number generator",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rng Seed"
+        },
+        "aind_behavior_services_pkg_version": {
+          "default": "0.10.2",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "title": "aind_behavior_services package version",
+          "type": "string"
+        }
+      },
+      "title": "AindPhysioFipParameters",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Olfactometer operation control model that is used to run a calibration data acquisition workflow",
+  "properties": {
+    "name": {
+      "const": "AindPhysiologyFip",
+      "default": "AindPhysiologyFip",
+      "title": "Name of the task logic",
+      "type": "string"
+    },
+    "description": {
+      "default": "",
+      "description": "Description of the task.",
+      "title": "Description",
+      "type": "string"
+    },
+    "task_parameters": {
+      "$ref": "#/definitions/AindPhysioFipParameters",
+      "default": {
+        "rng_seed": null,
+        "aind_behavior_services_pkg_version": "0.10.2"
+      },
+      "title": "Task parameters"
+    },
+    "version": {
+      "const": "0.1.0",
+      "default": "0.1.0",
+      "title": "Version",
+      "type": "string"
+    },
+    "stage_name": {
+      "default": null,
+      "description": "Optional stage name the `Task` object instance represents.",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Stage Name"
+    }
+  },
+  "title": "AindPhysioFipTaskLogic",
+  "type": "object"
+}

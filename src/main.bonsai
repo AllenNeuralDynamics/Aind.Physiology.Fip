@@ -4504,6 +4504,19 @@ Item4 as CpuTime)</scr:Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Merge" />
                   </Expression>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>CurrentCombinedRoi</Name>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="p2:SerializeToJson" />
+                  </Expression>
+                  <Expression xsi:type="IncludeWorkflow" Path="AllenNeuralDynamics.Core:LogAllText.bonsai">
+                    <SubjectName>LoggingRootPath</SubjectName>
+                    <Modality>Behavior</Modality>
+                    <DeviceName xsi:nil="true" />
+                    <LogName>regions</LogName>
+                    <Extension>json</Extension>
+                  </Expression>
                   <Expression xsi:type="GroupWorkflow">
                     <Name>SoftwareEvents</Name>
                     <Workflow>
@@ -4589,6 +4602,8 @@ Item4 as CpuTime)</scr:Expression>
                   <Edge From="10" To="11" Label="Source1" />
                   <Edge From="12" To="13" Label="Source1" />
                   <Edge From="13" To="14" Label="Source1" />
+                  <Edge From="15" To="16" Label="Source1" />
+                  <Edge From="16" To="17" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>

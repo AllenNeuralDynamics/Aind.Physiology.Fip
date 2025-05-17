@@ -102,7 +102,7 @@ namespace FipExtensions
                 {
                     for (int i = 1; i < nRegions; i++)
                     {
-                        columns.Add("Region" + i.ToString(CultureInfo.InvariantCulture));
+                        columns.Add("Fiber_" + (i - 1).ToString(CultureInfo.InvariantCulture));
                     }
                 }
                 var header = string.Join(",", columns);

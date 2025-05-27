@@ -18,7 +18,7 @@ classifiers = [
 ]
 
 dependencies = [
-"aind_behavior_services @ git+https://github.com/AllenNeuralDynamics/Aind.Behavior.Services@main",
+    "aind_behavior_services<0.12",
 ]
 
 [project.urls]
@@ -29,10 +29,7 @@ Changelog = "https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/releases
 
 [project.optional-dependencies]
 
-launcher = ["aind_behavior_experiment_launcher[aind-services]"]
-
 dev = [
-    "aind_physiology_fip[launcher]",
     "ruff",
     "codespell"
 ]

@@ -40,7 +40,7 @@ namespace FipExtensions
             {
                 var fipCsv = fipCsvWriter.Process(ps);
                 var fipMatrix = fipMatrixWriter.Process(ps.Select(v => v.Value.FipFrame.Image.GetMat())).IgnoreElements().Cast<Timestamped<CircleActivityCollection>>();
-                var fipMetadata = ps.Take(1).Do(f => File.WriteAllText(filePath + ".meta", f.Value.FipFrame.Image.ToString())).IgnoreElements();
+                var fipMetadata = ps.Take(1).Do(f => File.WriteAllText(filePath + "_meta.json", f.Value.FipFrame.Image.ToString())).IgnoreElements();
                 return Observable.Merge(fipCsv, fipMatrix, fipMetadata);
             });
         }

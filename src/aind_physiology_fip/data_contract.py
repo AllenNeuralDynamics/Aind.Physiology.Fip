@@ -127,17 +127,17 @@ dataset = Dataset(
         ),
         csv.Csv(
             "iso",
-            reader_params=csv.CsvParams(path=Path(root) / "iso.csv"),
+            reader_params=csv.CsvParams(path=Path(root) / "iso.csv", index="ReferenceTime"),
             description="Timeseries of integrated fluorescence for iso camera channel.",
         ),
         csv.Csv(
             "camera_green_iso_metadata",
-            reader_params=csv.CsvParams(path=Path(root) / "camera_green_iso_metadata.csv"),
+            reader_params=csv.CsvParams(path=Path(root) / "camera_green_iso_metadata.csv", index="ReferenceTime"),
             description="Metadata for the camera that acquires the iso and green channels",
         ),
         csv.Csv(
             "camera_red_metadata",
-            reader_params=csv.CsvParams(path=Path(root) / "camera_red_metadata.csv"),
+            reader_params=csv.CsvParams(path=Path(root) / "camera_red_metadata.csv", index="ReferenceTime"),
             description="Metadata for the camera that acquires the red channel",
         ),
         PydanticModel(

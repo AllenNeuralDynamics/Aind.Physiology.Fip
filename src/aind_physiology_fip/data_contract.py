@@ -117,12 +117,12 @@ dataset = Dataset(
         ),
         csv.Csv(
             "green",
-            reader_params=csv.CsvParams(path=Path(root) / "green.csv"),
+            reader_params=csv.CsvParams(path=Path(root) / "green.csv", index="ReferenceTime"),
             description="Timeseries of integrated fluorescence for green camera channel.",
         ),
         csv.Csv(
             "red",
-            reader_params=csv.CsvParams(path=Path(root) / "red.csv"),
+            reader_params=csv.CsvParams(path=Path(root) / "red.csv", index="ReferenceTime"),
             description="Timeseries of integrated fluorescence for red camera channel.",
         ),
         csv.Csv(

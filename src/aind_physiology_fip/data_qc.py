@@ -1,3 +1,4 @@
+import re
 import secrets
 import typing as t
 
@@ -70,14 +71,20 @@ class FipChannelTestSuite(Suite):
 
 class FipChannelSignalTestSuite(Suite):
     _reg_exp_ = r"Fiber_\d+"
-    cmos_floor_limit = 265
 
     def __init__(
-        self, color_channel: contract.csv.Csv, *, channel_name: t.Optional[t.Literal["green", "iso", "red"]] = None
+        self,
+        color_channel: contract.csv.Csv,
+        *,
+        channel_name: t.Optional[t.Literal["green", "iso", "red"]] = None,
+        sudden_change_limit: int = 2000,
+        cmos_floor_limit: int = 265,
     ) -> None:
         self.channel_name = channel_name or color_channel.name
         self.background_ch = color_channel.data["Background"]
         self.data = color_channel.data
+        self.sudden_change_limit = sudden_change_limit
+        self.cmos_floor_limit = cmos_floor_limit
 
     def test_sensor_floor(self):
         fig, sensor_floor = plot_sensor_floor(self.background_ch, self.channel_name)
@@ -85,21 +92,36 @@ class FipChannelSignalTestSuite(Suite):
 
         if sensor_floor > self.cmos_floor_limit:
             return self.fail_test(
-                sensor_floor,
+                False,
                 f"Sensor floor value {sensor_floor} exceeds the limit of {self.cmos_floor_limit}.",
                 context=fig,
             )
         else:
             return self.pass_test(
-                sensor_floor,
-                f"Sensor floor value {sensor_floor} is within the acceptable range.",
+                True,
+                f"Sensor floor value {sensor_floor} is within the acceptable range of {self.cmos_floor_limit}.",
                 context=fig,
             )
 
     def test_has_nans(self):
         if (nan_count := self.data.isna().sum().sum()) > 0:
-            return self.fail_test(None, f"Data contains {nan_count} NaNs.")
-        return self.pass_test(None, "Data does not contain NaNs.")
+            return self.fail_test(False, f"Data contains {nan_count} NaNs.")
+        return self.pass_test(True, "Data does not contain NaNs.")
+
+    def test_sudden_changes(self):
+        data_cols = [col for col in self.data.columns if re.match(self._reg_exp_, col)]
+        for ch in data_cols:
+            ch_data = self.data[ch]
+            if (sudden_changes := np.sum(np.abs(np.diff(ch_data)) > 1000)) > 0:
+                yield self.fail_test(
+                    False,
+                    f"Detected {sudden_changes} sudden changes in channel {ch}.",
+                )
+            else:
+                yield self.pass_test(
+                    True,
+                    f"No sudden changes detected in channel {ch}.",
+                )
 
 
 class FipAcquisitionTestSuite(Suite):
@@ -116,16 +138,16 @@ class FipAcquisitionTestSuite(Suite):
 
         if green_size != iso_size or green_size != red_size:
             return self.fail_test(
-                None,
+                False,
                 f"Channel sizes do not match: GreenCh: {green_size}, IsoCh: {iso_size}, RedCh: {red_size}",
             )
-        return self.pass_test(None, "All channels have the same number of frames and overal shape.")
+        return self.pass_test(True, "All channels have the same number of frames and overal shape.")
 
     def test_is_data_longer_than_15_minutes(self):
         total_seconds = self.green_ch.data.index.values[-1] - self.green_ch.data.index.values[0]
         if total_seconds < 15 * 60:
-            return self.fail_test(total_seconds, f"Data is shorter than 15 minutes: {total_seconds / 60:.2f} minutes.")
-        return self.pass_test(total_seconds, f"Data is longer than 15 minutes: {total_seconds / 60:.2f} minutes.")
+            return self.fail_test(False, f"Data is shorter than 15 minutes: {total_seconds / 60:.2f} minutes.")
+        return self.pass_test(True, f"Data is longer than 15 minutes: {total_seconds / 60:.2f} minutes.")
 
 
 runner = Runner()

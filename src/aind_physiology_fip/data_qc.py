@@ -1,6 +1,9 @@
+import secrets
 import typing as t
 
 import contraqctor.contract as contract
+import matplotlib
+import matplotlib.figure
 import numpy as np
 from contraqctor.qc import ContextExportableObj, Runner, Suite
 from contraqctor.qc.contract import ContractTestSuite
@@ -150,4 +153,12 @@ runner.add_suite(
     FipAcquisitionTestSuite(dataset),
     "Dataset tests",
 )
-runner.run_all_with_progress()
+results = runner.run_all_with_progress()
+
+for group, group_results in results.items():
+    for result in group_results:
+        if isinstance(result.context, dict):
+            asset = result.context.get("asset", None)
+            if isinstance(asset, ContextExportableObj):
+                if isinstance(asset.asset, matplotlib.figure.Figure):
+                    asset.asset.savefig(f"{result.suite_name}_{result.test_name}_{secrets.token_hex(4)}.png")

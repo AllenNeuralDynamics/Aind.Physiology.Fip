@@ -10,6 +10,7 @@ using System.Linq;
 using Bonsai.Harp;
 using Bonsai.Dsp;
 using System.Reactive.Linq;
+using OpenCV.Net;
 
 namespace FipExtensions
 {
@@ -40,9 +41,37 @@ namespace FipExtensions
             {
                 var fipCsv = fipCsvWriter.Process(ps);
                 var fipMatrix = fipMatrixWriter.Process(ps.Select(v => v.Value.FipFrame.Image.GetMat())).IgnoreElements().Cast<Timestamped<CircleActivityCollection>>();
-                var fipMetadata = ps.Take(1).Do(f => File.WriteAllText(filePath + "_meta.json", f.Value.FipFrame.Image.ToString())).IgnoreElements();
+                var fipMetadata = ps.Take(1).Do(f => File.WriteAllText(
+                    filePath + "_meta.json",
+                    ImageMetadata.FromImage(f.Value.FipFrame.Image).ToJson())).IgnoreElements();
                 return Observable.Merge(fipCsv, fipMatrix, fipMetadata);
             });
+        }
+
+        private class ImageMetadata
+        {
+            public int Width { get; set; }
+            public int Height { get; set; }
+            public int Channels { get; set; }
+            public MatrixLayout Layout { get; set; }
+            public string Depth { get; set; }
+
+            public string ToJson()
+            {
+                return Newtonsoft.Json.JsonConvert.SerializeObject(this);
+            }
+
+            public static ImageMetadata FromImage(IplImage image, MatrixLayout layout = MatrixLayout.ColumnMajor)
+            {
+                return new ImageMetadata
+                {
+                    Width = image.Width,
+                    Height = image.Height,
+                    Channels = image.Channels,
+                    Depth = image.Depth.ToString(),
+                    Layout = layout
+                };
+            }
         }
 
         class FipMatrixWriter : MatrixWriter
@@ -133,6 +162,7 @@ namespace FipExtensions
                 var line = string.Join(",", values);
                 writer.WriteLine(line);
             }
+
         }
     }
 }

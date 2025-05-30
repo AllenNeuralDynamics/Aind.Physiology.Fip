@@ -1,4 +1,3 @@
-
 import typing as t
 
 import contraqctor.contract as contract
@@ -78,21 +77,24 @@ class FipChannelSignalTestSuite(Suite):
         self.data = color_channel.data
 
     def test_sensor_floor(self):
-        fig = plot_sensor_floor(self.background_ch.values, self.channel_name)
-        self.warn_test(
-            None,
-            f"Generating sensor floor plot for channel {self.channel_name}",
-            context=ContextExportableObj.as_context(fig),
-        )
+        fig, sensor_floor = plot_sensor_floor(self.background_ch, self.channel_name)
+        fig = ContextExportableObj.as_context(fig)
 
-    def test_is_data_longer_than_15_minutes(self):
-        total_seconds = self.background_ch.index.values[-1] - self.background_ch.index.values[0]
-        if total_seconds < 15 * 60:
-            return self.fail_test(None, f"Data is shorter than 15 minutes: {total_seconds / 60:.2f} minutes.")
-        return self.pass_test(None, f"Data is longer than 15 minutes: {total_seconds / 60:.2f} minutes.")
+        if sensor_floor > self.cmos_floor_limit:
+            return self.fail_test(
+                sensor_floor,
+                f"Sensor floor value {sensor_floor} exceeds the limit of {self.cmos_floor_limit}.",
+                context=fig,
+            )
+        else:
+            return self.pass_test(
+                sensor_floor,
+                f"Sensor floor value {sensor_floor} is within the acceptable range.",
+                context=fig,
+            )
 
     def test_has_nans(self):
-        if nan_count := self.data.isna().count().sum() > 0:
+        if (nan_count := self.data.isna().sum().sum()) > 0:
             return self.fail_test(None, f"Data contains {nan_count} NaNs.")
         return self.pass_test(None, "Data does not contain NaNs.")
 
@@ -116,6 +118,12 @@ class FipAcquisitionTestSuite(Suite):
             )
         return self.pass_test(None, "All channels have the same number of frames and overal shape.")
 
+    def test_is_data_longer_than_15_minutes(self):
+        total_seconds = self.green_ch.data.index.values[-1] - self.green_ch.data.index.values[0]
+        if total_seconds < 15 * 60:
+            return self.fail_test(total_seconds, f"Data is shorter than 15 minutes: {total_seconds / 60:.2f} minutes.")
+        return self.pass_test(total_seconds, f"Data is longer than 15 minutes: {total_seconds / 60:.2f} minutes.")
+
 
 runner = Runner()
 
@@ -123,12 +131,23 @@ runner.add_suite(ContractTestSuite(dataset.load_all()), "Contract tests")
 
 for data_stream in dataset.iter_all():
     if isinstance(data_stream, contract.csv.Csv):
-        runner.add_suite(CsvTestSuite(data_stream), "Csv tests")
+        runner.add_suite(CsvTestSuite(data_stream), data_stream.name)
 
 rig = t.cast(AindPhysioFipRig, dataset["rig_input"])  # todo auto detect fps
 
-runner.add_suite(FipChannelTestSuite(dataset["green"], frame_stride=2, expected_fps=20), "Camera tests")
-runner.add_suite(FipChannelTestSuite(dataset["iso"], frame_stride=2, expected_fps=20), "Camera tests")
-runner.add_suite(FipChannelTestSuite(dataset["red"], frame_stride=1, expected_fps=20), "Camera tests")
+for color, stride in zip(
+    ["green", "iso", "red"],
+    [2, 2, 1],
+):
+    color_channel = t.cast(contract.csv.Csv, dataset[color])
+    runner.add_suite(
+        FipChannelTestSuite(color_channel, frame_stride=stride, expected_fps=20),
+        color_channel.name,
+    )
+    runner.add_suite(FipChannelSignalTestSuite(color_channel), color_channel.name)
 
+runner.add_suite(
+    FipAcquisitionTestSuite(dataset),
+    "Dataset tests",
+)
 runner.run_all_with_progress()

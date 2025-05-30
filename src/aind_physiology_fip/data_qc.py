@@ -1,18 +1,17 @@
-from pathlib import Path
 
-from contraqctor.qc import Runner, Suite
-from contraqctor.qc.contract import ContractTestSuite
-from contraqctor.qc.csv import CsvTestSuite
-import contraqctor.contract as contract
 import typing as t
 
+import contraqctor.contract as contract
 import numpy as np
+from contraqctor.qc import ContextExportableObj, Runner, Suite
+from contraqctor.qc.contract import ContractTestSuite
+from contraqctor.qc.csv import CsvTestSuite
+
+from aind_physiology_fip.data_contract import AindPhysioFipRig, dataset
+from aind_physiology_fip.data_qc_helpers import plot_sensor_floor
 
 
-from aind_physiology_fip.data_contract import dataset, AindPhysioFipRig
-
-
-class FipCameraChannelTestSuite(Suite):
+class FipChannelTestSuite(Suite):
     _expected_columns = {"ReferenceTime", "CameraFrameNumber", "CameraFrameTime"}
 
     def __init__(
@@ -67,21 +66,69 @@ class FipCameraChannelTestSuite(Suite):
         return self.pass_test(None, f"Mean frame period ({_mean}) is within expected range: {_expected}")
 
 
+class FipChannelSignalTestSuite(Suite):
+    _reg_exp_ = r"Fiber_\d+"
+    cmos_floor_limit = 265
+
+    def __init__(
+        self, color_channel: contract.csv.Csv, *, channel_name: t.Optional[t.Literal["green", "iso", "red"]] = None
+    ) -> None:
+        self.channel_name = channel_name or color_channel.name
+        self.background_ch = color_channel.data["Background"]
+        self.data = color_channel.data
+
+    def test_sensor_floor(self):
+        fig = plot_sensor_floor(self.background_ch.values, self.channel_name)
+        self.warn_test(
+            None,
+            f"Generating sensor floor plot for channel {self.channel_name}",
+            context=ContextExportableObj.as_context(fig),
+        )
+
+    def test_is_data_longer_than_15_minutes(self):
+        total_seconds = self.background_ch.index.values[-1] - self.background_ch.index.values[0]
+        if total_seconds < 15 * 60:
+            return self.fail_test(None, f"Data is shorter than 15 minutes: {total_seconds / 60:.2f} minutes.")
+        return self.pass_test(None, f"Data is longer than 15 minutes: {total_seconds / 60:.2f} minutes.")
+
+    def test_has_nans(self):
+        if nan_count := self.data.isna().count().sum() > 0:
+            return self.fail_test(None, f"Data contains {nan_count} NaNs.")
+        return self.pass_test(None, "Data does not contain NaNs.")
+
+
+class FipAcquisitionTestSuite(Suite):
+    def __init__(self, dataset: contract.Dataset) -> None:
+        self.dataset = dataset
+        self.green_ch = t.cast(contract.csv.Csv, dataset["green"])
+        self.iso_ch = t.cast(contract.csv.Csv, dataset["iso"])
+        self.red_ch = t.cast(contract.csv.Csv, dataset["red"])
+
+    def test_same_size_across_channels(self):
+        green_size = self.green_ch.data.shape[0]
+        iso_size = self.iso_ch.data.shape[0]
+        red_size = self.red_ch.data.shape[0]
+
+        if green_size != iso_size or green_size != red_size:
+            return self.fail_test(
+                None,
+                f"Channel sizes do not match: GreenCh: {green_size}, IsoCh: {iso_size}, RedCh: {red_size}",
+            )
+        return self.pass_test(None, "All channels have the same number of frames and overal shape.")
+
+
 runner = Runner()
 
 runner.add_suite(ContractTestSuite(dataset.load_all()), "Contract tests")
-
 
 for data_stream in dataset.iter_all():
     if isinstance(data_stream, contract.csv.Csv):
         runner.add_suite(CsvTestSuite(data_stream), "Csv tests")
 
-
 rig = t.cast(AindPhysioFipRig, dataset["rig_input"])  # todo auto detect fps
 
-runner.add_suite(FipCameraChannelTestSuite(dataset["green"], frame_stride=2, expected_fps=20), "Camera tests")
-runner.add_suite(FipCameraChannelTestSuite(dataset["iso"], frame_stride=2, expected_fps=20), "Camera tests")
-runner.add_suite(FipCameraChannelTestSuite(dataset["red"], frame_stride=1, expected_fps=20), "Camera tests")
-
+runner.add_suite(FipChannelTestSuite(dataset["green"], frame_stride=2, expected_fps=20), "Camera tests")
+runner.add_suite(FipChannelTestSuite(dataset["iso"], frame_stride=2, expected_fps=20), "Camera tests")
+runner.add_suite(FipChannelTestSuite(dataset["red"], frame_stride=1, expected_fps=20), "Camera tests")
 
 runner.run_all_with_progress()

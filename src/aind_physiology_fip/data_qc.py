@@ -226,10 +226,14 @@ class _QCCli(pydantic_settings.BaseSettings, cli_prog_name="data-qc", cli_kebab_
     )
 
 
-if __name__ == "__main__":
+def _cmd():
     cli = pydantic_settings.CliApp()
     parsed_args = cli.run(_QCCli)
     if not Path(parsed_args.data_path).exists():
         raise FileNotFoundError(f"Dataset path {parsed_args.data_path} does not exist.")
 
     main(dataset(parsed_args.data_path), parsed_args)  # type: ignore[arg-type]
+
+
+if __name__ == "__main__":
+    _cmd()

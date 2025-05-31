@@ -50,8 +50,7 @@ docs = [
 ]
 
 [project.scripts]
-clabe = "aind_physiology_fip.launcher:main"
-regenerate = "aind_physiology_fip.regenerate:main"
+qc = "aind_physiology_fip.data_qc:_cmd"
 
 [tool.setuptools.packages.find]
 where = ["src"]

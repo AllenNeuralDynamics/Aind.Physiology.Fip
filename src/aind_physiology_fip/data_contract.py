@@ -1,5 +1,6 @@
 import dataclasses
 import json
+import os
 import typing as t
 from pathlib import Path
 
@@ -9,8 +10,6 @@ from contraqctor.contract import Dataset, DataStream, FilePathBaseParam, csv
 from contraqctor.contract.json import PydanticModel
 
 from aind_physiology_fip.rig import AindPhysioFipRig, RoiSettings
-
-root = r"C:\Users\bruno.cruz\Desktop\test-fip\fip\fip_2025-05-28T165201Z"
 
 
 @dataclasses.dataclass
@@ -97,65 +96,70 @@ class FipRawFrame(DataStream[FipFrameReader, FipRawFrameParams]):
         )
 
 
-dataset = Dataset(
-    name="fip",
-    data_streams=[
-        FipRawFrame(
-            "raw_green",
-            reader_params=FipRawFrame.make_params(Path(root) / "green.bin"),
-            description="Green camera channel raw frames.",
-        ),
-        FipRawFrame(
-            "raw_red",
-            reader_params=FipRawFrame.make_params(Path(root) / "red.bin"),
-            description="Red camera channel raw frames.",
-        ),
-        FipRawFrame(
-            "raw_iso",
-            reader_params=FipRawFrame.make_params(Path(root) / "iso.bin"),
-            description="Iso camera channel raw frames.",
-        ),
-        csv.Csv(
-            "green",
-            reader_params=csv.CsvParams(path=Path(root) / "green.csv", index="ReferenceTime"),
-            description="Timeseries of integrated fluorescence for green camera channel.",
-        ),
-        csv.Csv(
-            "red",
-            reader_params=csv.CsvParams(path=Path(root) / "red.csv", index="ReferenceTime"),
-            description="Timeseries of integrated fluorescence for red camera channel.",
-        ),
-        csv.Csv(
-            "iso",
-            reader_params=csv.CsvParams(path=Path(root) / "iso.csv", index="ReferenceTime"),
-            description="Timeseries of integrated fluorescence for iso camera channel.",
-        ),
-        csv.Csv(
-            "camera_green_iso_metadata",
-            reader_params=csv.CsvParams(path=Path(root) / "camera_green_iso_metadata.csv", index="ReferenceTime"),
-            description="Metadata for the camera that acquires the iso and green channels",
-        ),
-        csv.Csv(
-            "camera_red_metadata",
-            reader_params=csv.CsvParams(path=Path(root) / "camera_red_metadata.csv", index="ReferenceTime"),
-            description="Metadata for the camera that acquires the red channel",
-        ),
-        PydanticModel(
-            "regions",
-            reader_params=PydanticModel.make_params(path=Path(root) / "regions.json", model=RoiSettings),
-            description="Regions of interest used to integrate fluorescence in the raw frames.",
-        ),
-        PydanticModel(
-            "session_input",
-            reader_params=PydanticModel.make_params(
-                path=Path(root) / "Logs/session_input.json", model=AindBehaviorSessionModel
+def dataset(root: os.PathLike) -> Dataset:
+    root = Path(root)
+    dataset = Dataset(
+        name="fip",
+        data_streams=[
+            FipRawFrame(
+                "raw_green",
+                reader_params=FipRawFrame.make_params(Path(root) / "green.bin"),
+                description="Green camera channel raw frames.",
             ),
-            description="Session input parameters for the FIP experiment.",
-        ),
-        PydanticModel(
-            "rig_input",
-            reader_params=PydanticModel.make_params(path=Path(root) / "Logs/rig_input.json", model=AindPhysioFipRig),
-            description="Rig input parameters for the FIP experiment.",
-        ),
-    ],
-)
+            FipRawFrame(
+                "raw_red",
+                reader_params=FipRawFrame.make_params(Path(root) / "red.bin"),
+                description="Red camera channel raw frames.",
+            ),
+            FipRawFrame(
+                "raw_iso",
+                reader_params=FipRawFrame.make_params(Path(root) / "iso.bin"),
+                description="Iso camera channel raw frames.",
+            ),
+            csv.Csv(
+                "green",
+                reader_params=csv.CsvParams(path=Path(root) / "green.csv", index="ReferenceTime"),
+                description="Timeseries of integrated fluorescence for green camera channel.",
+            ),
+            csv.Csv(
+                "red",
+                reader_params=csv.CsvParams(path=Path(root) / "red.csv", index="ReferenceTime"),
+                description="Timeseries of integrated fluorescence for red camera channel.",
+            ),
+            csv.Csv(
+                "iso",
+                reader_params=csv.CsvParams(path=Path(root) / "iso.csv", index="ReferenceTime"),
+                description="Timeseries of integrated fluorescence for iso camera channel.",
+            ),
+            csv.Csv(
+                "camera_green_iso_metadata",
+                reader_params=csv.CsvParams(path=Path(root) / "camera_green_iso_metadata.csv", index="ReferenceTime"),
+                description="Metadata for the camera that acquires the iso and green channels",
+            ),
+            csv.Csv(
+                "camera_red_metadata",
+                reader_params=csv.CsvParams(path=Path(root) / "camera_red_metadata.csv", index="ReferenceTime"),
+                description="Metadata for the camera that acquires the red channel",
+            ),
+            PydanticModel(
+                "regions",
+                reader_params=PydanticModel.make_params(path=Path(root) / "regions.json", model=RoiSettings),
+                description="Regions of interest used to integrate fluorescence in the raw frames.",
+            ),
+            PydanticModel(
+                "session_input",
+                reader_params=PydanticModel.make_params(
+                    path=Path(root) / "Logs/session_input.json", model=AindBehaviorSessionModel
+                ),
+                description="Session input parameters for the FIP experiment.",
+            ),
+            PydanticModel(
+                "rig_input",
+                reader_params=PydanticModel.make_params(
+                    path=Path(root) / "Logs/rig_input.json", model=AindPhysioFipRig
+                ),
+                description="Rig input parameters for the FIP experiment.",
+            ),
+        ],
+    )
+    return dataset

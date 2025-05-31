@@ -30,7 +30,8 @@ Changelog = "https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/releases
 [project.optional-dependencies]
 
 data = [
-    "contraqctor < 0.5.0"
+    "contraqctor < 0.5.0",
+    "pydantic_settings",
     ]
 
 dev = [

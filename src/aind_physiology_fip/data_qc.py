@@ -2,10 +2,12 @@ import re
 import secrets
 import typing as t
 from pathlib import Path
-import cv2
+
 import contraqctor.contract as contract
+import cv2
 import matplotlib
 import matplotlib.figure
+import matplotlib.pyplot as plt
 import numpy as np
 import pydantic
 import pydantic_settings
@@ -13,11 +15,9 @@ from contraqctor.qc import ContextExportableObj, Runner, Suite
 from contraqctor.qc.contract import ContractTestSuite
 from contraqctor.qc.csv import CsvTestSuite
 
-from aind_physiology_fip.data_contract import dataset, RoiSettings, FipRawFrame
-from aind_physiology_fip.rig import Circle
+from aind_physiology_fip.data_contract import FipRawFrame, RoiSettings, dataset
 from aind_physiology_fip.data_qc_helpers import plot_sensor_floor
-
-import matplotlib.pyplot as plt
+from aind_physiology_fip.rig import Circle
 
 
 class FipChannelMetadataTestSuite(Suite):

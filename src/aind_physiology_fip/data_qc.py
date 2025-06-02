@@ -2,7 +2,7 @@ import re
 import secrets
 import typing as t
 from pathlib import Path
-
+import cv2
 import contraqctor.contract as contract
 import matplotlib
 import matplotlib.figure
@@ -13,8 +13,11 @@ from contraqctor.qc import ContextExportableObj, Runner, Suite
 from contraqctor.qc.contract import ContractTestSuite
 from contraqctor.qc.csv import CsvTestSuite
 
-from aind_physiology_fip.data_contract import dataset
+from aind_physiology_fip.data_contract import dataset, RoiSettings, FipRawFrame
+from aind_physiology_fip.rig import Circle
 from aind_physiology_fip.data_qc_helpers import plot_sensor_floor
+
+import matplotlib.pyplot as plt
 
 
 class FipChannelMetadataTestSuite(Suite):
@@ -177,6 +180,112 @@ class FipAcquisitionTestSuite(Suite):
         )
 
 
+class FipRawImageTestSuite(Suite):
+    """Tests the quality of the ROI selection in the"""
+
+    def __init__(
+        self,
+        binary_raw_data: FipRawFrame,
+        color_channel: contract.csv.Csv,
+        background_region: Circle,
+        regions: t.List[Circle],
+        *,
+        cv_threshold: float = 0.05,
+    ) -> None:
+        self.raw_data = binary_raw_data
+        self.color_name = f"{color_channel.name}"
+        self.regions = regions
+        self.background_region = background_region
+        self.color_channel = color_channel
+        self.cv_threshold = cv_threshold
+
+    def test_frame_count(self):
+        frame_count = self.raw_data.data.number_of_frames
+        if frame_count != self.color_channel.data.shape[0]:
+            return self.fail_test(
+                False,
+                f"Frame count mismatch: {frame_count} frames in raw data, {self.color_channel.data.shape[0]} frames in color channel.",
+            )
+        else:
+            return self.pass_test(
+                True,
+                f"Frame count matches: {frame_count} frames in raw data and color channel.",
+            )
+
+    @staticmethod
+    def _get_pixels_in_circle(array: np.ndarray, circle: Circle) -> t.Tuple[np.ndarray, np.ndarray]:
+        h, w = array.shape[:2]
+        y, x = np.ogrid[:h, :w]
+        mask = (x - circle.center.x) ** 2 + (y - circle.center.y) ** 2 <= circle.radius**2
+        pixels_inside = array[mask]
+        return pixels_inside, mask
+
+    @staticmethod
+    def _render_roi(
+        image: np.ndarray, circle: Circle, text: str, color: t.Tuple[int, int, int] = (255, 0, 0), thickness: int = 1
+    ) -> np.ndarray:
+        """Render a circle on the image."""
+        image = cv2.circle(image, (int(circle.center.x), int(circle.center.y)), int(circle.radius), color, thickness)
+        image = cv2.putText(
+            image,
+            text,
+            (int(circle.center.x + circle.radius), int(circle.center.y + circle.radius)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (255, 255, 255),
+            2,
+        )
+        return image
+
+    def test_roi_selection(self):
+        mid_frame = self.raw_data.data.number_of_frames // 2
+        reference_image = self.raw_data.data.get_frames([mid_frame])[0]
+
+        render_image = reference_image.copy()
+
+        # Normalize to maximum intensity
+        if render_image.max() > 0:
+            render_image = (render_image / render_image.max() * 255).astype(np.uint8)
+        else:
+            render_image = render_image.astype(np.uint8)
+        render_image = cv2.cvtColor(render_image, cv2.COLOR_GRAY2RGB)
+
+        metrics = {}
+        # Background pixels
+        pixels_inside, _ = self._get_pixels_in_circle(reference_image, self.background_region)
+        cv = np.std(pixels_inside) / np.mean(pixels_inside)
+        metrics["background_cv"] = cv
+        render_image = self._render_roi(render_image, self.background_region, "B")
+
+        for i, r in enumerate(self.regions):
+            pixels_inside, _ = self._get_pixels_in_circle(reference_image, r)
+            cv = np.std(pixels_inside) / np.mean(pixels_inside)
+            render_image = self._render_roi(render_image, r, f"{i}")
+
+            metrics[f"roi_{i}_cv"] = cv
+
+        fig, ax = plt.subplots(figsize=(10, 10))
+        ax.imshow(render_image)
+        ax.set_title(f"ROI Selection for {self.color_name} Channel")
+        ax.axis("off")
+
+        context: t.Dict[str, t.Any] = ContextExportableObj.as_context(fig)
+        context["metrics"] = metrics
+
+        if any(cv > self.cv_threshold for cv in metrics.values()):
+            return self.fail_test(
+                False,
+                f"High coefficient of variation detected in ROI selection: {metrics}. (cv threshold: {self.cv_threshold})",
+                context=context,
+            )
+        else:
+            return self.pass_test(
+                True,
+                f"ROI selection is valid with coefficients of variation: {metrics}. (cv threshold: {self.cv_threshold})",
+                context=context,
+            )
+
+
 def main(dataset: contract.Dataset, args: "_QCCli") -> None:
     runner = Runner()
 
@@ -188,21 +297,27 @@ def main(dataset: contract.Dataset, args: "_QCCli") -> None:
 
     # rig = t.cast(AindPhysioFipRig, dataset["rig_input"])  # todo auto detect fps
 
-    for color, stride in zip(
-        ["green", "iso", "red"],
-        [2, 2, 1],
-    ):
+    for color, stride, roi in zip(["green", "iso", "red"], [2, 2, 1], ["green_iso", "green_iso", "red"]):
         color_channel = t.cast(contract.csv.Csv, dataset[color])
         runner.add_suite(
             FipChannelMetadataTestSuite(color_channel, frame_stride=stride, expected_fps=20),
             color_channel.name,
         )
         runner.add_suite(FipChannelSignalTestSuite(color_channel), color_channel.name)
-
+        runner.add_suite(
+            FipRawImageTestSuite(
+                t.cast(FipRawFrame, dataset[f"raw_{color}"]),
+                color_channel,
+                getattr(t.cast(RoiSettings, dataset["regions"].data), f"camera_{roi}_background"),
+                getattr(t.cast(RoiSettings, dataset["regions"].data), f"camera_{roi}_roi"),
+            ),
+            color_channel.name,
+        )
     runner.add_suite(
         FipAcquisitionTestSuite(dataset),
         "Dataset tests",
     )
+
     results = runner.run_all_with_progress()
 
     if args.asset_path:

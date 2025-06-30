@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.8.5"
+<WorkflowBuilder Version="2.9.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:p1="clr-namespace:AindPhysiologyFip.Session;assembly=Extensions"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
@@ -872,10 +872,9 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>StartExperiment</Name>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="BooleanProperty">
-                <Value>true</Value>
-              </Combinator>
+            <Expression xsi:type="PropertySource" TypeArguments="p7:CreateSetTaskStatePayload,p7:TaskState">
+              <MemberName>SetTaskState</MemberName>
+              <Value>Start</Value>
             </Expression>
             <Expression xsi:type="MulticastSubject">
               <Name>SetTaskState</Name>
@@ -1226,8 +1225,8 @@
                       <Nodes>
                         <Expression xsi:type="p7:CreateMessage">
                           <harp:MessageType>Write</harp:MessageType>
-                          <harp:Payload xsi:type="p7:CreateStartTasksPayload">
-                            <p7:StartTasks>Disabled</p7:StartTasks>
+                          <harp:Payload xsi:type="p7:CreateSetTaskStatePayload">
+                            <p7:SetTaskState>Abort</p7:SetTaskState>
                           </harp:Payload>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
@@ -1241,7 +1240,7 @@
                         <Expression xsi:type="p7:CreateMessage">
                           <harp:MessageType>Write</harp:MessageType>
                           <harp:Payload xsi:type="p7:CreateClearAllTasksPayload">
-                            <p7:ClearAllTasks>1</p7:ClearAllTasks>
+                            <p7:ClearAllTasks>Disabled</p7:ClearAllTasks>
                           </harp:Payload>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
@@ -1267,16 +1266,12 @@
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Switch" />
                   </Expression>
-                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="sys:Boolean">
+                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p7:TaskState">
                     <rx:Name>SetTaskState</rx:Name>
-                  </Expression>
-                  <Expression xsi:type="scr:ExpressionTransform">
-                    <scr:Name>boolToInt</scr:Name>
-                    <scr:Expression>it ? 1 : 0</scr:Expression>
                   </Expression>
                   <Expression xsi:type="p7:Format">
                     <harp:MessageType>Write</harp:MessageType>
-                    <harp:Register xsi:type="p7:StartTasks" />
+                    <harp:Register xsi:type="p7:SetTaskState" />
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
                     <Name>CuttlefishFipCommands</Name>
@@ -1293,7 +1288,6 @@
                   <Edge From="8" To="9" Label="Source1" />
                   <Edge From="10" To="11" Label="Source1" />
                   <Edge From="11" To="12" Label="Source1" />
-                  <Edge From="12" To="13" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -3677,10 +3671,9 @@
                             <rx:DueTime>PT0.2S</rx:DueTime>
                           </Combinator>
                         </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="BooleanProperty">
-                            <Value>true</Value>
-                          </Combinator>
+                        <Expression xsi:type="PropertySource" TypeArguments="p7:CreateSetTaskStatePayload,p7:TaskState">
+                          <MemberName>SetTaskState</MemberName>
+                          <Value>Start</Value>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
                           <Name>SetTaskState</Name>
@@ -3721,10 +3714,9 @@
                             <rx:DueTime>PT0.2S</rx:DueTime>
                           </Combinator>
                         </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="BooleanProperty">
-                            <Value>true</Value>
-                          </Combinator>
+                        <Expression xsi:type="PropertySource" TypeArguments="p7:CreateSetTaskStatePayload,p7:TaskState">
+                          <MemberName>SetTaskState</MemberName>
+                          <Value>Start</Value>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
                           <Name>SetTaskState</Name>
@@ -4642,10 +4634,9 @@ Item4 as CpuTime)</scr:Expression>
         <Name>Cleanup</Name>
         <Workflow>
           <Nodes>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="BooleanProperty">
-                <Value>false</Value>
-              </Combinator>
+            <Expression xsi:type="PropertySource" TypeArguments="p7:CreateSetTaskStatePayload,p7:TaskState">
+              <MemberName>SetTaskState</MemberName>
+              <Value>Abort</Value>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:Take">

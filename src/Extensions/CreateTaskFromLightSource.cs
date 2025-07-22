@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using AindPhysiologyFip.Rig;
+using AindPhysiologyFip;
 using MathNet.Numerics.Interpolation;
 
 [Combinator]

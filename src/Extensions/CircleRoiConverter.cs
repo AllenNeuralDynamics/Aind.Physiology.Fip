@@ -12,7 +12,7 @@ namespace FipExtensions
     [WorkflowElementCategory(ElementCategory.Transform)]
     public class RoiCircleConverter
     {
-        public IObservable<CameraSourceRoiSettings> Process(IObservable<AindPhysiologyFip.Rig.RoiSettings> source)
+        public IObservable<CameraSourceRoiSettings> Process(IObservable<AindPhysiologyFip.RoiSettings> source)
         {
             return source.Select(value =>
             {
@@ -23,11 +23,11 @@ namespace FipExtensions
             });
         }
 
-        public IObservable<AindPhysiologyFip.Rig.RoiSettings> Process(IObservable<CameraSourceRoiSettings> source)
+        public IObservable<AindPhysiologyFip.RoiSettings> Process(IObservable<CameraSourceRoiSettings> source)
         {
             return source.Select(value =>
             {
-                var settings = new AindPhysiologyFip.Rig.RoiSettings();
+                var settings = new AindPhysiologyFip.RoiSettings();
                 settings.CameraGreenIsoBackground = value.GreenIso.Length == 0 ? null : ConvertToFipCircle(value.GreenIso[0]);
                 settings.CameraGreenIsoRoi = value.GreenIso.Skip(1).Select(ConvertToFipCircle).ToList();
                 settings.CameraRedBackground = value.Red.Length == 0 ? null : ConvertToFipCircle(value.Red[0]);
@@ -36,23 +36,23 @@ namespace FipExtensions
             });
         }
 
-        public IObservable<AindPhysiologyFip.Rig.RoiSettings> Process(IObservable<Tuple<Bonsai.Vision.Circle[], Bonsai.Vision.Circle[]>> source)
+        public IObservable<AindPhysiologyFip.RoiSettings> Process(IObservable<Tuple<Bonsai.Vision.Circle[], Bonsai.Vision.Circle[]>> source)
         {
             return Process(source.Select(value => new CameraSourceRoiSettings(value.Item1, value.Item2)));
         }
 
-        private static Bonsai.Vision.Circle[] ToCircleArray(AindPhysiologyFip.Rig.RoiSettings settings, FipCameraSource cameraSource)
+        private static Bonsai.Vision.Circle[] ToCircleArray(AindPhysiologyFip.RoiSettings settings, FipCameraSource cameraSource)
         {
             switch (cameraSource)
             {
                 case FipCameraSource.Iso:
                 case FipCameraSource.Green:
-                    return new List<AindPhysiologyFip.Rig.Circle>() { settings.CameraGreenIsoBackground }
+                    return new List<AindPhysiologyFip.Circle>() { settings.CameraGreenIsoBackground }
                         .Concat(settings.CameraGreenIsoRoi)
                         .Select(circle => ConvertToBonsaiVisionCircle(circle))
                         .ToArray();
                 case FipCameraSource.Red:
-                    return new List<AindPhysiologyFip.Rig.Circle>() { settings.CameraRedBackground }
+                    return new List<AindPhysiologyFip.Circle>() { settings.CameraRedBackground }
                         .Concat(settings.CameraRedRoi)
                         .Select(circle => ConvertToBonsaiVisionCircle(circle))
                         .ToArray();
@@ -61,7 +61,7 @@ namespace FipExtensions
             }
         }
 
-        private static Bonsai.Vision.Circle ConvertToBonsaiVisionCircle(AindPhysiologyFip.Rig.Circle circle)
+        private static Bonsai.Vision.Circle ConvertToBonsaiVisionCircle(AindPhysiologyFip.Circle circle)
         {
             return new Bonsai.Vision.Circle
             {
@@ -70,11 +70,11 @@ namespace FipExtensions
             };
         }
 
-        private static AindPhysiologyFip.Rig.Circle ConvertToFipCircle(Bonsai.Vision.Circle circle)
+        private static AindPhysiologyFip.Circle ConvertToFipCircle(Bonsai.Vision.Circle circle)
         {
-            return new AindPhysiologyFip.Rig.Circle
+            return new AindPhysiologyFip.Circle
             {
-                Center = new AindPhysiologyFip.Rig.Point2f { X = circle.Center.X, Y = circle.Center.Y },
+                Center = new AindPhysiologyFip.Point2f { X = circle.Center.X, Y = circle.Center.Y },
                 Radius = circle.Radius
             };
         }

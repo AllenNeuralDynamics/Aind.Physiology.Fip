@@ -5,1003 +5,136 @@
 //----------------------
 
 
-namespace AindPhysiologyFip.Rig
+namespace AindPhysiologyFip
 {
     #pragma warning disable // Disable all warnings
 
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class BaseModel
+    public partial class AindBehaviorSessionModel
     {
     
-        public BaseModel()
-        {
-        }
+        private string _aindBehaviorServicesPkgVersion;
     
-        protected BaseModel(BaseModel other)
-        {
-        }
+        private string _version;
     
-        public System.IObservable<BaseModel> Process()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new BaseModel(this)));
-        }
+        private string _experiment;
     
-        public System.IObservable<BaseModel> Process<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new BaseModel(this));
-        }
+        private System.Collections.Generic.List<string> _experimenter;
     
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            return false;
-        }
+        private System.DateTimeOffset _date;
     
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Bonsai.CombinatorAttribute()]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class Circle
-    {
+        private string _rootPath;
     
-        private Point2f _center;
+        private string _sessionName;
     
-        private double _radius = 1D;
+        private string _subject;
     
-        public Circle()
-        {
-        }
-    
-        protected Circle(Circle other)
-        {
-            _center = other._center;
-            _radius = other._radius;
-        }
-    
-        /// <summary>
-        /// Center of the circle (px)
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("center")]
-        [System.ComponentModel.DescriptionAttribute("Center of the circle (px)")]
-        public Point2f Center
-        {
-            get
-            {
-                return _center;
-            }
-            set
-            {
-                _center = value;
-            }
-        }
-    
-        /// <summary>
-        /// Radius of the circle (px)
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("radius")]
-        [System.ComponentModel.DescriptionAttribute("Radius of the circle (px)")]
-        public double Radius
-        {
-            get
-            {
-                return _radius;
-            }
-            set
-            {
-                _radius = value;
-            }
-        }
-    
-        public System.IObservable<Circle> Process()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new Circle(this)));
-        }
-    
-        public System.IObservable<Circle> Process<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new Circle(this));
-        }
-    
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("center = " + _center + ", ");
-            stringBuilder.Append("radius = " + _radius);
-            return true;
-        }
-    
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Bonsai.CombinatorAttribute()]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class FipCamera
-    {
-    
-        private string _deviceType = "FipCamera";
-    
-        private string _deviceName;
-    
-        private BaseModel _additionalSettings;
-    
-        private BaseModel _calibration;
-    
-        private string _serialNumber;
-    
-        private double _gain = 0D;
-    
-        private Point2f _offset;
-    
-        public FipCamera()
-        {
-        }
-    
-        protected FipCamera(FipCamera other)
-        {
-            _deviceType = other._deviceType;
-            _deviceName = other._deviceName;
-            _additionalSettings = other._additionalSettings;
-            _calibration = other._calibration;
-            _serialNumber = other._serialNumber;
-            _gain = other._gain;
-            _offset = other._offset;
-        }
-    
-        [Newtonsoft.Json.JsonPropertyAttribute("device_type")]
-        public string DeviceType
-        {
-            get
-            {
-                return _deviceType;
-            }
-            set
-            {
-                _deviceType = value;
-            }
-        }
-    
-        /// <summary>
-        /// Device name
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("device_name")]
-        [System.ComponentModel.DescriptionAttribute("Device name")]
-        public string DeviceName
-        {
-            get
-            {
-                return _deviceName;
-            }
-            set
-            {
-                _deviceName = value;
-            }
-        }
-    
-        /// <summary>
-        /// Additional settings
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("additional_settings")]
-        [System.ComponentModel.DescriptionAttribute("Additional settings")]
-        public BaseModel AdditionalSettings
-        {
-            get
-            {
-                return _additionalSettings;
-            }
-            set
-            {
-                _additionalSettings = value;
-            }
-        }
-    
-        /// <summary>
-        /// Calibration
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("calibration")]
-        [System.ComponentModel.DescriptionAttribute("Calibration")]
-        public BaseModel Calibration
-        {
-            get
-            {
-                return _calibration;
-            }
-            set
-            {
-                _calibration = value;
-            }
-        }
-    
-        /// <summary>
-        /// Camera serial number
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("serial_number", Required=Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DescriptionAttribute("Camera serial number")]
-        public string SerialNumber
-        {
-            get
-            {
-                return _serialNumber;
-            }
-            set
-            {
-                _serialNumber = value;
-            }
-        }
-    
-        /// <summary>
-        /// Gain
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("gain")]
-        [System.ComponentModel.DescriptionAttribute("Gain")]
-        public double Gain
-        {
-            get
-            {
-                return _gain;
-            }
-            set
-            {
-                _gain = value;
-            }
-        }
-    
-        /// <summary>
-        /// Offset (px)
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("offset")]
-        [System.ComponentModel.DescriptionAttribute("Offset (px)")]
-        public Point2f Offset
-        {
-            get
-            {
-                return _offset;
-            }
-            set
-            {
-                _offset = value;
-            }
-        }
-    
-        public System.IObservable<FipCamera> Process()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new FipCamera(this)));
-        }
-    
-        public System.IObservable<FipCamera> Process<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new FipCamera(this));
-        }
-    
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("device_type = " + _deviceType + ", ");
-            stringBuilder.Append("device_name = " + _deviceName + ", ");
-            stringBuilder.Append("additional_settings = " + _additionalSettings + ", ");
-            stringBuilder.Append("calibration = " + _calibration + ", ");
-            stringBuilder.Append("serial_number = " + _serialNumber + ", ");
-            stringBuilder.Append("gain = " + _gain + ", ");
-            stringBuilder.Append("offset = " + _offset);
-            return true;
-        }
-    
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Bonsai.CombinatorAttribute()]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class FipTask
-    {
-    
-        private int _delta1 = 15650;
-    
-        private int _delta2 = 666;
-    
-        private int _delta3 = 300;
-    
-        private int _delta4 = 50;
-    
-        private Ports _lightSourcePort;
-    
-        private Ports _cameraPort;
-    
-        private bool _eventsEnabled = true;
-    
-        private bool _muteOutput = false;
-    
-        private double _pwmFrequency = 10000D;
-    
-        public FipTask()
-        {
-        }
-    
-        protected FipTask(FipTask other)
-        {
-            _delta1 = other._delta1;
-            _delta2 = other._delta2;
-            _delta3 = other._delta3;
-            _delta4 = other._delta4;
-            _lightSourcePort = other._lightSourcePort;
-            _cameraPort = other._cameraPort;
-            _eventsEnabled = other._eventsEnabled;
-            _muteOutput = other._muteOutput;
-            _pwmFrequency = other._pwmFrequency;
-        }
-    
-        /// <summary>
-        /// Delta 1 (us)
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("delta_1")]
-        [System.ComponentModel.DescriptionAttribute("Delta 1 (us)")]
-        public int Delta1
-        {
-            get
-            {
-                return _delta1;
-            }
-            set
-            {
-                _delta1 = value;
-            }
-        }
-    
-        /// <summary>
-        /// Delta 2 (us)
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("delta_2")]
-        [System.ComponentModel.DescriptionAttribute("Delta 2 (us)")]
-        public int Delta2
-        {
-            get
-            {
-                return _delta2;
-            }
-            set
-            {
-                _delta2 = value;
-            }
-        }
-    
-        /// <summary>
-        /// Delta 3 (us)
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("delta_3")]
-        [System.ComponentModel.DescriptionAttribute("Delta 3 (us)")]
-        public int Delta3
-        {
-            get
-            {
-                return _delta3;
-            }
-            set
-            {
-                _delta3 = value;
-            }
-        }
-    
-        /// <summary>
-        /// Delta 4 (us)
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("delta_4")]
-        [System.ComponentModel.DescriptionAttribute("Delta 4 (us)")]
-        public int Delta4
-        {
-            get
-            {
-                return _delta4;
-            }
-            set
-            {
-                _delta4 = value;
-            }
-        }
-    
-        /// <summary>
-        /// Port that triggers the light source.
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("light_source_port", Required=Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DescriptionAttribute("Port that triggers the light source.")]
-        public Ports LightSourcePort
-        {
-            get
-            {
-                return _lightSourcePort;
-            }
-            set
-            {
-                _lightSourcePort = value;
-            }
-        }
-    
-        /// <summary>
-        /// Port that triggers the camera.
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("camera_port", Required=Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DescriptionAttribute("Port that triggers the camera.")]
-        public Ports CameraPort
-        {
-            get
-            {
-                return _cameraPort;
-            }
-            set
-            {
-                _cameraPort = value;
-            }
-        }
-    
-        /// <summary>
-        /// Whether to enable events for the task. If False, the task will not trigger any events.
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("events_enabled")]
-        [System.ComponentModel.DescriptionAttribute("Whether to enable events for the task. If False, the task will not trigger any ev" +
-            "ents.")]
-        public bool EventsEnabled
-        {
-            get
-            {
-                return _eventsEnabled;
-            }
-            set
-            {
-                _eventsEnabled = value;
-            }
-        }
-    
-        /// <summary>
-        /// Whether to mute the output of the task. If True, the task will not trigger any outputs but timing will be preserved.
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("mute_output")]
-        [System.ComponentModel.DescriptionAttribute("Whether to mute the output of the task. If True, the task will not trigger any ou" +
-            "tputs but timing will be preserved.")]
-        public bool MuteOutput
-        {
-            get
-            {
-                return _muteOutput;
-            }
-            set
-            {
-                _muteOutput = value;
-            }
-        }
-    
-        /// <summary>
-        /// PWM frequency (Hz) of the light source output.
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("pwm_frequency")]
-        [System.ComponentModel.DescriptionAttribute("PWM frequency (Hz) of the light source output.")]
-        public double PwmFrequency
-        {
-            get
-            {
-                return _pwmFrequency;
-            }
-            set
-            {
-                _pwmFrequency = value;
-            }
-        }
-    
-        public System.IObservable<FipTask> Process()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new FipTask(this)));
-        }
-    
-        public System.IObservable<FipTask> Process<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new FipTask(this));
-        }
-    
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("delta_1 = " + _delta1 + ", ");
-            stringBuilder.Append("delta_2 = " + _delta2 + ", ");
-            stringBuilder.Append("delta_3 = " + _delta3 + ", ");
-            stringBuilder.Append("delta_4 = " + _delta4 + ", ");
-            stringBuilder.Append("light_source_port = " + _lightSourcePort + ", ");
-            stringBuilder.Append("camera_port = " + _cameraPort + ", ");
-            stringBuilder.Append("events_enabled = " + _eventsEnabled + ", ");
-            stringBuilder.Append("mute_output = " + _muteOutput + ", ");
-            stringBuilder.Append("pwm_frequency = " + _pwmFrequency);
-            return true;
-        }
-    
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Bonsai.CombinatorAttribute()]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class HarpCuttlefishfip
-    {
-    
-        private string _deviceType = "cuTTLefishFip";
-    
-        private string _deviceName;
-    
-        private BaseModel _additionalSettings;
-    
-        private BaseModel _calibration;
-    
-        private int _whoAmI = 1407;
-    
-        private string _serialNumber;
-    
-        private string _portName;
-    
-        public HarpCuttlefishfip()
-        {
-        }
-    
-        protected HarpCuttlefishfip(HarpCuttlefishfip other)
-        {
-            _deviceType = other._deviceType;
-            _deviceName = other._deviceName;
-            _additionalSettings = other._additionalSettings;
-            _calibration = other._calibration;
-            _whoAmI = other._whoAmI;
-            _serialNumber = other._serialNumber;
-            _portName = other._portName;
-        }
-    
-        [Newtonsoft.Json.JsonPropertyAttribute("device_type")]
-        public string DeviceType
-        {
-            get
-            {
-                return _deviceType;
-            }
-            set
-            {
-                _deviceType = value;
-            }
-        }
-    
-        /// <summary>
-        /// Device name
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("device_name")]
-        [System.ComponentModel.DescriptionAttribute("Device name")]
-        public string DeviceName
-        {
-            get
-            {
-                return _deviceName;
-            }
-            set
-            {
-                _deviceName = value;
-            }
-        }
-    
-        /// <summary>
-        /// Additional settings
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("additional_settings")]
-        [System.ComponentModel.DescriptionAttribute("Additional settings")]
-        public BaseModel AdditionalSettings
-        {
-            get
-            {
-                return _additionalSettings;
-            }
-            set
-            {
-                _additionalSettings = value;
-            }
-        }
-    
-        /// <summary>
-        /// Calibration
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("calibration")]
-        [System.ComponentModel.DescriptionAttribute("Calibration")]
-        public BaseModel Calibration
-        {
-            get
-            {
-                return _calibration;
-            }
-            set
-            {
-                _calibration = value;
-            }
-        }
-    
-        [Newtonsoft.Json.JsonPropertyAttribute("who_am_i")]
-        public int WhoAmI
-        {
-            get
-            {
-                return _whoAmI;
-            }
-            set
-            {
-                _whoAmI = value;
-            }
-        }
-    
-        /// <summary>
-        /// Device serial number
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("serial_number")]
-        [System.ComponentModel.DescriptionAttribute("Device serial number")]
-        public string SerialNumber
-        {
-            get
-            {
-                return _serialNumber;
-            }
-            set
-            {
-                _serialNumber = value;
-            }
-        }
-    
-        /// <summary>
-        /// Device port name
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("port_name", Required=Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DescriptionAttribute("Device port name")]
-        public string PortName
-        {
-            get
-            {
-                return _portName;
-            }
-            set
-            {
-                _portName = value;
-            }
-        }
-    
-        public System.IObservable<HarpCuttlefishfip> Process()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new HarpCuttlefishfip(this)));
-        }
-    
-        public System.IObservable<HarpCuttlefishfip> Process<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new HarpCuttlefishfip(this));
-        }
-    
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("device_type = " + _deviceType + ", ");
-            stringBuilder.Append("device_name = " + _deviceName + ", ");
-            stringBuilder.Append("additional_settings = " + _additionalSettings + ", ");
-            stringBuilder.Append("calibration = " + _calibration + ", ");
-            stringBuilder.Append("who_am_i = " + _whoAmI + ", ");
-            stringBuilder.Append("serial_number = " + _serialNumber + ", ");
-            stringBuilder.Append("port_name = " + _portName);
-            return true;
-        }
-    
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Bonsai.CombinatorAttribute()]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class LightSource
-    {
-    
-        private string _deviceType = "LightSource";
-    
-        private string _deviceName;
-    
-        private BaseModel _additionalSettings;
-    
-        private LightSourceCalibration _calibration;
-    
-        private double _power = 0D;
-    
-        private FipTask _task = new FipTask();
-    
-        public LightSource()
-        {
-        }
-    
-        protected LightSource(LightSource other)
-        {
-            _deviceType = other._deviceType;
-            _deviceName = other._deviceName;
-            _additionalSettings = other._additionalSettings;
-            _calibration = other._calibration;
-            _power = other._power;
-            _task = other._task;
-        }
-    
-        [Newtonsoft.Json.JsonPropertyAttribute("device_type")]
-        public string DeviceType
-        {
-            get
-            {
-                return _deviceType;
-            }
-            set
-            {
-                _deviceType = value;
-            }
-        }
-    
-        /// <summary>
-        /// Device name
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("device_name")]
-        [System.ComponentModel.DescriptionAttribute("Device name")]
-        public string DeviceName
-        {
-            get
-            {
-                return _deviceName;
-            }
-            set
-            {
-                _deviceName = value;
-            }
-        }
-    
-        /// <summary>
-        /// Additional settings
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("additional_settings")]
-        [System.ComponentModel.DescriptionAttribute("Additional settings")]
-        public BaseModel AdditionalSettings
-        {
-            get
-            {
-                return _additionalSettings;
-            }
-            set
-            {
-                _additionalSettings = value;
-            }
-        }
-    
-        /// <summary>
-        /// Calibration for the LightSource. If left empty, 'power' will be used as duty-cycle (0-100).
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("calibration")]
-        [System.ComponentModel.DescriptionAttribute("Calibration for the LightSource. If left empty, \'power\' will be used as duty-cycl" +
-            "e (0-100).")]
-        public LightSourceCalibration Calibration
-        {
-            get
-            {
-                return _calibration;
-            }
-            set
-            {
-                _calibration = value;
-            }
-        }
-    
-        /// <summary>
-        /// Power (mW)
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("power")]
-        [System.ComponentModel.DescriptionAttribute("Power (mW)")]
-        public double Power
-        {
-            get
-            {
-                return _power;
-            }
-            set
-            {
-                _power = value;
-            }
-        }
-    
-        /// <summary>
-        /// Task for the light source
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("task", Required=Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DescriptionAttribute("Task for the light source")]
-        public FipTask Task
-        {
-            get
-            {
-                return _task;
-            }
-            set
-            {
-                _task = value;
-            }
-        }
-    
-        public System.IObservable<LightSource> Process()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new LightSource(this)));
-        }
-    
-        public System.IObservable<LightSource> Process<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new LightSource(this));
-        }
-    
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("device_type = " + _deviceType + ", ");
-            stringBuilder.Append("device_name = " + _deviceName + ", ");
-            stringBuilder.Append("additional_settings = " + _additionalSettings + ", ");
-            stringBuilder.Append("calibration = " + _calibration + ", ");
-            stringBuilder.Append("power = " + _power + ", ");
-            stringBuilder.Append("task = " + _task);
-            return true;
-        }
-    
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Bonsai.CombinatorAttribute()]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class LightSourceCalibration
-    {
-    
-        private string _deviceName;
-    
-        private BaseModel _input;
-    
-        private LightSourceCalibrationOutput _output = new LightSourceCalibrationOutput();
-    
-        private System.DateTimeOffset? _date;
-    
-        private string _description;
+        private string _experimentVersion;
     
         private string _notes;
     
-        public LightSourceCalibration()
+        private string _commitHash;
+    
+        private bool _allowDirtyRepo;
+    
+        private bool _skipHardwareValidation;
+    
+        public AindBehaviorSessionModel()
         {
+            _aindBehaviorServicesPkgVersion = "0.11.0";
+            _version = "0.3.1";
+            _experimenter = new System.Collections.Generic.List<string>();
+            _allowDirtyRepo = false;
+            _skipHardwareValidation = false;
         }
     
-        protected LightSourceCalibration(LightSourceCalibration other)
+        protected AindBehaviorSessionModel(AindBehaviorSessionModel other)
         {
-            _deviceName = other._deviceName;
-            _input = other._input;
-            _output = other._output;
+            _aindBehaviorServicesPkgVersion = other._aindBehaviorServicesPkgVersion;
+            _version = other._version;
+            _experiment = other._experiment;
+            _experimenter = other._experimenter;
             _date = other._date;
-            _description = other._description;
+            _rootPath = other._rootPath;
+            _sessionName = other._sessionName;
+            _subject = other._subject;
+            _experimentVersion = other._experimentVersion;
             _notes = other._notes;
+            _commitHash = other._commitHash;
+            _allowDirtyRepo = other._allowDirtyRepo;
+            _skipHardwareValidation = other._skipHardwareValidation;
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("aind_behavior_services_pkg_version")]
+        public string AindBehaviorServicesPkgVersion
+        {
+            get
+            {
+                return _aindBehaviorServicesPkgVersion;
+            }
+            set
+            {
+                _aindBehaviorServicesPkgVersion = value;
+            }
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("version")]
+        public string Version
+        {
+            get
+            {
+                return _version;
+            }
+            set
+            {
+                _version = value;
+            }
         }
     
         /// <summary>
-        /// Name of the device being calibrated
+        /// Name of the experiment
         /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("device_name", Required=Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DescriptionAttribute("Name of the device being calibrated")]
-        public string DeviceName
+        [Newtonsoft.Json.JsonPropertyAttribute("experiment", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Name of the experiment")]
+        public string Experiment
         {
             get
             {
-                return _deviceName;
+                return _experiment;
             }
             set
             {
-                _deviceName = value;
+                _experiment = value;
             }
         }
     
+        /// <summary>
+        /// Name of the experimenter
+        /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("input")]
-        public BaseModel Input
+        [Newtonsoft.Json.JsonPropertyAttribute("experimenter")]
+        [System.ComponentModel.DescriptionAttribute("Name of the experimenter")]
+        public System.Collections.Generic.List<string> Experimenter
         {
             get
             {
-                return _input;
+                return _experimenter;
             }
             set
             {
-                _input = value;
+                _experimenter = value;
             }
         }
     
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("output", Required=Newtonsoft.Json.Required.Always)]
-        public LightSourceCalibrationOutput Output
-        {
-            get
-            {
-                return _output;
-            }
-            set
-            {
-                _output = value;
-            }
-        }
-    
+        /// <summary>
+        /// Date of the experiment
+        /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
         [Newtonsoft.Json.JsonPropertyAttribute("date")]
-        public System.DateTimeOffset? Date
+        [System.ComponentModel.DescriptionAttribute("Date of the experiment")]
+        public System.DateTimeOffset Date
         {
             get
             {
@@ -1013,20 +146,79 @@ namespace AindPhysiologyFip.Rig
             }
         }
     
-        [Newtonsoft.Json.JsonPropertyAttribute("description")]
-        public string Description
+        /// <summary>
+        /// Root path where data will be logged
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("root_path", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Root path where data will be logged")]
+        public string RootPath
         {
             get
             {
-                return _description;
+                return _rootPath;
             }
             set
             {
-                _description = value;
+                _rootPath = value;
             }
         }
     
+        /// <summary>
+        /// Name of the session. This will be used to create a folder in the root path.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("session_name")]
+        [System.ComponentModel.DescriptionAttribute("Name of the session. This will be used to create a folder in the root path.")]
+        public string SessionName
+        {
+            get
+            {
+                return _sessionName;
+            }
+            set
+            {
+                _sessionName = value;
+            }
+        }
+    
+        /// <summary>
+        /// Name of the subject
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("subject", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Name of the subject")]
+        public string Subject
+        {
+            get
+            {
+                return _subject;
+            }
+            set
+            {
+                _subject = value;
+            }
+        }
+    
+        /// <summary>
+        /// Version of the experiment
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("experiment_version", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Version of the experiment")]
+        public string ExperimentVersion
+        {
+            get
+            {
+                return _experimentVersion;
+            }
+            set
+            {
+                _experimentVersion = value;
+            }
+        }
+    
+        /// <summary>
+        /// Notes about the experiment
+        /// </summary>
         [Newtonsoft.Json.JsonPropertyAttribute("notes")]
+        [System.ComponentModel.DescriptionAttribute("Notes about the experiment")]
         public string Notes
         {
             get
@@ -1039,24 +231,82 @@ namespace AindPhysiologyFip.Rig
             }
         }
     
-        public System.IObservable<LightSourceCalibration> Process()
+        /// <summary>
+        /// Commit hash of the repository
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("commit_hash")]
+        [System.ComponentModel.DescriptionAttribute("Commit hash of the repository")]
+        public string CommitHash
         {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new LightSourceCalibration(this)));
+            get
+            {
+                return _commitHash;
+            }
+            set
+            {
+                _commitHash = value;
+            }
         }
     
-        public System.IObservable<LightSourceCalibration> Process<TSource>(System.IObservable<TSource> source)
+        /// <summary>
+        /// Allow running from a dirty repository
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("allow_dirty_repo")]
+        [System.ComponentModel.DescriptionAttribute("Allow running from a dirty repository")]
+        public bool AllowDirtyRepo
         {
-            return System.Reactive.Linq.Observable.Select(source, _ => new LightSourceCalibration(this));
+            get
+            {
+                return _allowDirtyRepo;
+            }
+            set
+            {
+                _allowDirtyRepo = value;
+            }
+        }
+    
+        /// <summary>
+        /// Skip hardware validation
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("skip_hardware_validation")]
+        [System.ComponentModel.DescriptionAttribute("Skip hardware validation")]
+        public bool SkipHardwareValidation
+        {
+            get
+            {
+                return _skipHardwareValidation;
+            }
+            set
+            {
+                _skipHardwareValidation = value;
+            }
+        }
+    
+        public System.IObservable<AindBehaviorSessionModel> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new AindBehaviorSessionModel(this)));
+        }
+    
+        public System.IObservable<AindBehaviorSessionModel> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new AindBehaviorSessionModel(this));
         }
     
         protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
         {
-            stringBuilder.Append("device_name = " + _deviceName + ", ");
-            stringBuilder.Append("input = " + _input + ", ");
-            stringBuilder.Append("output = " + _output + ", ");
+            stringBuilder.Append("aind_behavior_services_pkg_version = " + _aindBehaviorServicesPkgVersion + ", ");
+            stringBuilder.Append("version = " + _version + ", ");
+            stringBuilder.Append("experiment = " + _experiment + ", ");
+            stringBuilder.Append("experimenter = " + _experimenter + ", ");
             stringBuilder.Append("date = " + _date + ", ");
-            stringBuilder.Append("description = " + _description + ", ");
-            stringBuilder.Append("notes = " + _notes);
+            stringBuilder.Append("root_path = " + _rootPath + ", ");
+            stringBuilder.Append("session_name = " + _sessionName + ", ");
+            stringBuilder.Append("subject = " + _subject + ", ");
+            stringBuilder.Append("experiment_version = " + _experimentVersion + ", ");
+            stringBuilder.Append("notes = " + _notes + ", ");
+            stringBuilder.Append("commit_hash = " + _commitHash + ", ");
+            stringBuilder.Append("allow_dirty_repo = " + _allowDirtyRepo + ", ");
+            stringBuilder.Append("skip_hardware_validation = " + _skipHardwareValidation);
             return true;
         }
     
@@ -1075,517 +325,47 @@ namespace AindPhysiologyFip.Rig
     }
 
 
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Bonsai.CombinatorAttribute()]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class LightSourceCalibrationOutput
-    {
-    
-        private System.Collections.Generic.IDictionary<string, double> _powerLut = new System.Collections.Generic.Dictionary<string, double>();
-    
-        public LightSourceCalibrationOutput()
-        {
-        }
-    
-        protected LightSourceCalibrationOutput(LightSourceCalibrationOutput other)
-        {
-            _powerLut = other._powerLut;
-        }
-    
-        /// <summary>
-        /// Look-up table for LightSource power vs. duty cycle
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("power_lut", Required=Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DescriptionAttribute("Look-up table for LightSource power vs. duty cycle")]
-        public System.Collections.Generic.IDictionary<string, double> PowerLut
-        {
-            get
-            {
-                return _powerLut;
-            }
-            set
-            {
-                _powerLut = value;
-            }
-        }
-    
-        public System.IObservable<LightSourceCalibrationOutput> Process()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new LightSourceCalibrationOutput(this)));
-        }
-    
-        public System.IObservable<LightSourceCalibrationOutput> Process<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new LightSourceCalibrationOutput(this));
-        }
-    
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("power_lut = " + _powerLut);
-            return true;
-        }
-    
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Bonsai.CombinatorAttribute()]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class Networking
-    {
-    
-        private ZmqConnection _zmqPublisher;
-    
-        private ZmqConnection _zmqSubscriber;
-    
-        public Networking()
-        {
-        }
-    
-        protected Networking(Networking other)
-        {
-            _zmqPublisher = other._zmqPublisher;
-            _zmqSubscriber = other._zmqSubscriber;
-        }
-    
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("zmq_publisher")]
-        public ZmqConnection ZmqPublisher
-        {
-            get
-            {
-                return _zmqPublisher;
-            }
-            set
-            {
-                _zmqPublisher = value;
-            }
-        }
-    
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("zmq_subscriber")]
-        public ZmqConnection ZmqSubscriber
-        {
-            get
-            {
-                return _zmqSubscriber;
-            }
-            set
-            {
-                _zmqSubscriber = value;
-            }
-        }
-    
-        public System.IObservable<Networking> Process()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new Networking(this)));
-        }
-    
-        public System.IObservable<Networking> Process<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new Networking(this));
-        }
-    
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("zmq_publisher = " + _zmqPublisher + ", ");
-            stringBuilder.Append("zmq_subscriber = " + _zmqSubscriber);
-            return true;
-        }
-    
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Bonsai.CombinatorAttribute()]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class Point2f
-    {
-    
-        private double _x;
-    
-        private double _y;
-    
-        public Point2f()
-        {
-        }
-    
-        protected Point2f(Point2f other)
-        {
-            _x = other._x;
-            _y = other._y;
-        }
-    
-        /// <summary>
-        /// X coordinate of the point (px)
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("x", Required=Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DescriptionAttribute("X coordinate of the point (px)")]
-        public double X
-        {
-            get
-            {
-                return _x;
-            }
-            set
-            {
-                _x = value;
-            }
-        }
-    
-        /// <summary>
-        /// Y coordinate of the point (px)
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("y", Required=Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DescriptionAttribute("Y coordinate of the point (px)")]
-        public double Y
-        {
-            get
-            {
-                return _y;
-            }
-            set
-            {
-                _y = value;
-            }
-        }
-    
-        public System.IObservable<Point2f> Process()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new Point2f(this)));
-        }
-    
-        public System.IObservable<Point2f> Process<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new Point2f(this));
-        }
-    
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("x = " + _x + ", ");
-            stringBuilder.Append("y = " + _y);
-            return true;
-        }
-    
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    public enum Ports
-    {
-    
-        [System.Runtime.Serialization.EnumMemberAttribute(Value="0")]
-        None = 0,
-    
-        [System.Runtime.Serialization.EnumMemberAttribute(Value="1")]
-        Io0 = 1,
-    
-        [System.Runtime.Serialization.EnumMemberAttribute(Value="2")]
-        Io1 = 2,
-    
-        [System.Runtime.Serialization.EnumMemberAttribute(Value="4")]
-        Io2 = 4,
-    
-        [System.Runtime.Serialization.EnumMemberAttribute(Value="8")]
-        Io3 = 8,
-    
-        [System.Runtime.Serialization.EnumMemberAttribute(Value="16")]
-        Io4 = 16,
-    
-        [System.Runtime.Serialization.EnumMemberAttribute(Value="32")]
-        Io5 = 32,
-    
-        [System.Runtime.Serialization.EnumMemberAttribute(Value="64")]
-        Io6 = 64,
-    
-        [System.Runtime.Serialization.EnumMemberAttribute(Value="128")]
-        Io7 = 128,
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Bonsai.CombinatorAttribute()]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class RoiSettings
-    {
-    
-        private Circle _cameraGreenIsoBackground;
-    
-        private Circle _cameraRedBackground;
-    
-        private System.Collections.Generic.List<Circle> _cameraGreenIsoRoi = new System.Collections.Generic.List<Circle>();
-    
-        private System.Collections.Generic.List<Circle> _cameraRedRoi = new System.Collections.Generic.List<Circle>();
-    
-        public RoiSettings()
-        {
-        }
-    
-        protected RoiSettings(RoiSettings other)
-        {
-            _cameraGreenIsoBackground = other._cameraGreenIsoBackground;
-            _cameraRedBackground = other._cameraRedBackground;
-            _cameraGreenIsoRoi = other._cameraGreenIsoRoi;
-            _cameraRedRoi = other._cameraRedRoi;
-        }
-    
-        /// <summary>
-        /// ROI to compute the background for the green/iso camera channel
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("camera_green_iso_background")]
-        [System.ComponentModel.DescriptionAttribute("ROI to compute the background for the green/iso camera channel")]
-        public Circle CameraGreenIsoBackground
-        {
-            get
-            {
-                return _cameraGreenIsoBackground;
-            }
-            set
-            {
-                _cameraGreenIsoBackground = value;
-            }
-        }
-    
-        /// <summary>
-        /// ROI to compute the background for the red camera channel
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("camera_red_background")]
-        [System.ComponentModel.DescriptionAttribute("ROI to compute the background for the red camera channel")]
-        public Circle CameraRedBackground
-        {
-            get
-            {
-                return _cameraRedBackground;
-            }
-            set
-            {
-                _cameraRedBackground = value;
-            }
-        }
-    
-        /// <summary>
-        /// ROI for the green/iso camera channel
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("camera_green_iso_roi")]
-        [System.ComponentModel.DescriptionAttribute("ROI for the green/iso camera channel")]
-        public System.Collections.Generic.List<Circle> CameraGreenIsoRoi
-        {
-            get
-            {
-                return _cameraGreenIsoRoi;
-            }
-            set
-            {
-                _cameraGreenIsoRoi = value;
-            }
-        }
-    
-        /// <summary>
-        /// ROI for the red camera channel
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("camera_red_roi")]
-        [System.ComponentModel.DescriptionAttribute("ROI for the red camera channel")]
-        public System.Collections.Generic.List<Circle> CameraRedRoi
-        {
-            get
-            {
-                return _cameraRedRoi;
-            }
-            set
-            {
-                _cameraRedRoi = value;
-            }
-        }
-    
-        public System.IObservable<RoiSettings> Process()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new RoiSettings(this)));
-        }
-    
-        public System.IObservable<RoiSettings> Process<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new RoiSettings(this));
-        }
-    
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("camera_green_iso_background = " + _cameraGreenIsoBackground + ", ");
-            stringBuilder.Append("camera_red_background = " + _cameraRedBackground + ", ");
-            stringBuilder.Append("camera_green_iso_roi = " + _cameraGreenIsoRoi + ", ");
-            stringBuilder.Append("camera_red_roi = " + _cameraRedRoi);
-            return true;
-        }
-    
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [Bonsai.CombinatorAttribute()]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    public partial class ZmqConnection
-    {
-    
-        private string _connectionString = "@tcp://localhost:5556";
-    
-        private string _topic = "";
-    
-        public ZmqConnection()
-        {
-        }
-    
-        protected ZmqConnection(ZmqConnection other)
-        {
-            _connectionString = other._connectionString;
-            _topic = other._topic;
-        }
-    
-        /// <summary>
-        /// The connection string for the ZMQ socket.
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("connection_string")]
-        [System.ComponentModel.DescriptionAttribute("The connection string for the ZMQ socket.")]
-        public string ConnectionString
-        {
-            get
-            {
-                return _connectionString;
-            }
-            set
-            {
-                _connectionString = value;
-            }
-        }
-    
-        [Newtonsoft.Json.JsonPropertyAttribute("topic")]
-        public string Topic
-        {
-            get
-            {
-                return _topic;
-            }
-            set
-            {
-                _topic = value;
-            }
-        }
-    
-        public System.IObservable<ZmqConnection> Process()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new ZmqConnection(this)));
-        }
-    
-        public System.IObservable<ZmqConnection> Process<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new ZmqConnection(this));
-        }
-    
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("connection_string = " + _connectionString + ", ");
-            stringBuilder.Append("topic = " + _topic);
-            return true;
-        }
-    
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     public partial class AindPhysioFipRig
     {
     
-        private string _aindBehaviorServicesPkgVersion = "0.11.0";
+        private string _aindBehaviorServicesPkgVersion;
     
-        private string _version = "0.1.0";
+        private string _version;
     
         private string _computerName;
     
         private string _rigName;
     
-        private FipCamera _cameraGreenIso = new FipCamera();
+        private FipCamera _cameraGreenIso;
     
-        private FipCamera _cameraRed = new FipCamera();
+        private FipCamera _cameraRed;
     
-        private LightSource _lightSourceUv = new LightSource();
+        private LightSource _lightSourceUv;
     
-        private LightSource _lightSourceBlue = new LightSource();
+        private LightSource _lightSourceBlue;
     
-        private LightSource _lightSourceLime = new LightSource();
+        private LightSource _lightSourceLime;
     
         private RoiSettings _roiSettings;
     
-        private HarpCuttlefishfip _cuttlefishFip = new HarpCuttlefishfip();
+        private HarpCuttlefishfip _cuttlefishFip;
     
         private Networking _networking;
     
         public AindPhysioFipRig()
         {
+            _aindBehaviorServicesPkgVersion = "0.11.0";
+            _version = "0.1.0";
+            _cameraGreenIso = new FipCamera();
+            _cameraRed = new FipCamera();
+            _lightSourceUv = new LightSource();
+            _lightSourceBlue = new LightSource();
+            _lightSourceLime = new LightSource();
+            _cuttlefishFip = new HarpCuttlefishfip();
+            _networking = new Networking();
         }
     
         protected AindPhysioFipRig(AindPhysioFipRig other)
@@ -1851,10 +631,1582 @@ namespace AindPhysiologyFip.Rig
     }
 
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class BaseModel
+    {
+    
+        public BaseModel()
+        {
+        }
+    
+        protected BaseModel(BaseModel other)
+        {
+        }
+    
+        public System.IObservable<BaseModel> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new BaseModel(this)));
+        }
+    
+        public System.IObservable<BaseModel> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new BaseModel(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            return false;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class Circle
+    {
+    
+        private Point2f _center;
+    
+        private double _radius;
+    
+        public Circle()
+        {
+            _center = new Point2f();
+            _radius = 1D;
+        }
+    
+        protected Circle(Circle other)
+        {
+            _center = other._center;
+            _radius = other._radius;
+        }
+    
+        /// <summary>
+        /// Center of the circle (px)
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("center")]
+        [System.ComponentModel.DescriptionAttribute("Center of the circle (px)")]
+        public Point2f Center
+        {
+            get
+            {
+                return _center;
+            }
+            set
+            {
+                _center = value;
+            }
+        }
+    
+        /// <summary>
+        /// Radius of the circle (px)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("radius")]
+        [System.ComponentModel.DescriptionAttribute("Radius of the circle (px)")]
+        public double Radius
+        {
+            get
+            {
+                return _radius;
+            }
+            set
+            {
+                _radius = value;
+            }
+        }
+    
+        public System.IObservable<Circle> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new Circle(this)));
+        }
+    
+        public System.IObservable<Circle> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new Circle(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("center = " + _center + ", ");
+            stringBuilder.Append("radius = " + _radius);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class FipCamera
+    {
+    
+        private string _deviceType;
+    
+        private string _deviceName;
+    
+        private BaseModel _additionalSettings;
+    
+        private BaseModel _calibration;
+    
+        private string _serialNumber;
+    
+        private double _gain;
+    
+        private Point2f _offset;
+    
+        public FipCamera()
+        {
+            _deviceType = "FipCamera";
+            _gain = 0D;
+            _offset = new Point2f();
+        }
+    
+        protected FipCamera(FipCamera other)
+        {
+            _deviceType = other._deviceType;
+            _deviceName = other._deviceName;
+            _additionalSettings = other._additionalSettings;
+            _calibration = other._calibration;
+            _serialNumber = other._serialNumber;
+            _gain = other._gain;
+            _offset = other._offset;
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("device_type")]
+        public string DeviceType
+        {
+            get
+            {
+                return _deviceType;
+            }
+            set
+            {
+                _deviceType = value;
+            }
+        }
+    
+        /// <summary>
+        /// Device name
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("device_name")]
+        [System.ComponentModel.DescriptionAttribute("Device name")]
+        public string DeviceName
+        {
+            get
+            {
+                return _deviceName;
+            }
+            set
+            {
+                _deviceName = value;
+            }
+        }
+    
+        /// <summary>
+        /// Additional settings
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("additional_settings")]
+        [System.ComponentModel.DescriptionAttribute("Additional settings")]
+        public BaseModel AdditionalSettings
+        {
+            get
+            {
+                return _additionalSettings;
+            }
+            set
+            {
+                _additionalSettings = value;
+            }
+        }
+    
+        /// <summary>
+        /// Calibration
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("calibration")]
+        [System.ComponentModel.DescriptionAttribute("Calibration")]
+        public BaseModel Calibration
+        {
+            get
+            {
+                return _calibration;
+            }
+            set
+            {
+                _calibration = value;
+            }
+        }
+    
+        /// <summary>
+        /// Camera serial number
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("serial_number", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Camera serial number")]
+        public string SerialNumber
+        {
+            get
+            {
+                return _serialNumber;
+            }
+            set
+            {
+                _serialNumber = value;
+            }
+        }
+    
+        /// <summary>
+        /// Gain
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("gain")]
+        [System.ComponentModel.DescriptionAttribute("Gain")]
+        public double Gain
+        {
+            get
+            {
+                return _gain;
+            }
+            set
+            {
+                _gain = value;
+            }
+        }
+    
+        /// <summary>
+        /// Offset (px)
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("offset")]
+        [System.ComponentModel.DescriptionAttribute("Offset (px)")]
+        public Point2f Offset
+        {
+            get
+            {
+                return _offset;
+            }
+            set
+            {
+                _offset = value;
+            }
+        }
+    
+        public System.IObservable<FipCamera> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new FipCamera(this)));
+        }
+    
+        public System.IObservable<FipCamera> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new FipCamera(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("device_type = " + _deviceType + ", ");
+            stringBuilder.Append("device_name = " + _deviceName + ", ");
+            stringBuilder.Append("additional_settings = " + _additionalSettings + ", ");
+            stringBuilder.Append("calibration = " + _calibration + ", ");
+            stringBuilder.Append("serial_number = " + _serialNumber + ", ");
+            stringBuilder.Append("gain = " + _gain + ", ");
+            stringBuilder.Append("offset = " + _offset);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class FipTask
+    {
+    
+        private int _delta1;
+    
+        private int _delta2;
+    
+        private int _delta3;
+    
+        private int _delta4;
+    
+        private Ports _lightSourcePort;
+    
+        private Ports _cameraPort;
+    
+        private bool _eventsEnabled;
+    
+        private bool _muteOutput;
+    
+        private double _pwmFrequency;
+    
+        public FipTask()
+        {
+            _delta1 = 15650;
+            _delta2 = 666;
+            _delta3 = 300;
+            _delta4 = 50;
+            _eventsEnabled = true;
+            _muteOutput = false;
+            _pwmFrequency = 10000D;
+        }
+    
+        protected FipTask(FipTask other)
+        {
+            _delta1 = other._delta1;
+            _delta2 = other._delta2;
+            _delta3 = other._delta3;
+            _delta4 = other._delta4;
+            _lightSourcePort = other._lightSourcePort;
+            _cameraPort = other._cameraPort;
+            _eventsEnabled = other._eventsEnabled;
+            _muteOutput = other._muteOutput;
+            _pwmFrequency = other._pwmFrequency;
+        }
+    
+        /// <summary>
+        /// Delta 1 (us)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("delta_1")]
+        [System.ComponentModel.DescriptionAttribute("Delta 1 (us)")]
+        public int Delta1
+        {
+            get
+            {
+                return _delta1;
+            }
+            set
+            {
+                _delta1 = value;
+            }
+        }
+    
+        /// <summary>
+        /// Delta 2 (us)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("delta_2")]
+        [System.ComponentModel.DescriptionAttribute("Delta 2 (us)")]
+        public int Delta2
+        {
+            get
+            {
+                return _delta2;
+            }
+            set
+            {
+                _delta2 = value;
+            }
+        }
+    
+        /// <summary>
+        /// Delta 3 (us)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("delta_3")]
+        [System.ComponentModel.DescriptionAttribute("Delta 3 (us)")]
+        public int Delta3
+        {
+            get
+            {
+                return _delta3;
+            }
+            set
+            {
+                _delta3 = value;
+            }
+        }
+    
+        /// <summary>
+        /// Delta 4 (us)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("delta_4")]
+        [System.ComponentModel.DescriptionAttribute("Delta 4 (us)")]
+        public int Delta4
+        {
+            get
+            {
+                return _delta4;
+            }
+            set
+            {
+                _delta4 = value;
+            }
+        }
+    
+        /// <summary>
+        /// Port that triggers the light source.
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("light_source_port", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Port that triggers the light source.")]
+        public Ports LightSourcePort
+        {
+            get
+            {
+                return _lightSourcePort;
+            }
+            set
+            {
+                _lightSourcePort = value;
+            }
+        }
+    
+        /// <summary>
+        /// Port that triggers the camera.
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_port", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Port that triggers the camera.")]
+        public Ports CameraPort
+        {
+            get
+            {
+                return _cameraPort;
+            }
+            set
+            {
+                _cameraPort = value;
+            }
+        }
+    
+        /// <summary>
+        /// Whether to enable events for the task. If False, the task will not trigger any events.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("events_enabled")]
+        [System.ComponentModel.DescriptionAttribute("Whether to enable events for the task. If False, the task will not trigger any ev" +
+            "ents.")]
+        public bool EventsEnabled
+        {
+            get
+            {
+                return _eventsEnabled;
+            }
+            set
+            {
+                _eventsEnabled = value;
+            }
+        }
+    
+        /// <summary>
+        /// Whether to mute the output of the task. If True, the task will not trigger any outputs but timing will be preserved.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("mute_output")]
+        [System.ComponentModel.DescriptionAttribute("Whether to mute the output of the task. If True, the task will not trigger any ou" +
+            "tputs but timing will be preserved.")]
+        public bool MuteOutput
+        {
+            get
+            {
+                return _muteOutput;
+            }
+            set
+            {
+                _muteOutput = value;
+            }
+        }
+    
+        /// <summary>
+        /// PWM frequency (Hz) of the light source output.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("pwm_frequency")]
+        [System.ComponentModel.DescriptionAttribute("PWM frequency (Hz) of the light source output.")]
+        public double PwmFrequency
+        {
+            get
+            {
+                return _pwmFrequency;
+            }
+            set
+            {
+                _pwmFrequency = value;
+            }
+        }
+    
+        public System.IObservable<FipTask> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new FipTask(this)));
+        }
+    
+        public System.IObservable<FipTask> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new FipTask(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("delta_1 = " + _delta1 + ", ");
+            stringBuilder.Append("delta_2 = " + _delta2 + ", ");
+            stringBuilder.Append("delta_3 = " + _delta3 + ", ");
+            stringBuilder.Append("delta_4 = " + _delta4 + ", ");
+            stringBuilder.Append("light_source_port = " + _lightSourcePort + ", ");
+            stringBuilder.Append("camera_port = " + _cameraPort + ", ");
+            stringBuilder.Append("events_enabled = " + _eventsEnabled + ", ");
+            stringBuilder.Append("mute_output = " + _muteOutput + ", ");
+            stringBuilder.Append("pwm_frequency = " + _pwmFrequency);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class HarpCuttlefishfip
+    {
+    
+        private string _deviceType;
+    
+        private string _deviceName;
+    
+        private BaseModel _additionalSettings;
+    
+        private BaseModel _calibration;
+    
+        private int _whoAmI;
+    
+        private string _serialNumber;
+    
+        private string _portName;
+    
+        public HarpCuttlefishfip()
+        {
+            _deviceType = "cuTTLefishFip";
+            _whoAmI = 1407;
+        }
+    
+        protected HarpCuttlefishfip(HarpCuttlefishfip other)
+        {
+            _deviceType = other._deviceType;
+            _deviceName = other._deviceName;
+            _additionalSettings = other._additionalSettings;
+            _calibration = other._calibration;
+            _whoAmI = other._whoAmI;
+            _serialNumber = other._serialNumber;
+            _portName = other._portName;
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("device_type")]
+        public string DeviceType
+        {
+            get
+            {
+                return _deviceType;
+            }
+            set
+            {
+                _deviceType = value;
+            }
+        }
+    
+        /// <summary>
+        /// Device name
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("device_name")]
+        [System.ComponentModel.DescriptionAttribute("Device name")]
+        public string DeviceName
+        {
+            get
+            {
+                return _deviceName;
+            }
+            set
+            {
+                _deviceName = value;
+            }
+        }
+    
+        /// <summary>
+        /// Additional settings
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("additional_settings")]
+        [System.ComponentModel.DescriptionAttribute("Additional settings")]
+        public BaseModel AdditionalSettings
+        {
+            get
+            {
+                return _additionalSettings;
+            }
+            set
+            {
+                _additionalSettings = value;
+            }
+        }
+    
+        /// <summary>
+        /// Calibration
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("calibration")]
+        [System.ComponentModel.DescriptionAttribute("Calibration")]
+        public BaseModel Calibration
+        {
+            get
+            {
+                return _calibration;
+            }
+            set
+            {
+                _calibration = value;
+            }
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("who_am_i")]
+        public int WhoAmI
+        {
+            get
+            {
+                return _whoAmI;
+            }
+            set
+            {
+                _whoAmI = value;
+            }
+        }
+    
+        /// <summary>
+        /// Device serial number
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("serial_number")]
+        [System.ComponentModel.DescriptionAttribute("Device serial number")]
+        public string SerialNumber
+        {
+            get
+            {
+                return _serialNumber;
+            }
+            set
+            {
+                _serialNumber = value;
+            }
+        }
+    
+        /// <summary>
+        /// Device port name
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("port_name", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Device port name")]
+        public string PortName
+        {
+            get
+            {
+                return _portName;
+            }
+            set
+            {
+                _portName = value;
+            }
+        }
+    
+        public System.IObservable<HarpCuttlefishfip> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new HarpCuttlefishfip(this)));
+        }
+    
+        public System.IObservable<HarpCuttlefishfip> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new HarpCuttlefishfip(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("device_type = " + _deviceType + ", ");
+            stringBuilder.Append("device_name = " + _deviceName + ", ");
+            stringBuilder.Append("additional_settings = " + _additionalSettings + ", ");
+            stringBuilder.Append("calibration = " + _calibration + ", ");
+            stringBuilder.Append("who_am_i = " + _whoAmI + ", ");
+            stringBuilder.Append("serial_number = " + _serialNumber + ", ");
+            stringBuilder.Append("port_name = " + _portName);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class LightSource
+    {
+    
+        private string _deviceType;
+    
+        private string _deviceName;
+    
+        private BaseModel _additionalSettings;
+    
+        private LightSourceCalibration _calibration;
+    
+        private double _power;
+    
+        private FipTask _task;
+    
+        public LightSource()
+        {
+            _deviceType = "LightSource";
+            _power = 0D;
+            _task = new FipTask();
+        }
+    
+        protected LightSource(LightSource other)
+        {
+            _deviceType = other._deviceType;
+            _deviceName = other._deviceName;
+            _additionalSettings = other._additionalSettings;
+            _calibration = other._calibration;
+            _power = other._power;
+            _task = other._task;
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("device_type")]
+        public string DeviceType
+        {
+            get
+            {
+                return _deviceType;
+            }
+            set
+            {
+                _deviceType = value;
+            }
+        }
+    
+        /// <summary>
+        /// Device name
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("device_name")]
+        [System.ComponentModel.DescriptionAttribute("Device name")]
+        public string DeviceName
+        {
+            get
+            {
+                return _deviceName;
+            }
+            set
+            {
+                _deviceName = value;
+            }
+        }
+    
+        /// <summary>
+        /// Additional settings
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("additional_settings")]
+        [System.ComponentModel.DescriptionAttribute("Additional settings")]
+        public BaseModel AdditionalSettings
+        {
+            get
+            {
+                return _additionalSettings;
+            }
+            set
+            {
+                _additionalSettings = value;
+            }
+        }
+    
+        /// <summary>
+        /// Calibration for the LightSource. If left empty, 'power' will be used as duty-cycle (0-100).
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("calibration")]
+        [System.ComponentModel.DescriptionAttribute("Calibration for the LightSource. If left empty, \'power\' will be used as duty-cycl" +
+            "e (0-100).")]
+        public LightSourceCalibration Calibration
+        {
+            get
+            {
+                return _calibration;
+            }
+            set
+            {
+                _calibration = value;
+            }
+        }
+    
+        /// <summary>
+        /// Power (mW)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("power")]
+        [System.ComponentModel.DescriptionAttribute("Power (mW)")]
+        public double Power
+        {
+            get
+            {
+                return _power;
+            }
+            set
+            {
+                _power = value;
+            }
+        }
+    
+        /// <summary>
+        /// Task for the light source
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("task", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Task for the light source")]
+        public FipTask Task
+        {
+            get
+            {
+                return _task;
+            }
+            set
+            {
+                _task = value;
+            }
+        }
+    
+        public System.IObservable<LightSource> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new LightSource(this)));
+        }
+    
+        public System.IObservable<LightSource> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new LightSource(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("device_type = " + _deviceType + ", ");
+            stringBuilder.Append("device_name = " + _deviceName + ", ");
+            stringBuilder.Append("additional_settings = " + _additionalSettings + ", ");
+            stringBuilder.Append("calibration = " + _calibration + ", ");
+            stringBuilder.Append("power = " + _power + ", ");
+            stringBuilder.Append("task = " + _task);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class LightSourceCalibration
+    {
+    
+        private string _deviceName;
+    
+        private BaseModel _input;
+    
+        private LightSourceCalibrationOutput _output;
+    
+        private System.DateTimeOffset? _date;
+    
+        private string _description;
+    
+        private string _notes;
+    
+        public LightSourceCalibration()
+        {
+            _output = new LightSourceCalibrationOutput();
+        }
+    
+        protected LightSourceCalibration(LightSourceCalibration other)
+        {
+            _deviceName = other._deviceName;
+            _input = other._input;
+            _output = other._output;
+            _date = other._date;
+            _description = other._description;
+            _notes = other._notes;
+        }
+    
+        /// <summary>
+        /// Name of the device being calibrated
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("device_name", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Name of the device being calibrated")]
+        public string DeviceName
+        {
+            get
+            {
+                return _deviceName;
+            }
+            set
+            {
+                _deviceName = value;
+            }
+        }
+    
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("input")]
+        public BaseModel Input
+        {
+            get
+            {
+                return _input;
+            }
+            set
+            {
+                _input = value;
+            }
+        }
+    
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("output", Required=Newtonsoft.Json.Required.Always)]
+        public LightSourceCalibrationOutput Output
+        {
+            get
+            {
+                return _output;
+            }
+            set
+            {
+                _output = value;
+            }
+        }
+    
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("date")]
+        public System.DateTimeOffset? Date
+        {
+            get
+            {
+                return _date;
+            }
+            set
+            {
+                _date = value;
+            }
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("description")]
+        public string Description
+        {
+            get
+            {
+                return _description;
+            }
+            set
+            {
+                _description = value;
+            }
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("notes")]
+        public string Notes
+        {
+            get
+            {
+                return _notes;
+            }
+            set
+            {
+                _notes = value;
+            }
+        }
+    
+        public System.IObservable<LightSourceCalibration> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new LightSourceCalibration(this)));
+        }
+    
+        public System.IObservable<LightSourceCalibration> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new LightSourceCalibration(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("device_name = " + _deviceName + ", ");
+            stringBuilder.Append("input = " + _input + ", ");
+            stringBuilder.Append("output = " + _output + ", ");
+            stringBuilder.Append("date = " + _date + ", ");
+            stringBuilder.Append("description = " + _description + ", ");
+            stringBuilder.Append("notes = " + _notes);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class LightSourceCalibrationOutput
+    {
+    
+        private System.Collections.Generic.IDictionary<string, double> _powerLut;
+    
+        public LightSourceCalibrationOutput()
+        {
+            _powerLut = new System.Collections.Generic.Dictionary<string, double>();
+        }
+    
+        protected LightSourceCalibrationOutput(LightSourceCalibrationOutput other)
+        {
+            _powerLut = other._powerLut;
+        }
+    
+        /// <summary>
+        /// Look-up table for LightSource power vs. duty cycle
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("power_lut", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Look-up table for LightSource power vs. duty cycle")]
+        public System.Collections.Generic.IDictionary<string, double> PowerLut
+        {
+            get
+            {
+                return _powerLut;
+            }
+            set
+            {
+                _powerLut = value;
+            }
+        }
+    
+        public System.IObservable<LightSourceCalibrationOutput> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new LightSourceCalibrationOutput(this)));
+        }
+    
+        public System.IObservable<LightSourceCalibrationOutput> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new LightSourceCalibrationOutput(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("power_lut = " + _powerLut);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class Networking
+    {
+    
+        private ZmqConnection _zmqPublisher;
+    
+        private ZmqConnection _zmqSubscriber;
+    
+        public Networking()
+        {
+            _zmqPublisher = new ZmqConnection();
+            _zmqSubscriber = new ZmqConnection();
+        }
+    
+        protected Networking(Networking other)
+        {
+            _zmqPublisher = other._zmqPublisher;
+            _zmqSubscriber = other._zmqSubscriber;
+        }
+    
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("zmq_publisher")]
+        public ZmqConnection ZmqPublisher
+        {
+            get
+            {
+                return _zmqPublisher;
+            }
+            set
+            {
+                _zmqPublisher = value;
+            }
+        }
+    
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("zmq_subscriber")]
+        public ZmqConnection ZmqSubscriber
+        {
+            get
+            {
+                return _zmqSubscriber;
+            }
+            set
+            {
+                _zmqSubscriber = value;
+            }
+        }
+    
+        public System.IObservable<Networking> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new Networking(this)));
+        }
+    
+        public System.IObservable<Networking> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new Networking(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("zmq_publisher = " + _zmqPublisher + ", ");
+            stringBuilder.Append("zmq_subscriber = " + _zmqSubscriber);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class Point2f
+    {
+    
+        private double _x;
+    
+        private double _y;
+    
+        public Point2f()
+        {
+        }
+    
+        protected Point2f(Point2f other)
+        {
+            _x = other._x;
+            _y = other._y;
+        }
+    
+        /// <summary>
+        /// X coordinate of the point (px)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("x", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("X coordinate of the point (px)")]
+        public double X
+        {
+            get
+            {
+                return _x;
+            }
+            set
+            {
+                _x = value;
+            }
+        }
+    
+        /// <summary>
+        /// Y coordinate of the point (px)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("y", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Y coordinate of the point (px)")]
+        public double Y
+        {
+            get
+            {
+                return _y;
+            }
+            set
+            {
+                _y = value;
+            }
+        }
+    
+        public System.IObservable<Point2f> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new Point2f(this)));
+        }
+    
+        public System.IObservable<Point2f> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new Point2f(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("x = " + _x + ", ");
+            stringBuilder.Append("y = " + _y);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    public enum Ports
+    {
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="0")]
+        None = 0,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="1")]
+        Io0 = 1,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="2")]
+        Io1 = 2,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="4")]
+        Io2 = 4,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="8")]
+        Io3 = 8,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="16")]
+        Io4 = 16,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="32")]
+        Io5 = 32,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="64")]
+        Io6 = 64,
+    
+        [System.Runtime.Serialization.EnumMemberAttribute(Value="128")]
+        Io7 = 128,
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class RoiSettings
+    {
+    
+        private Circle _cameraGreenIsoBackground;
+    
+        private Circle _cameraRedBackground;
+    
+        private System.Collections.Generic.List<Circle> _cameraGreenIsoRoi;
+    
+        private System.Collections.Generic.List<Circle> _cameraRedRoi;
+    
+        public RoiSettings()
+        {
+            _cameraGreenIsoBackground = new Circle();
+            _cameraRedBackground = new Circle();
+            _cameraGreenIsoRoi = new System.Collections.Generic.List<Circle>();
+            _cameraRedRoi = new System.Collections.Generic.List<Circle>();
+        }
+    
+        protected RoiSettings(RoiSettings other)
+        {
+            _cameraGreenIsoBackground = other._cameraGreenIsoBackground;
+            _cameraRedBackground = other._cameraRedBackground;
+            _cameraGreenIsoRoi = other._cameraGreenIsoRoi;
+            _cameraRedRoi = other._cameraRedRoi;
+        }
+    
+        /// <summary>
+        /// ROI to compute the background for the green/iso camera channel
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_green_iso_background")]
+        [System.ComponentModel.DescriptionAttribute("ROI to compute the background for the green/iso camera channel")]
+        public Circle CameraGreenIsoBackground
+        {
+            get
+            {
+                return _cameraGreenIsoBackground;
+            }
+            set
+            {
+                _cameraGreenIsoBackground = value;
+            }
+        }
+    
+        /// <summary>
+        /// ROI to compute the background for the red camera channel
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_red_background")]
+        [System.ComponentModel.DescriptionAttribute("ROI to compute the background for the red camera channel")]
+        public Circle CameraRedBackground
+        {
+            get
+            {
+                return _cameraRedBackground;
+            }
+            set
+            {
+                _cameraRedBackground = value;
+            }
+        }
+    
+        /// <summary>
+        /// ROI for the green/iso camera channel
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_green_iso_roi")]
+        [System.ComponentModel.DescriptionAttribute("ROI for the green/iso camera channel")]
+        public System.Collections.Generic.List<Circle> CameraGreenIsoRoi
+        {
+            get
+            {
+                return _cameraGreenIsoRoi;
+            }
+            set
+            {
+                _cameraGreenIsoRoi = value;
+            }
+        }
+    
+        /// <summary>
+        /// ROI for the red camera channel
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_red_roi")]
+        [System.ComponentModel.DescriptionAttribute("ROI for the red camera channel")]
+        public System.Collections.Generic.List<Circle> CameraRedRoi
+        {
+            get
+            {
+                return _cameraRedRoi;
+            }
+            set
+            {
+                _cameraRedRoi = value;
+            }
+        }
+    
+        public System.IObservable<RoiSettings> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new RoiSettings(this)));
+        }
+    
+        public System.IObservable<RoiSettings> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new RoiSettings(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("camera_green_iso_background = " + _cameraGreenIsoBackground + ", ");
+            stringBuilder.Append("camera_red_background = " + _cameraRedBackground + ", ");
+            stringBuilder.Append("camera_green_iso_roi = " + _cameraGreenIsoRoi + ", ");
+            stringBuilder.Append("camera_red_roi = " + _cameraRedRoi);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.CombinatorAttribute()]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    public partial class ZmqConnection
+    {
+    
+        private string _connectionString;
+    
+        private string _topic;
+    
+        public ZmqConnection()
+        {
+            _connectionString = "@tcp://localhost:5556";
+            _topic = "";
+        }
+    
+        protected ZmqConnection(ZmqConnection other)
+        {
+            _connectionString = other._connectionString;
+            _topic = other._topic;
+        }
+    
+        /// <summary>
+        /// The connection string for the ZMQ socket.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("connection_string")]
+        [System.ComponentModel.DescriptionAttribute("The connection string for the ZMQ socket.")]
+        public string ConnectionString
+        {
+            get
+            {
+                return _connectionString;
+            }
+            set
+            {
+                _connectionString = value;
+            }
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("topic")]
+        public string Topic
+        {
+            get
+            {
+                return _topic;
+            }
+            set
+            {
+                _topic = value;
+            }
+        }
+    
+        public System.IObservable<ZmqConnection> Process()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new ZmqConnection(this)));
+        }
+    
+        public System.IObservable<ZmqConnection> Process<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new ZmqConnection(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("connection_string = " + _connectionString + ", ");
+            stringBuilder.Append("topic = " + _topic);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
     /// <summary>
     /// Serializes a sequence of data model objects into JSON strings.
     /// </summary>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
     [System.ComponentModel.DescriptionAttribute("Serializes a sequence of data model objects into JSON strings.")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Transform)]
@@ -1864,6 +2216,16 @@ namespace AindPhysiologyFip.Rig
         private System.IObservable<string> Process<T>(System.IObservable<T> source)
         {
             return System.Reactive.Linq.Observable.Select(source, value => Newtonsoft.Json.JsonConvert.SerializeObject(value));
+        }
+
+        public System.IObservable<string> Process(System.IObservable<AindBehaviorSessionModel> source)
+        {
+            return Process<AindBehaviorSessionModel>(source);
+        }
+
+        public System.IObservable<string> Process(System.IObservable<AindPhysioFipRig> source)
+        {
+            return Process<AindPhysioFipRig>(source);
         }
 
         public System.IObservable<string> Process(System.IObservable<BaseModel> source)
@@ -1925,21 +2287,18 @@ namespace AindPhysiologyFip.Rig
         {
             return Process<ZmqConnection>(source);
         }
-
-        public System.IObservable<string> Process(System.IObservable<AindPhysioFipRig> source)
-        {
-            return Process<AindPhysioFipRig>(source);
-        }
     }
 
 
     /// <summary>
     /// Deserializes a sequence of JSON strings into data model objects.
     /// </summary>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.4.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
     [System.ComponentModel.DescriptionAttribute("Deserializes a sequence of JSON strings into data model objects.")]
     [System.ComponentModel.DefaultPropertyAttribute("Type")]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Transform)]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<AindBehaviorSessionModel>))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<AindPhysioFipRig>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<BaseModel>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Circle>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipCamera>))]
@@ -1952,13 +2311,12 @@ namespace AindPhysiologyFip.Rig
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Point2f>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<RoiSettings>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<ZmqConnection>))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<AindPhysioFipRig>))]
     public partial class DeserializeFromJson : Bonsai.Expressions.SingleArgumentExpressionBuilder
     {
     
         public DeserializeFromJson()
         {
-            Type = new Bonsai.Expressions.TypeMapping<AindPhysioFipRig>();
+            Type = new Bonsai.Expressions.TypeMapping<AindBehaviorSessionModel>();
         }
 
         public Bonsai.Expressions.TypeMapping Type { get; set; }

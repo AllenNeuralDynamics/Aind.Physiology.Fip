@@ -1,6 +1,6 @@
 using System;
 
-namespace AindPhysiologyFip.Rig{
+namespace AindPhysiologyFip{
     partial class RoiSettings : ICloneable{
 
         public object Clone(){

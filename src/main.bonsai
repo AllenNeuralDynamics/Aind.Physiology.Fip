@@ -1,27 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.9.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xmlns:p1="clr-namespace:AindPhysiologyFip.Session;assembly=Extensions"
+                 xmlns:p1="clr-namespace:AindPhysiologyFip;assembly=Extensions"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
-                 xmlns:p2="clr-namespace:AindPhysiologyFip.Rig;assembly=Extensions"
-                 xmlns:p3="clr-namespace:System.Reactive;assembly=System.Reactive.Core"
+                 xmlns:p2="clr-namespace:System.Reactive;assembly=System.Reactive.Core"
                  xmlns:sys="clr-namespace:System;assembly=mscorlib"
                  xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
-                 xmlns:p4="clr-namespace:AllenNeuralDynamics.AindBehaviorServices.DataTypes;assembly=AllenNeuralDynamics.AindBehaviorServices"
-                 xmlns:p5="clr-namespace:AllenNeuralDynamics.VersionControl;assembly=AllenNeuralDynamics.VersionControl"
-                 xmlns:p6="clr-namespace:FipExtensions;assembly=Extensions"
+                 xmlns:p3="clr-namespace:AllenNeuralDynamics.AindBehaviorServices.DataTypes;assembly=AllenNeuralDynamics.AindBehaviorServices"
+                 xmlns:p4="clr-namespace:AllenNeuralDynamics.VersionControl;assembly=AllenNeuralDynamics.VersionControl"
+                 xmlns:p5="clr-namespace:FipExtensions;assembly=Extensions"
                  xmlns:spk="clr-namespace:Bonsai.Spinnaker;assembly=Bonsai.Spinnaker"
                  xmlns:harp="clr-namespace:Bonsai.Harp;assembly=Bonsai.Harp"
-                 xmlns:p7="clr-namespace:AllenNeuralDynamics.CuttlefishFip;assembly=AllenNeuralDynamics.CuttlefishFip"
-                 xmlns:p8="clr-namespace:;assembly=Extensions"
+                 xmlns:p6="clr-namespace:AllenNeuralDynamics.CuttlefishFip;assembly=AllenNeuralDynamics.CuttlefishFip"
+                 xmlns:p7="clr-namespace:;assembly=Extensions"
                  xmlns:zmq="clr-namespace:Bonsai.ZeroMQ;assembly=Bonsai.ZeroMQ"
-                 xmlns:p9="clr-namespace:NetMQ;assembly=NetMQ"
+                 xmlns:p8="clr-namespace:NetMQ;assembly=NetMQ"
                  xmlns:scr="clr-namespace:Bonsai.Scripting.Expressions;assembly=Bonsai.Scripting.Expressions"
-                 xmlns:p10="clr-namespace:AllenNeuralDynamics.Core;assembly=AllenNeuralDynamics.Core"
+                 xmlns:p9="clr-namespace:AllenNeuralDynamics.Core;assembly=AllenNeuralDynamics.Core"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
-                 xmlns:p11="clr-namespace:AllenNeuralDynamics.Core.Design;assembly=AllenNeuralDynamics.Core.Design"
+                 xmlns:p10="clr-namespace:AllenNeuralDynamics.Core.Design;assembly=AllenNeuralDynamics.Core.Design"
                  xmlns:gui="clr-namespace:Bonsai.Gui;assembly=Bonsai.Gui"
-                 xmlns:p12="clr-namespace:Bonsai.Vision.Design;assembly=Extensions"
+                 xmlns:p11="clr-namespace:Bonsai.Vision.Design;assembly=Extensions"
                  xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
                  xmlns:num="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
                  xmlns="https://bonsai-rx.org/2018/workflow">
@@ -51,8 +50,8 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>RawRigSchema</Name>
             </Expression>
-            <Expression xsi:type="p2:DeserializeFromJson">
-              <p2:Type xsi:type="TypeMapping" TypeArguments="p2:AindPhysioFipRig" />
+            <Expression xsi:type="p1:DeserializeFromJson">
+              <p1:Type xsi:type="TypeMapping" TypeArguments="p1:AindPhysioFipRig" />
             </Expression>
             <Expression xsi:type="rx:AsyncSubject">
               <Name>RigSchema</Name>
@@ -70,16 +69,16 @@
         <Name>Init</Name>
         <Workflow>
           <Nodes>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:Unit">
               <rx:Name>StartExperimentShortcut</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:Unit">
               <rx:Name>EndExperiment</rx:Name>
             </Expression>
             <Expression xsi:type="rx:BehaviorSubject" TypeArguments="sys:String">
               <rx:Name>Annotations</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:Unit">
               <rx:Name>StartExperiment</rx:Name>
             </Expression>
             <Expression xsi:type="rx:BehaviorSubject" TypeArguments="cv:Circle[]">
@@ -88,18 +87,18 @@
             <Expression xsi:type="rx:BehaviorSubject" TypeArguments="cv:Circle[]">
               <rx:Name>CurrentGreenIsoRoi</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:RoiSettings">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p1:RoiSettings">
               <rx:Name>CurrentCombinedRoi</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p4:SoftwareEvent">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:SoftwareEvent">
               <rx:Name>SoftwareEvent</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:Unit">
               <rx:Name>StartLogging</rx:Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p5:CreateRepository">
-                <p5:Path>../.</p5:Path>
+              <Combinator xsi:type="p4:CreateRepository">
+                <p4:Path>../.</p4:Path>
               </Combinator>
             </Expression>
             <Expression xsi:type="rx:AsyncSubject">
@@ -174,7 +173,7 @@
             <Expression xsi:type="rx:AsyncSubject">
               <Name>LocalRoiDefaultPath</Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:Unit">
               <rx:Name>ClearTasks</rx:Name>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -267,19 +266,19 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p6:FipSpinnakerCapture">
+                    <Combinator xsi:type="p5:FipSpinnakerCapture">
                       <spk:Index xsi:nil="true" />
                       <spk:ColorProcessing>Default</spk:ColorProcessing>
-                      <p6:Gain>0</p6:Gain>
-                      <p6:Offset>
-                        <p6:X>0</p6:X>
-                        <p6:Y>0</p6:Y>
-                      </p6:Offset>
+                      <p5:Gain>0</p5:Gain>
+                      <p5:Offset>
+                        <p5:X>0</p5:X>
+                        <p5:Y>0</p5:Y>
+                      </p5:Offset>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p6:ToFipFrame">
-                      <p6:CameraSource>GreenIso</p6:CameraSource>
+                    <Combinator xsi:type="p5:ToFipFrame">
+                      <p5:CameraSource>GreenIso</p5:CameraSource>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
@@ -291,8 +290,8 @@
                       <harp:MessageType>Event</harp:MessageType>
                     </Combinator>
                   </Expression>
-                  <Expression xsi:type="p7:Parse">
-                    <harp:Register xsi:type="p7:TimestampedTaskRisingEdgeEvent" />
+                  <Expression xsi:type="p6:Parse">
+                    <harp:Register xsi:type="p6:TimestampedTaskRisingEdgeEvent" />
                   </Expression>
                   <Expression xsi:type="GroupWorkflow">
                     <Name>HasUv&amp;BlueFlags</Name>
@@ -319,7 +318,7 @@
                           </PropertyMappings>
                         </Expression>
                         <Expression xsi:type="HasFlag">
-                          <Operand xsi:type="WorkflowProperty" TypeArguments="p7:Ports">
+                          <Operand xsi:type="WorkflowProperty" TypeArguments="p6:Ports">
                             <Value>None</Value>
                           </Operand>
                         </Expression>
@@ -338,7 +337,7 @@
                           </PropertyMappings>
                         </Expression>
                         <Expression xsi:type="HasFlag">
-                          <Operand xsi:type="WorkflowProperty" TypeArguments="p7:Ports">
+                          <Operand xsi:type="WorkflowProperty" TypeArguments="p6:Ports">
                             <Value>None</Value>
                           </Operand>
                         </Expression>
@@ -419,24 +418,24 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p6:FipSpinnakerCapture">
+                    <Combinator xsi:type="p5:FipSpinnakerCapture">
                       <spk:Index xsi:nil="true" />
                       <spk:ColorProcessing>Default</spk:ColorProcessing>
-                      <p6:Gain>0</p6:Gain>
-                      <p6:Offset>
-                        <p6:X>0</p6:X>
-                        <p6:Y>0</p6:Y>
-                      </p6:Offset>
+                      <p5:Gain>0</p5:Gain>
+                      <p5:Offset>
+                        <p5:X>0</p5:X>
+                        <p5:Y>0</p5:Y>
+                      </p5:Offset>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p6:ToFipFrame">
-                      <p6:CameraSource>Red</p6:CameraSource>
+                    <Combinator xsi:type="p5:ToFipFrame">
+                      <p5:CameraSource>Red</p5:CameraSource>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p8:FlipInPlace">
-                      <p8:FlipMode>Horizontal</p8:FlipMode>
+                    <Combinator xsi:type="p7:FlipInPlace">
+                      <p7:FlipMode>Horizontal</p7:FlipMode>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
@@ -448,8 +447,8 @@
                       <harp:MessageType>Event</harp:MessageType>
                     </Combinator>
                   </Expression>
-                  <Expression xsi:type="p7:Parse">
-                    <harp:Register xsi:type="p7:TimestampedTaskRisingEdgeEvent" />
+                  <Expression xsi:type="p6:Parse">
+                    <harp:Register xsi:type="p6:TimestampedTaskRisingEdgeEvent" />
                   </Expression>
                   <Expression xsi:type="GroupWorkflow">
                     <Name>HasLimeFlags</Name>
@@ -476,7 +475,7 @@
                           </PropertyMappings>
                         </Expression>
                         <Expression xsi:type="HasFlag">
-                          <Operand xsi:type="WorkflowProperty" TypeArguments="p7:Ports">
+                          <Operand xsi:type="WorkflowProperty" TypeArguments="p6:Ports">
                             <Value>None</Value>
                           </Operand>
                         </Expression>
@@ -599,7 +598,7 @@
                           </PropertyMappings>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p7:Device">
+                          <Combinator xsi:type="p6:Device">
                             <harp:OperationMode>Active</harp:OperationMode>
                             <harp:OperationLed>On</harp:OperationLed>
                             <harp:DumpRegisters>true</harp:DumpRegisters>
@@ -699,7 +698,7 @@
                   <Expression xsi:type="rx:PublishSubject">
                     <Name>SocketResponse</Name>
                   </Expression>
-                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p9:NetMQMessage">
+                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p8:NetMQMessage">
                     <rx:Name>SocketRequest</rx:Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
@@ -743,9 +742,9 @@
                     <Selector>LightSourceUv</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p8:CreateTaskFromLightSource" />
+                    <Combinator xsi:type="p7:CreateTaskFromLightSource" />
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p6:ToFipFrame,p6:FipCameraSource">
+                  <Expression xsi:type="PropertySource" TypeArguments="p5:ToFipFrame,p5:FipCameraSource">
                     <MemberName>CameraSource</MemberName>
                     <Value>Iso</Value>
                   </Expression>
@@ -759,9 +758,9 @@
                     <Selector>LightSourceBlue</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p8:CreateTaskFromLightSource" />
+                    <Combinator xsi:type="p7:CreateTaskFromLightSource" />
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p6:ToFipFrame,p6:FipCameraSource">
+                  <Expression xsi:type="PropertySource" TypeArguments="p5:ToFipFrame,p5:FipCameraSource">
                     <MemberName>CameraSource</MemberName>
                     <Value>Green</Value>
                   </Expression>
@@ -775,9 +774,9 @@
                     <Selector>LightSourceLime</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p8:CreateTaskFromLightSource" />
+                    <Combinator xsi:type="p7:CreateTaskFromLightSource" />
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p6:ToFipFrame,p6:FipCameraSource">
+                  <Expression xsi:type="PropertySource" TypeArguments="p5:ToFipFrame,p5:FipCameraSource">
                     <MemberName>CameraSource</MemberName>
                     <Value>Red</Value>
                   </Expression>
@@ -872,7 +871,7 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>StartExperiment</Name>
             </Expression>
-            <Expression xsi:type="PropertySource" TypeArguments="p7:CreateSetTaskStatePayload,p7:TaskState">
+            <Expression xsi:type="PropertySource" TypeArguments="p6:CreateSetTaskStatePayload,p6:TaskState">
               <MemberName>SetTaskState</MemberName>
               <Value>Start</Value>
             </Expression>
@@ -883,7 +882,7 @@
               <Name>TriggeringLogic</Name>
               <Workflow>
                 <Nodes>
-                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:Unit">
+                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:Unit">
                     <rx:Name>TriggerConfigureFipTasks</rx:Name>
                   </Expression>
                   <Expression xsi:type="rx:CreateObservable">
@@ -963,18 +962,18 @@
                                       </PropertyMappings>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p7:ConfigureTask">
-                                        <p7:MessageType>Write</p7:MessageType>
-                                        <p7:PwmPort>IO0</p7:PwmPort>
-                                        <p7:DutyCycle>0.1</p7:DutyCycle>
-                                        <p7:Frequency>10000</p7:Frequency>
-                                        <p7:TriggerPorts>IO1</p7:TriggerPorts>
-                                        <p7:EventsEnabled>true</p7:EventsEnabled>
-                                        <p7:IsMuted>false</p7:IsMuted>
-                                        <p7:Delta1>0</p7:Delta1>
-                                        <p7:Delta2>0</p7:Delta2>
-                                        <p7:Delta3>0</p7:Delta3>
-                                        <p7:Delta4>0</p7:Delta4>
+                                      <Combinator xsi:type="p6:ConfigureTask">
+                                        <p6:MessageType>Write</p6:MessageType>
+                                        <p6:PwmPort>IO0</p6:PwmPort>
+                                        <p6:DutyCycle>0.1</p6:DutyCycle>
+                                        <p6:Frequency>10000</p6:Frequency>
+                                        <p6:TriggerPorts>IO1</p6:TriggerPorts>
+                                        <p6:EventsEnabled>true</p6:EventsEnabled>
+                                        <p6:IsMuted>false</p6:IsMuted>
+                                        <p6:Delta1>0</p6:Delta1>
+                                        <p6:Delta2>0</p6:Delta2>
+                                        <p6:Delta3>0</p6:Delta3>
+                                        <p6:Delta4>0</p6:Delta4>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
@@ -1033,7 +1032,7 @@
                       </Edges>
                     </Workflow>
                   </Expression>
-                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="sys:Tuple(p6:FipCameraSource,sys:Single)">
+                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="sys:Tuple(p5:FipCameraSource,sys:Single)">
                     <rx:Name>TriggerContinuousLaserTask</rx:Name>
                   </Expression>
                   <Expression xsi:type="rx:CreateObservable">
@@ -1098,7 +1097,7 @@
                                 </PropertyMappings>
                               </Expression>
                               <Expression xsi:type="Index">
-                                <Operand xsi:type="WorkflowProperty" TypeArguments="p6:FipCameraSource">
+                                <Operand xsi:type="WorkflowProperty" TypeArguments="p5:FipCameraSource">
                                   <Value>None</Value>
                                 </Operand>
                               </Expression>
@@ -1143,18 +1142,18 @@
                                       </PropertyMappings>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p7:ConfigureTask">
-                                        <p7:MessageType>Write</p7:MessageType>
-                                        <p7:PwmPort>None</p7:PwmPort>
-                                        <p7:DutyCycle>0.1</p7:DutyCycle>
-                                        <p7:Frequency>10000</p7:Frequency>
-                                        <p7:TriggerPorts>None</p7:TriggerPorts>
-                                        <p7:EventsEnabled>false</p7:EventsEnabled>
-                                        <p7:IsMuted>false</p7:IsMuted>
-                                        <p7:Delta1>10000</p7:Delta1>
-                                        <p7:Delta2>0</p7:Delta2>
-                                        <p7:Delta3>0</p7:Delta3>
-                                        <p7:Delta4>0</p7:Delta4>
+                                      <Combinator xsi:type="p6:ConfigureTask">
+                                        <p6:MessageType>Write</p6:MessageType>
+                                        <p6:PwmPort>None</p6:PwmPort>
+                                        <p6:DutyCycle>0.1</p6:DutyCycle>
+                                        <p6:Frequency>10000</p6:Frequency>
+                                        <p6:TriggerPorts>None</p6:TriggerPorts>
+                                        <p6:EventsEnabled>false</p6:EventsEnabled>
+                                        <p6:IsMuted>false</p6:IsMuted>
+                                        <p6:Delta1>10000</p6:Delta1>
+                                        <p6:Delta2>0</p6:Delta2>
+                                        <p6:Delta3>0</p6:Delta3>
+                                        <p6:Delta4>0</p6:Delta4>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
@@ -1223,10 +1222,10 @@
                     <Name>ClearTasks</Name>
                     <Workflow>
                       <Nodes>
-                        <Expression xsi:type="p7:CreateMessage">
+                        <Expression xsi:type="p6:CreateMessage">
                           <harp:MessageType>Write</harp:MessageType>
-                          <harp:Payload xsi:type="p7:CreateSetTaskStatePayload">
-                            <p7:SetTaskState>Abort</p7:SetTaskState>
+                          <harp:Payload xsi:type="p6:CreateSetTaskStatePayload">
+                            <p6:SetTaskState>Abort</p6:SetTaskState>
                           </harp:Payload>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
@@ -1237,10 +1236,10 @@
                             <rx:DueTime>PT0.03S</rx:DueTime>
                           </Combinator>
                         </Expression>
-                        <Expression xsi:type="p7:CreateMessage">
+                        <Expression xsi:type="p6:CreateMessage">
                           <harp:MessageType>Write</harp:MessageType>
-                          <harp:Payload xsi:type="p7:CreateClearAllTasksPayload">
-                            <p7:ClearAllTasks>Disabled</p7:ClearAllTasks>
+                          <harp:Payload xsi:type="p6:CreateClearAllTasksPayload">
+                            <p6:ClearAllTasks>Disabled</p6:ClearAllTasks>
                           </harp:Payload>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
@@ -1266,12 +1265,12 @@
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Switch" />
                   </Expression>
-                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p7:TaskState">
+                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p6:TaskState">
                     <rx:Name>SetTaskState</rx:Name>
                   </Expression>
-                  <Expression xsi:type="p7:Format">
+                  <Expression xsi:type="p6:Format">
                     <harp:MessageType>Write</harp:MessageType>
-                    <harp:Register xsi:type="p7:SetTaskState" />
+                    <harp:Register xsi:type="p6:SetTaskState" />
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
                     <Name>CuttlefishFipCommands</Name>
@@ -1488,7 +1487,7 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="HasFlag">
-                    <Operand xsi:type="WorkflowProperty" TypeArguments="p7:Ports">
+                    <Operand xsi:type="WorkflowProperty" TypeArguments="p6:Ports">
                       <Value>None</Value>
                     </Operand>
                   </Expression>
@@ -1507,7 +1506,7 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="HasFlag">
-                    <Operand xsi:type="WorkflowProperty" TypeArguments="p7:Ports">
+                    <Operand xsi:type="WorkflowProperty" TypeArguments="p6:Ports">
                       <Value>None</Value>
                     </Operand>
                   </Expression>
@@ -1543,8 +1542,8 @@
               <Combinator xsi:type="harp:CreateTimestamped" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p8:ModifyFipCameraSource">
-                <p8:Source>Iso</p8:Source>
+              <Combinator xsi:type="p7:ModifyFipCameraSource">
+                <p7:Source>Iso</p7:Source>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -1556,8 +1555,8 @@
               </PropertyMappings>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p6:CircleActivityCalculator">
-                <p6:Operation>Avg</p6:Operation>
+              <Combinator xsi:type="p5:CircleActivityCalculator">
+                <p5:Operation>Avg</p5:Operation>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -1588,7 +1587,7 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="HasFlag">
-                    <Operand xsi:type="WorkflowProperty" TypeArguments="p7:Ports">
+                    <Operand xsi:type="WorkflowProperty" TypeArguments="p6:Ports">
                       <Value>None</Value>
                     </Operand>
                   </Expression>
@@ -1607,7 +1606,7 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="HasFlag">
-                    <Operand xsi:type="WorkflowProperty" TypeArguments="p7:Ports">
+                    <Operand xsi:type="WorkflowProperty" TypeArguments="p6:Ports">
                       <Value>None</Value>
                     </Operand>
                   </Expression>
@@ -1643,8 +1642,8 @@
               <Combinator xsi:type="harp:CreateTimestamped" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p8:ModifyFipCameraSource">
-                <p8:Source>Green</p8:Source>
+              <Combinator xsi:type="p7:ModifyFipCameraSource">
+                <p7:Source>Green</p7:Source>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -1656,8 +1655,8 @@
               </PropertyMappings>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p6:CircleActivityCalculator">
-                <p6:Operation>Avg</p6:Operation>
+              <Combinator xsi:type="p5:CircleActivityCalculator">
+                <p5:Operation>Avg</p5:Operation>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -1688,7 +1687,7 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="HasFlag">
-                    <Operand xsi:type="WorkflowProperty" TypeArguments="p7:Ports">
+                    <Operand xsi:type="WorkflowProperty" TypeArguments="p6:Ports">
                       <Value>None</Value>
                     </Operand>
                   </Expression>
@@ -1707,7 +1706,7 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="HasFlag">
-                    <Operand xsi:type="WorkflowProperty" TypeArguments="p7:Ports">
+                    <Operand xsi:type="WorkflowProperty" TypeArguments="p6:Ports">
                       <Value>None</Value>
                     </Operand>
                   </Expression>
@@ -1743,8 +1742,8 @@
               <Combinator xsi:type="harp:CreateTimestamped" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p8:ModifyFipCameraSource">
-                <p8:Source>Red</p8:Source>
+              <Combinator xsi:type="p7:ModifyFipCameraSource">
+                <p7:Source>Red</p7:Source>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -1756,8 +1755,8 @@
               </PropertyMappings>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p6:CircleActivityCalculator">
-                <p6:Operation>Avg</p6:Operation>
+              <Combinator xsi:type="p5:CircleActivityCalculator">
+                <p5:Operation>Avg</p5:Operation>
               </Combinator>
             </Expression>
             <Expression xsi:type="Combinator">
@@ -1815,8 +1814,8 @@
                     <Name>Repository</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p5:IsRepositoryClean">
-                      <p5:IgnoreUntracked>false</p5:IgnoreUntracked>
+                    <Combinator xsi:type="p4:IsRepositoryClean">
+                      <p4:IgnoreUntracked>false</p4:IgnoreUntracked>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="BitwiseNot" />
@@ -1847,8 +1846,8 @@
                     </Workflow>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p10:ThrowException">
-                      <p10:Message>Repository is not clean! Please discard all local changes.</p10:Message>
+                    <Combinator xsi:type="p9:ThrowException">
+                      <p9:Message>Repository is not clean! Please discard all local changes.</p9:Message>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="GroupWorkflow">
@@ -1955,8 +1954,8 @@
                           <Selector>it</Selector>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p10:ThrowException">
-                            <p10:Message>Dropped frame detected during pre-session!</p10:Message>
+                          <Combinator xsi:type="p9:ThrowException">
+                            <p9:Message>Dropped frame detected during pre-session!</p9:Message>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
@@ -2075,10 +2074,10 @@
                                       </PropertyMappings>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p11:MessageBox">
-                                        <p11:Text />
-                                        <p11:Title>Warning</p11:Title>
-                                        <p11:MessageBoxIcon>Exclamation</p11:MessageBoxIcon>
+                                      <Combinator xsi:type="p10:MessageBox">
+                                        <p10:Text />
+                                        <p10:Title>Warning</p10:Title>
+                                        <p10:MessageBoxIcon>Exclamation</p10:MessageBoxIcon>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="SubscribeSubject">
@@ -2098,8 +2097,8 @@
                                       <Combinator xsi:type="rx:WithLatestFrom" />
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p10:CreateSoftwareEvent">
-                                        <p10:EventName>HardwareQA</p10:EventName>
+                                      <Combinator xsi:type="p9:CreateSoftwareEvent">
+                                        <p9:EventName>HardwareQA</p9:EventName>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="MulticastSubject">
@@ -2254,7 +2253,7 @@
                     <Property Name="Value" />
                   </Expression>
                   <Expression xsi:type="HasFlag">
-                    <Operand xsi:type="WorkflowProperty" TypeArguments="p6:FipCameraSource">
+                    <Operand xsi:type="WorkflowProperty" TypeArguments="p5:FipCameraSource">
                       <Value>Iso</Value>
                     </Operand>
                   </Expression>
@@ -2291,7 +2290,7 @@
                     <Property Name="Value" />
                   </Expression>
                   <Expression xsi:type="HasFlag">
-                    <Operand xsi:type="WorkflowProperty" TypeArguments="p6:FipCameraSource">
+                    <Operand xsi:type="WorkflowProperty" TypeArguments="p5:FipCameraSource">
                       <Value>Green</Value>
                     </Operand>
                   </Expression>
@@ -2328,7 +2327,7 @@
                     <Property Name="Value" />
                   </Expression>
                   <Expression xsi:type="HasFlag">
-                    <Operand xsi:type="WorkflowProperty" TypeArguments="p6:FipCameraSource">
+                    <Operand xsi:type="WorkflowProperty" TypeArguments="p5:FipCameraSource">
                       <Value>Red</Value>
                     </Operand>
                   </Expression>
@@ -2368,7 +2367,7 @@
                     <Name>IsoActivity</Name>
                   </Expression>
                   <Expression xsi:type="VisualizerMapping">
-                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p12:CircleActivityCollectionVisualizer" />
+                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p11:CircleActivityCollectionVisualizer" />
                   </Expression>
                   <Expression xsi:type="gui:TableLayoutPanelBuilder">
                     <gui:Enabled>true</gui:Enabled>
@@ -2400,7 +2399,7 @@
                     <Name>GreenActivity</Name>
                   </Expression>
                   <Expression xsi:type="VisualizerMapping">
-                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p12:CircleActivityCollectionVisualizer" />
+                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p11:CircleActivityCollectionVisualizer" />
                   </Expression>
                   <Expression xsi:type="gui:TableLayoutPanelBuilder">
                     <gui:Enabled>true</gui:Enabled>
@@ -2432,7 +2431,7 @@
                     <Name>RedActivity</Name>
                   </Expression>
                   <Expression xsi:type="VisualizerMapping">
-                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p12:CircleActivityCollectionVisualizer" />
+                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p11:CircleActivityCollectionVisualizer" />
                   </Expression>
                   <Expression xsi:type="gui:TableLayoutPanelBuilder">
                     <gui:Enabled>true</gui:Enabled>
@@ -2885,7 +2884,7 @@
                                       <Name>CurrentCombinedRoi</Name>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p2:SerializeToJson" />
+                                      <Combinator xsi:type="p1:SerializeToJson" />
                                     </Expression>
                                     <Expression xsi:type="SubscribeSubject">
                                       <Name>LocalRoiDefaultPath</Name>
@@ -2958,11 +2957,11 @@
                                         <io:Path>../local/default.json</io:Path>
                                       </Combinator>
                                     </Expression>
-                                    <Expression xsi:type="p2:DeserializeFromJson">
-                                      <p2:Type xsi:type="TypeMapping" TypeArguments="p2:RoiSettings" />
+                                    <Expression xsi:type="p1:DeserializeFromJson">
+                                      <p1:Type xsi:type="TypeMapping" TypeArguments="p1:RoiSettings" />
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p6:RoiCircleConverter" />
+                                      <Combinator xsi:type="p5:RoiCircleConverter" />
                                     </Expression>
                                     <Expression xsi:type="MemberSelector">
                                       <Selector>GreenIso</Selector>
@@ -3000,10 +2999,10 @@
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p11:MessageBox">
-                                        <p11:Text>Could not load local ROI settings.</p11:Text>
-                                        <p11:Title>Error</p11:Title>
-                                        <p11:MessageBoxIcon>Exclamation</p11:MessageBoxIcon>
+                                      <Combinator xsi:type="p10:MessageBox">
+                                        <p10:Text>Could not load local ROI settings.</p10:Text>
+                                        <p10:Title>Error</p10:Title>
+                                        <p10:MessageBoxIcon>Exclamation</p10:MessageBoxIcon>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
@@ -3059,12 +3058,12 @@
                                 <Workflow>
                                   <Nodes>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p6:LoadRoiDefault">
-                                        <p6:Path>../local/default.json</p6:Path>
+                                      <Combinator xsi:type="p5:LoadRoiDefault">
+                                        <p5:Path>../local/default.json</p5:Path>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p6:RoiCircleConverter" />
+                                      <Combinator xsi:type="p5:RoiCircleConverter" />
                                     </Expression>
                                     <Expression xsi:type="MemberSelector">
                                       <Selector>GreenIso</Selector>
@@ -3173,12 +3172,12 @@
                           </PropertyMappings>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p6:LoadRoiDefault">
-                            <p6:Path>../local/default.json</p6:Path>
+                          <Combinator xsi:type="p5:LoadRoiDefault">
+                            <p5:Path>../local/default.json</p5:Path>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p6:RoiCircleConverter" />
+                          <Combinator xsi:type="p5:RoiCircleConverter" />
                         </Expression>
                         <Expression xsi:type="MemberSelector">
                           <Selector>GreenIso</Selector>
@@ -3212,7 +3211,7 @@
                           <Name>CurrentGreenIsoRoi</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p6:CircleArrayDistinctUntilChanged" />
+                          <Combinator xsi:type="p5:CircleArrayDistinctUntilChanged" />
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="BooleanProperty">
@@ -3229,45 +3228,45 @@
                           </PropertyMappings>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p8:SelectCircles">
-                            <p8:Circles>
-                              <p8:Circle>
-                                <p8:Center>
-                                  <p8:X>10</p8:X>
-                                  <p8:Y>10</p8:Y>
-                                </p8:Center>
-                                <p8:Radius>10</p8:Radius>
-                              </p8:Circle>
-                              <p8:Circle>
-                                <p8:Center>
-                                  <p8:X>50</p8:X>
-                                  <p8:Y>50</p8:Y>
-                                </p8:Center>
-                                <p8:Radius>20</p8:Radius>
-                              </p8:Circle>
-                              <p8:Circle>
-                                <p8:Center>
-                                  <p8:X>50</p8:X>
-                                  <p8:Y>150</p8:Y>
-                                </p8:Center>
-                                <p8:Radius>20</p8:Radius>
-                              </p8:Circle>
-                              <p8:Circle>
-                                <p8:Center>
-                                  <p8:X>150</p8:X>
-                                  <p8:Y>50</p8:Y>
-                                </p8:Center>
-                                <p8:Radius>20</p8:Radius>
-                              </p8:Circle>
-                              <p8:Circle>
-                                <p8:Center>
-                                  <p8:X>150</p8:X>
-                                  <p8:Y>150</p8:Y>
-                                </p8:Center>
-                                <p8:Radius>20</p8:Radius>
-                              </p8:Circle>
-                            </p8:Circles>
-                            <p8:Refresh>false</p8:Refresh>
+                          <Combinator xsi:type="p7:SelectCircles">
+                            <p7:Circles>
+                              <p7:Circle>
+                                <p7:Center>
+                                  <p7:X>10</p7:X>
+                                  <p7:Y>10</p7:Y>
+                                </p7:Center>
+                                <p7:Radius>10</p7:Radius>
+                              </p7:Circle>
+                              <p7:Circle>
+                                <p7:Center>
+                                  <p7:X>50</p7:X>
+                                  <p7:Y>50</p7:Y>
+                                </p7:Center>
+                                <p7:Radius>20</p7:Radius>
+                              </p7:Circle>
+                              <p7:Circle>
+                                <p7:Center>
+                                  <p7:X>50</p7:X>
+                                  <p7:Y>150</p7:Y>
+                                </p7:Center>
+                                <p7:Radius>20</p7:Radius>
+                              </p7:Circle>
+                              <p7:Circle>
+                                <p7:Center>
+                                  <p7:X>150</p7:X>
+                                  <p7:Y>50</p7:Y>
+                                </p7:Center>
+                                <p7:Radius>20</p7:Radius>
+                              </p7:Circle>
+                              <p7:Circle>
+                                <p7:Center>
+                                  <p7:X>150</p7:X>
+                                  <p7:Y>150</p7:Y>
+                                </p7:Center>
+                                <p7:Radius>20</p7:Radius>
+                              </p7:Circle>
+                            </p7:Circles>
+                            <p7:Refresh>false</p7:Refresh>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="rx:Sink">
@@ -3277,7 +3276,7 @@
                                 <Name>Source1</Name>
                               </Expression>
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="p6:CircleArrayDistinctUntilChanged" />
+                                <Combinator xsi:type="p5:CircleArrayDistinctUntilChanged" />
                               </Expression>
                               <Expression xsi:type="MulticastSubject">
                                 <Name>CurrentGreenIsoRoi</Name>
@@ -3328,7 +3327,7 @@
                           <Name>CurrentRedRoi</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p6:CircleArrayDistinctUntilChanged" />
+                          <Combinator xsi:type="p5:CircleArrayDistinctUntilChanged" />
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="BooleanProperty">
@@ -3345,45 +3344,45 @@
                           </PropertyMappings>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p8:SelectCircles">
-                            <p8:Circles>
-                              <p8:Circle>
-                                <p8:Center>
-                                  <p8:X>10</p8:X>
-                                  <p8:Y>10</p8:Y>
-                                </p8:Center>
-                                <p8:Radius>10</p8:Radius>
-                              </p8:Circle>
-                              <p8:Circle>
-                                <p8:Center>
-                                  <p8:X>50</p8:X>
-                                  <p8:Y>50</p8:Y>
-                                </p8:Center>
-                                <p8:Radius>20</p8:Radius>
-                              </p8:Circle>
-                              <p8:Circle>
-                                <p8:Center>
-                                  <p8:X>50</p8:X>
-                                  <p8:Y>150</p8:Y>
-                                </p8:Center>
-                                <p8:Radius>20</p8:Radius>
-                              </p8:Circle>
-                              <p8:Circle>
-                                <p8:Center>
-                                  <p8:X>150</p8:X>
-                                  <p8:Y>50</p8:Y>
-                                </p8:Center>
-                                <p8:Radius>20</p8:Radius>
-                              </p8:Circle>
-                              <p8:Circle>
-                                <p8:Center>
-                                  <p8:X>150</p8:X>
-                                  <p8:Y>150</p8:Y>
-                                </p8:Center>
-                                <p8:Radius>20</p8:Radius>
-                              </p8:Circle>
-                            </p8:Circles>
-                            <p8:Refresh>false</p8:Refresh>
+                          <Combinator xsi:type="p7:SelectCircles">
+                            <p7:Circles>
+                              <p7:Circle>
+                                <p7:Center>
+                                  <p7:X>10</p7:X>
+                                  <p7:Y>10</p7:Y>
+                                </p7:Center>
+                                <p7:Radius>10</p7:Radius>
+                              </p7:Circle>
+                              <p7:Circle>
+                                <p7:Center>
+                                  <p7:X>50</p7:X>
+                                  <p7:Y>50</p7:Y>
+                                </p7:Center>
+                                <p7:Radius>20</p7:Radius>
+                              </p7:Circle>
+                              <p7:Circle>
+                                <p7:Center>
+                                  <p7:X>50</p7:X>
+                                  <p7:Y>150</p7:Y>
+                                </p7:Center>
+                                <p7:Radius>20</p7:Radius>
+                              </p7:Circle>
+                              <p7:Circle>
+                                <p7:Center>
+                                  <p7:X>150</p7:X>
+                                  <p7:Y>50</p7:Y>
+                                </p7:Center>
+                                <p7:Radius>20</p7:Radius>
+                              </p7:Circle>
+                              <p7:Circle>
+                                <p7:Center>
+                                  <p7:X>150</p7:X>
+                                  <p7:Y>150</p7:Y>
+                                </p7:Center>
+                                <p7:Radius>20</p7:Radius>
+                              </p7:Circle>
+                            </p7:Circles>
+                            <p7:Refresh>false</p7:Refresh>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="rx:Sink">
@@ -3393,7 +3392,7 @@
                                 <Name>Source1</Name>
                               </Expression>
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="p6:CircleArrayDistinctUntilChanged" />
+                                <Combinator xsi:type="p5:CircleArrayDistinctUntilChanged" />
                               </Expression>
                               <Expression xsi:type="MulticastSubject">
                                 <Name>CurrentRedRoi</Name>
@@ -3447,7 +3446,7 @@
                           <Combinator xsi:type="rx:CombineLatest" />
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p6:RoiCircleConverter" />
+                          <Combinator xsi:type="p5:RoiCircleConverter" />
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
                           <Name>CurrentCombinedRoi</Name>
@@ -3586,15 +3585,15 @@
                   <Expression xsi:type="rx:BehaviorSubject">
                     <Name>Power</Name>
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p8:ModifyFipCameraSource,p6:FipCameraSource">
+                  <Expression xsi:type="PropertySource" TypeArguments="p7:ModifyFipCameraSource,p5:FipCameraSource">
                     <MemberName>Source</MemberName>
                     <Value>Iso</Value>
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p8:ModifyFipCameraSource,p6:FipCameraSource">
+                  <Expression xsi:type="PropertySource" TypeArguments="p7:ModifyFipCameraSource,p5:FipCameraSource">
                     <MemberName>Source</MemberName>
                     <Value>Green</Value>
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p8:ModifyFipCameraSource,p6:FipCameraSource">
+                  <Expression xsi:type="PropertySource" TypeArguments="p7:ModifyFipCameraSource,p5:FipCameraSource">
                     <MemberName>Source</MemberName>
                     <Value>Red</Value>
                   </Expression>
@@ -3671,7 +3670,7 @@
                             <rx:DueTime>PT0.2S</rx:DueTime>
                           </Combinator>
                         </Expression>
-                        <Expression xsi:type="PropertySource" TypeArguments="p7:CreateSetTaskStatePayload,p7:TaskState">
+                        <Expression xsi:type="PropertySource" TypeArguments="p6:CreateSetTaskStatePayload,p6:TaskState">
                           <MemberName>SetTaskState</MemberName>
                           <Value>Start</Value>
                         </Expression>
@@ -3714,7 +3713,7 @@
                             <rx:DueTime>PT0.2S</rx:DueTime>
                           </Combinator>
                         </Expression>
-                        <Expression xsi:type="PropertySource" TypeArguments="p7:CreateSetTaskStatePayload,p7:TaskState">
+                        <Expression xsi:type="PropertySource" TypeArguments="p6:CreateSetTaskStatePayload,p6:TaskState">
                           <MemberName>SetTaskState</MemberName>
                           <Value>Start</Value>
                         </Expression>
@@ -3976,19 +3975,19 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p8:FipSignalVisualizerSource">
-                      <p8:Capacity>10</p8:Capacity>
-                      <p8:Color>
-                        <p8:Val0>255</p8:Val0>
-                        <p8:Val1>0</p8:Val1>
-                        <p8:Val2>0</p8:Val2>
-                        <p8:Val3>255</p8:Val3>
-                      </p8:Color>
-                      <p8:Title>Isosbestic</p8:Title>
+                    <Combinator xsi:type="p7:FipSignalVisualizerSource">
+                      <p7:Capacity>10</p7:Capacity>
+                      <p7:Color>
+                        <p7:Val0>255</p7:Val0>
+                        <p7:Val1>0</p7:Val1>
+                        <p7:Val2>0</p7:Val2>
+                        <p7:Val3>255</p7:Val3>
+                      </p7:Color>
+                      <p7:Title>Isosbestic</p7:Title>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="VisualizerMapping">
-                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p8:FipSignalVisualizer" />
+                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p7:FipSignalVisualizer" />
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>GreenActivity</Name>
@@ -4002,19 +4001,19 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p8:FipSignalVisualizerSource">
-                      <p8:Capacity>10</p8:Capacity>
-                      <p8:Color>
-                        <p8:Val0>0</p8:Val0>
-                        <p8:Val1>255</p8:Val1>
-                        <p8:Val2>0</p8:Val2>
-                        <p8:Val3>255</p8:Val3>
-                      </p8:Color>
-                      <p8:Title>Green</p8:Title>
+                    <Combinator xsi:type="p7:FipSignalVisualizerSource">
+                      <p7:Capacity>10</p7:Capacity>
+                      <p7:Color>
+                        <p7:Val0>0</p7:Val0>
+                        <p7:Val1>255</p7:Val1>
+                        <p7:Val2>0</p7:Val2>
+                        <p7:Val3>255</p7:Val3>
+                      </p7:Color>
+                      <p7:Title>Green</p7:Title>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="VisualizerMapping">
-                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p8:FipSignalVisualizer" />
+                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p7:FipSignalVisualizer" />
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>RedActivity</Name>
@@ -4028,19 +4027,19 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p8:FipSignalVisualizerSource">
-                      <p8:Capacity>10</p8:Capacity>
-                      <p8:Color>
-                        <p8:Val0>0</p8:Val0>
-                        <p8:Val1>0</p8:Val1>
-                        <p8:Val2>255</p8:Val2>
-                        <p8:Val3>255</p8:Val3>
-                      </p8:Color>
-                      <p8:Title>Red</p8:Title>
+                    <Combinator xsi:type="p7:FipSignalVisualizerSource">
+                      <p7:Capacity>10</p7:Capacity>
+                      <p7:Color>
+                        <p7:Val0>0</p7:Val0>
+                        <p7:Val1>0</p7:Val1>
+                        <p7:Val2>255</p7:Val2>
+                        <p7:Val3>255</p7:Val3>
+                      </p7:Color>
+                      <p7:Title>Red</p7:Title>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="VisualizerMapping">
-                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p8:FipSignalVisualizer" />
+                    <VisualizerType xsi:type="TypeMapping" TypeArguments="p7:FipSignalVisualizer" />
                   </Expression>
                   <Expression xsi:type="gui:TableLayoutPanelBuilder">
                     <gui:Name>Activity</gui:Name>
@@ -4171,8 +4170,8 @@
               <Name>LoggingRootPath</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p10:AppendModalitySuffix">
-                <p10:Modality>Fib</p10:Modality>
+              <Combinator xsi:type="p9:AppendModalitySuffix">
+                <p9:Modality>Fib</p9:Modality>
               </Combinator>
             </Expression>
             <Expression xsi:type="Combinator">
@@ -4253,7 +4252,7 @@
                           <Name>RigSchema</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p2:SerializeToJson" />
+                          <Combinator xsi:type="p1:SerializeToJson" />
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
                           <Name>DeviceName</Name>
@@ -4352,7 +4351,7 @@
                           <scr:Expression>it.ToString()</scr:Expression>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p6:PascalToSnake" />
+                          <Combinator xsi:type="p5:PascalToSnake" />
                         </Expression>
                         <Expression xsi:type="rx:AsyncSubject">
                           <Name>CameraName</Name>
@@ -4453,7 +4452,7 @@ Item4 as CpuTime)</scr:Expression>
                           <scr:Expression>it.ToString()</scr:Expression>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p6:PascalToSnake" />
+                          <Combinator xsi:type="p5:PascalToSnake" />
                         </Expression>
                         <Expression xsi:type="rx:AsyncSubject">
                           <Name>fipStreamName</Name>
@@ -4500,7 +4499,7 @@ Item4 as CpuTime)</scr:Expression>
                     <Name>CurrentCombinedRoi</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p2:SerializeToJson" />
+                    <Combinator xsi:type="p1:SerializeToJson" />
                   </Expression>
                   <Expression xsi:type="IncludeWorkflow" Path="AllenNeuralDynamics.Core:LogAllText.bonsai">
                     <SubjectName>LoggingRootPath</SubjectName>
@@ -4531,7 +4530,7 @@ Item4 as CpuTime)</scr:Expression>
                           <Combinator xsi:type="harp:CreateTimestamped" />
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p10:TimestampSoftwareEvent" />
+                          <Combinator xsi:type="p9:TimestampSoftwareEvent" />
                         </Expression>
                         <Expression xsi:type="IncludeWorkflow" Path="AllenNeuralDynamics.Core:LogSoftwareEventsDemux.bonsai">
                           <LoggerName>SoftwareEvents</LoggerName>
@@ -4542,13 +4541,13 @@ Item4 as CpuTime)</scr:Expression>
                           <Name>Repository</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p5:IsRepositoryClean">
-                            <p5:IgnoreUntracked>false</p5:IgnoreUntracked>
+                          <Combinator xsi:type="p4:IsRepositoryClean">
+                            <p4:IgnoreUntracked>false</p4:IgnoreUntracked>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p10:CreateSoftwareEvent">
-                            <p10:EventName>RepositoryStatus</p10:EventName>
+                          <Combinator xsi:type="p9:CreateSoftwareEvent">
+                            <p9:EventName>RepositoryStatus</p9:EventName>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
@@ -4558,8 +4557,8 @@ Item4 as CpuTime)</scr:Expression>
                           <Name>CurrentCombinedRoi</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p10:CreateSoftwareEvent">
-                            <p10:EventName>Regions</p10:EventName>
+                          <Combinator xsi:type="p9:CreateSoftwareEvent">
+                            <p9:EventName>Regions</p9:EventName>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
@@ -4634,7 +4633,7 @@ Item4 as CpuTime)</scr:Expression>
         <Name>Cleanup</Name>
         <Workflow>
           <Nodes>
-            <Expression xsi:type="PropertySource" TypeArguments="p7:CreateSetTaskStatePayload,p7:TaskState">
+            <Expression xsi:type="PropertySource" TypeArguments="p6:CreateSetTaskStatePayload,p6:TaskState">
               <MemberName>SetTaskState</MemberName>
               <Value>Abort</Value>
             </Expression>

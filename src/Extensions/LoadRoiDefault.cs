@@ -2,7 +2,7 @@ using Bonsai;
 using System;
 using System.ComponentModel;
 using System.Reactive.Linq;
-using AindPhysiologyFip.Rig;
+using AindPhysiologyFip;
 using Newtonsoft.Json;
 using System.IO;
 using System.Linq;
@@ -51,7 +51,7 @@ namespace FipExtensions
         {
             return new Circle()
             {
-                Center = new AindPhysiologyFip.Rig.Point2f()
+                Center = new AindPhysiologyFip.Point2f()
                 {
                     X = x,
                     Y = y

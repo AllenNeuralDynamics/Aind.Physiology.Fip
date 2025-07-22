@@ -5,4 +5,3 @@ api
 
    api.session
    api.rig
-   api.task_logic

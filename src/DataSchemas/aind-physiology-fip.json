@@ -1,5 +1,209 @@
 {
-  "definitions": {
+  "$defs": {
+    "AindBehaviorSessionModel": {
+      "properties": {
+        "aind_behavior_services_pkg_version": {
+          "default": "0.11.0",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "title": "aind_behavior_services package version",
+          "type": "string"
+        },
+        "version": {
+          "const": "0.3.1",
+          "default": "0.3.1",
+          "title": "Version",
+          "type": "string"
+        },
+        "experiment": {
+          "description": "Name of the experiment",
+          "title": "Experiment",
+          "type": "string"
+        },
+        "experimenter": {
+          "default": [],
+          "description": "Name of the experimenter",
+          "items": {
+            "type": "string"
+          },
+          "title": "Experimenter",
+          "type": "array"
+        },
+        "date": {
+          "description": "Date of the experiment",
+          "format": "date-time",
+          "title": "Date",
+          "type": "string"
+        },
+        "root_path": {
+          "description": "Root path where data will be logged",
+          "title": "Root Path",
+          "type": "string"
+        },
+        "session_name": {
+          "default": null,
+          "description": "Name of the session. This will be used to create a folder in the root path.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Session Name"
+        },
+        "subject": {
+          "description": "Name of the subject",
+          "title": "Subject",
+          "type": "string"
+        },
+        "experiment_version": {
+          "description": "Version of the experiment",
+          "title": "Experiment Version",
+          "type": "string"
+        },
+        "notes": {
+          "default": null,
+          "description": "Notes about the experiment",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Notes"
+        },
+        "commit_hash": {
+          "default": null,
+          "description": "Commit hash of the repository",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Commit Hash"
+        },
+        "allow_dirty_repo": {
+          "default": false,
+          "description": "Allow running from a dirty repository",
+          "title": "Allow Dirty Repo",
+          "type": "boolean"
+        },
+        "skip_hardware_validation": {
+          "default": false,
+          "description": "Skip hardware validation",
+          "title": "Skip Hardware Validation",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "experiment",
+        "root_path",
+        "subject",
+        "experiment_version"
+      ],
+      "title": "AindBehaviorSessionModel",
+      "type": "object"
+    },
+    "AindPhysioFipRig": {
+      "properties": {
+        "aind_behavior_services_pkg_version": {
+          "default": "0.11.0",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "title": "aind_behavior_services package version",
+          "type": "string"
+        },
+        "version": {
+          "const": "0.1.0",
+          "default": "0.1.0",
+          "title": "Version",
+          "type": "string"
+        },
+        "computer_name": {
+          "description": "Computer name",
+          "title": "Computer Name",
+          "type": "string"
+        },
+        "rig_name": {
+          "description": "Rig name",
+          "title": "Rig Name",
+          "type": "string"
+        },
+        "camera_green_iso": {
+          "$ref": "#/$defs/FipCamera",
+          "description": "Camera for the green and iso channels",
+          "title": "G/Iso Camera"
+        },
+        "camera_red": {
+          "$ref": "#/$defs/FipCamera",
+          "description": "Red camera",
+          "title": "Red Camera"
+        },
+        "light_source_uv": {
+          "$ref": "#/$defs/LightSource",
+          "description": "UV (415nm) light source",
+          "title": "UV light source"
+        },
+        "light_source_blue": {
+          "$ref": "#/$defs/LightSource",
+          "description": "Blue (470nm) light source",
+          "title": "Blue light source"
+        },
+        "light_source_lime": {
+          "$ref": "#/$defs/LightSource",
+          "description": "Lime (560nm) light source",
+          "title": "Lime light source"
+        },
+        "roi_settings": {
+          "default": null,
+          "description": "Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RoiSettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Region of interest settings"
+        },
+        "cuttlefish_fip": {
+          "$ref": "#/$defs/HarpCuttlefishfip",
+          "description": "CuttlefishFip board for controlling the trigger of cameras and light-sources",
+          "title": "CuttlefishFip"
+        },
+        "networking": {
+          "$ref": "#/$defs/Networking",
+          "default": {
+            "zmq_publisher": {
+              "connection_string": "@tcp://localhost:5556",
+              "topic": "fip"
+            },
+            "zmq_subscriber": {
+              "connection_string": "@tcp://localhost:5557",
+              "topic": "fip"
+            }
+          },
+          "description": "Networking settings"
+        }
+      },
+      "required": [
+        "rig_name",
+        "camera_green_iso",
+        "camera_red",
+        "light_source_uv",
+        "light_source_blue",
+        "light_source_lime",
+        "cuttlefish_fip"
+      ],
+      "title": "AindPhysioFipRig",
+      "type": "object"
+    },
     "BaseModel": {
       "properties": {},
       "title": "BaseModel",
@@ -8,7 +212,7 @@
     "Circle": {
       "properties": {
         "center": {
-          "$ref": "#/definitions/Point2f",
+          "$ref": "#/$defs/Point2f",
           "default": {
             "x": 0.0,
             "y": 0.0
@@ -52,7 +256,7 @@
           "description": "Additional settings",
           "oneOf": [
             {
-              "$ref": "#/definitions/BaseModel"
+              "$ref": "#/$defs/BaseModel"
             },
             {
               "type": "null"
@@ -64,7 +268,7 @@
           "description": "Calibration",
           "oneOf": [
             {
-              "$ref": "#/definitions/BaseModel"
+              "$ref": "#/$defs/BaseModel"
             },
             {
               "type": "null"
@@ -84,7 +288,7 @@
           "type": "number"
         },
         "offset": {
-          "$ref": "#/definitions/Point2f",
+          "$ref": "#/$defs/Point2f",
           "default": {
             "x": 200.0,
             "y": 150.0
@@ -129,11 +333,11 @@
           "type": "integer"
         },
         "light_source_port": {
-          "$ref": "#/definitions/Ports",
+          "$ref": "#/$defs/Ports",
           "description": "Port that triggers the light source."
         },
         "camera_port": {
-          "$ref": "#/definitions/Ports",
+          "$ref": "#/$defs/Ports",
           "description": "Port that triggers the camera."
         },
         "events_enabled": {
@@ -189,7 +393,7 @@
           "description": "Additional settings",
           "oneOf": [
             {
-              "$ref": "#/definitions/BaseModel"
+              "$ref": "#/$defs/BaseModel"
             },
             {
               "type": "null"
@@ -201,7 +405,7 @@
           "description": "Calibration",
           "oneOf": [
             {
-              "$ref": "#/definitions/BaseModel"
+              "$ref": "#/$defs/BaseModel"
             },
             {
               "type": "null"
@@ -265,7 +469,7 @@
           "description": "Additional settings",
           "oneOf": [
             {
-              "$ref": "#/definitions/BaseModel"
+              "$ref": "#/$defs/BaseModel"
             },
             {
               "type": "null"
@@ -277,7 +481,7 @@
           "description": "Calibration for the LightSource. If left empty, 'power' will be used as duty-cycle (0-100).",
           "oneOf": [
             {
-              "$ref": "#/definitions/LightSourceCalibration"
+              "$ref": "#/$defs/LightSourceCalibration"
             },
             {
               "type": "null"
@@ -293,7 +497,7 @@
           "type": "number"
         },
         "task": {
-          "$ref": "#/definitions/FipTask",
+          "$ref": "#/$defs/FipTask",
           "description": "Task for the light source",
           "title": "Task"
         }
@@ -315,7 +519,7 @@
           "default": null,
           "oneOf": [
             {
-              "$ref": "#/definitions/BaseModel"
+              "$ref": "#/$defs/BaseModel"
             },
             {
               "type": "null"
@@ -324,7 +528,7 @@
           "title": "Input data"
         },
         "output": {
-          "$ref": "#/definitions/LightSourceCalibrationOutput",
+          "$ref": "#/$defs/LightSourceCalibrationOutput",
           "title": "Lookup table to convert duty cycle to power (mW)"
         },
         "date": {
@@ -395,14 +599,14 @@
     "Networking": {
       "properties": {
         "zmq_publisher": {
-          "$ref": "#/definitions/ZmqConnection",
+          "$ref": "#/$defs/ZmqConnection",
           "default": {
             "connection_string": "@tcp://localhost:5556",
             "topic": "fip"
           }
         },
         "zmq_subscriber": {
-          "$ref": "#/definitions/ZmqConnection",
+          "$ref": "#/$defs/ZmqConnection",
           "default": {
             "connection_string": "@tcp://localhost:5557",
             "topic": "fip"
@@ -461,7 +665,7 @@
     "RoiSettings": {
       "properties": {
         "camera_green_iso_background": {
-          "$ref": "#/definitions/Circle",
+          "$ref": "#/$defs/Circle",
           "default": {
             "center": {
               "x": 10.0,
@@ -472,7 +676,7 @@
           "description": "ROI to compute the background for the green/iso camera channel"
         },
         "camera_red_background": {
-          "$ref": "#/definitions/Circle",
+          "$ref": "#/$defs/Circle",
           "default": {
             "center": {
               "x": 10.0,
@@ -515,7 +719,7 @@
           ],
           "description": "ROI for the green/iso camera channel",
           "items": {
-            "$ref": "#/definitions/Circle"
+            "$ref": "#/$defs/Circle"
           },
           "title": "Camera Green Iso Roi",
           "type": "array"
@@ -553,7 +757,7 @@
           ],
           "description": "ROI for the red camera channel",
           "items": {
-            "$ref": "#/definitions/Circle"
+            "$ref": "#/$defs/Circle"
           },
           "title": "Camera Red Roi",
           "type": "array"
@@ -579,97 +783,5 @@
       "title": "ZmqConnection",
       "type": "object"
     }
-  },
-  "properties": {
-    "aind_behavior_services_pkg_version": {
-      "default": "0.11.0",
-      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
-      "title": "aind_behavior_services package version",
-      "type": "string"
-    },
-    "version": {
-      "const": "0.1.0",
-      "default": "0.1.0",
-      "title": "Version",
-      "type": "string"
-    },
-    "computer_name": {
-      "description": "Computer name",
-      "title": "Computer Name",
-      "type": "string"
-    },
-    "rig_name": {
-      "description": "Rig name",
-      "title": "Rig Name",
-      "type": "string"
-    },
-    "camera_green_iso": {
-      "$ref": "#/definitions/FipCamera",
-      "description": "Camera for the green and iso channels",
-      "title": "G/Iso Camera"
-    },
-    "camera_red": {
-      "$ref": "#/definitions/FipCamera",
-      "description": "Red camera",
-      "title": "Red Camera"
-    },
-    "light_source_uv": {
-      "$ref": "#/definitions/LightSource",
-      "description": "UV (415nm) light source",
-      "title": "UV light source"
-    },
-    "light_source_blue": {
-      "$ref": "#/definitions/LightSource",
-      "description": "Blue (470nm) light source",
-      "title": "Blue light source"
-    },
-    "light_source_lime": {
-      "$ref": "#/definitions/LightSource",
-      "description": "Lime (560nm) light source",
-      "title": "Lime light source"
-    },
-    "roi_settings": {
-      "default": null,
-      "description": "Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program.",
-      "oneOf": [
-        {
-          "$ref": "#/definitions/RoiSettings"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "title": "Region of interest settings"
-    },
-    "cuttlefish_fip": {
-      "$ref": "#/definitions/HarpCuttlefishfip",
-      "description": "CuttlefishFip board for controlling the trigger of cameras and light-sources",
-      "title": "CuttlefishFip"
-    },
-    "networking": {
-      "$ref": "#/definitions/Networking",
-      "default": {
-        "zmq_publisher": {
-          "connection_string": "@tcp://localhost:5556",
-          "topic": "fip"
-        },
-        "zmq_subscriber": {
-          "connection_string": "@tcp://localhost:5557",
-          "topic": "fip"
-        }
-      },
-      "description": "Networking settings"
-    }
-  },
-  "required": [
-    "rig_name",
-    "camera_green_iso",
-    "camera_red",
-    "light_source_uv",
-    "light_source_blue",
-    "light_source_lime",
-    "cuttlefish_fip"
-  ],
-  "title": "AindPhysioFipRig",
-  "type": "object"
+  }
 }

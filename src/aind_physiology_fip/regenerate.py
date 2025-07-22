@@ -38,12 +38,6 @@ def main():
         namespace=NAMESPACE_PREFIX,
         output_path=EXTENSIONS_ROOT / "AindPhysiologyFip.cs",
     )
-    # with open(EXTENSIONS_ROOT / "AindPhysiologyFip.cs", "r+", encoding="utf-8") as f:
-    #     raw = f.read()
-    #     raw = raw.replace("IDictionary", "Dictionary")
-    #     f.seek(0)
-    #     f.write(raw)
-    #     f.truncate()
 
 
 if __name__ == "__main__":

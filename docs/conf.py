@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 import aind_physiology_fip
 import aind_physiology_fip.rig
-import aind_physiology_fip.task_logic
 
 sys.path.insert(0, os.path.abspath("../src/DataSchemas"))
 

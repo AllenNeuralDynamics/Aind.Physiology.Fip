@@ -10,13 +10,12 @@ from aind_behavior_services.utils import run_bonsai_process
 from pydantic import ValidationError
 
 from aind_physiology_fip.rig import AindPhysioFipRig
-from aind_physiology_fip.task_logic import AindPhysioFipTaskLogic
 
 sys.path.append(".")
 from examples import example  # isort:skip # pylint: disable=wrong-import-position
 from tests import JSON_ROOT  # isort:skip # pylint: disable=wrong-import-position
 
-TModel = TypeVar("TModel", bound=Union[AindPhysioFipRig, AindPhysioFipTaskLogic, AindBehaviorSessionModel])
+TModel = TypeVar("TModel", bound=Union[AindPhysioFipRig, AindBehaviorSessionModel])
 
 
 class BonsaiTests(unittest.TestCase):

@@ -1,14 +1,15 @@
-import inspect
+import json
+import typing as t
 from pathlib import Path
 
+import pydantic
 from aind_behavior_services.session import AindBehaviorSessionModel
 from aind_behavior_services.utils import (
-    convert_pydantic_to_bonsai,
-    pascal_to_snake_case,
-    snake_to_pascal_case,
+    CustomGenerateJsonSchema,
+    bonsai_sgen,
 )
 
-from aind_physiology_fip import rig, task_logic
+from aind_physiology_fip import rig
 
 SCHEMA_ROOT = Path("./src/DataSchemas/")
 EXTENSIONS_ROOT = Path("./src/Extensions/")
@@ -17,21 +18,32 @@ NAMESPACE_PREFIX = "AindPhysiologyFip"
 
 def main():
     models = [
-        task_logic.AindPhysioFipTaskLogic,
         rig.AindPhysioFipRig,
         AindBehaviorSessionModel,
     ]
 
-    for model in models:
-        module_name = inspect.getmodule(model).__name__
-        module_name = module_name.split(".")[-1]
-        schema_name = f"{pascal_to_snake_case(model.__name__)}"
-        namespace = f"{NAMESPACE_PREFIX}.{snake_to_pascal_case(module_name)}"
+    model = pydantic.RootModel[t.Union[tuple(models)]]
+    json_schema = model.model_json_schema(schema_generator=CustomGenerateJsonSchema, mode="serialization")
 
-        print((schema_name, namespace))
-        convert_pydantic_to_bonsai(
-            {schema_name: model}, schema_path=SCHEMA_ROOT, output_path=EXTENSIONS_ROOT, namespace=namespace
-        )
+    for to_remove in ["$schema", "title", "description", "properties", "required", "type", "oneOf"]:
+        json_schema.pop(to_remove, None)
+
+    with open(schema_path := SCHEMA_ROOT / "aind-physiology-fip.json", "w", encoding="utf-8") as f:
+        literal = json.dumps(json_schema, indent=2)
+        f.write(literal)
+
+    bonsai_sgen(
+        schema_path=schema_path,
+        root_element="Root",
+        namespace=NAMESPACE_PREFIX,
+        output_path=EXTENSIONS_ROOT / "AindPhysiologyFip.cs",
+    )
+    # with open(EXTENSIONS_ROOT / "AindPhysiologyFip.cs", "r+", encoding="utf-8") as f:
+    #     raw = f.read()
+    #     raw = raw.replace("IDictionary", "Dictionary")
+    #     f.seek(0)
+    #     f.write(raw)
+    #     f.truncate()
 
 
 if __name__ == "__main__":

@@ -4503,7 +4503,7 @@ Item4 as CpuTime)</scr:Expression>
                   </Expression>
                   <Expression xsi:type="IncludeWorkflow" Path="AllenNeuralDynamics.Core:LogAllText.bonsai">
                     <SubjectName>LoggingRootPath</SubjectName>
-                    <Modality>Behavior</Modality>
+                    <Modality xsi:nil="true" />
                     <DeviceName xsi:nil="true" />
                     <LogName>regions</LogName>
                     <Extension>json</Extension>

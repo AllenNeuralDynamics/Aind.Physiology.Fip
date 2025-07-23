@@ -12,6 +12,20 @@ using Bonsai.Vision;
 [DefaultProperty("Circles")]
 public class SelectCircles
 {
+
+    private string Label = "Channel";
+    public string label
+    {
+        get { return Label; }
+        set
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                Label = value;
+            }
+        }
+    }
+
     private Circle[] circles = new Circle[0];
     public Circle[] Circles {
         get { return circles; }

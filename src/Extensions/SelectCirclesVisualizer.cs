@@ -54,12 +54,13 @@ public class SelectCirclesVisualizer : DialogTypeVisualizer
         {
             visualizerService.AddControl(ellipsePicker);
         }
+
         visualizerService.AddControl(new Label
         {
             Text = selectRegions.label,
             Dock = DockStyle.Top,
             TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
-            Size = new System.Drawing.Size(100, 40),
+            AutoSize = true,
         });
     }
 

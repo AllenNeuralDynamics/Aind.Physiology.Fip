@@ -1260,8 +1260,8 @@
                               </p2:Circle>
                               <p2:Circle>
                                 <p2:Center>
-                                  <p2:X>149</p2:X>
-                                  <p2:Y>55</p2:Y>
+                                  <p2:X>150</p2:X>
+                                  <p2:Y>50</p2:Y>
                                 </p2:Center>
                                 <p2:Radius>20</p2:Radius>
                               </p2:Circle>
@@ -2123,7 +2123,7 @@
               <ui:Visible>true</ui:Visible>
               <ui:Location xsi:nil="true" />
               <ui:Size>
-                <ui:Width>800</ui:Width>
+                <ui:Width>1200</ui:Width>
                 <ui:Height>600</ui:Height>
               </ui:Size>
               <ui:WindowState>Normal</ui:WindowState>

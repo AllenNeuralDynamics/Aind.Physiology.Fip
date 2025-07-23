@@ -3648,6 +3648,7 @@
                     <gui:Text>SetPower</gui:Text>
                   </Expression>
                   <Expression xsi:type="rx:Sink">
+                    <Name>SetPower</Name>
                     <Workflow>
                       <Nodes>
                         <Expression xsi:type="WorkflowInput">
@@ -3699,6 +3700,7 @@
                     <gui:Text>StartFipMode</gui:Text>
                   </Expression>
                   <Expression xsi:type="rx:Sink">
+                    <Name>StartFipMode</Name>
                     <Workflow>
                       <Nodes>
                         <Expression xsi:type="WorkflowInput">
@@ -3740,6 +3742,7 @@
                     <gui:Text>Off</gui:Text>
                   </Expression>
                   <Expression xsi:type="rx:Sink">
+                    <Name>TurnOff</Name>
                     <Workflow>
                       <Nodes>
                         <Expression xsi:type="WorkflowInput">

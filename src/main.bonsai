@@ -1227,7 +1227,7 @@
                         <Expression xsi:type="p6:CreateMessage">
                           <harp:MessageType>Write</harp:MessageType>
                           <harp:Payload xsi:type="p6:CreateSetTaskStatePayload">
-                            <p6:SetTaskState>Abort</p6:SetTaskState>
+                            <p6:SetTaskState>Stop</p6:SetTaskState>
                           </harp:Payload>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">

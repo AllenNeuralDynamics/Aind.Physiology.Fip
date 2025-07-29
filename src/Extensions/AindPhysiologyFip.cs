@@ -325,7 +325,11 @@ namespace AindPhysiologyFip
     }
 
 
+    /// <summary>
+    /// Complete rig configuration model for AIND FIP photometry system.
+    /// </summary>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Complete rig configuration model for AIND FIP photometry system.")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     public partial class AindPhysioFipRig
@@ -764,7 +768,11 @@ namespace AindPhysiologyFip
     }
 
 
+    /// <summary>
+    /// Camera device configuration for FIP photometry system.
+    /// </summary>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Camera device configuration for FIP photometry system.")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     public partial class FipCamera
@@ -957,7 +965,11 @@ namespace AindPhysiologyFip
     }
 
 
+    /// <summary>
+    /// Task configuration for FIP timing and triggering parameters.
+    /// </summary>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Task configuration for FIP timing and triggering parameters.")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     public partial class FipTask
@@ -1388,7 +1400,11 @@ namespace AindPhysiologyFip
     }
 
 
+    /// <summary>
+    /// Light source device configuration with power control and timing tasks.
+    /// </summary>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Light source device configuration with power control and timing tasks.")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     public partial class LightSource
@@ -1561,7 +1577,11 @@ namespace AindPhysiologyFip
     }
 
 
+    /// <summary>
+    /// Calibration model for converting light source duty cycle to power output.
+    /// </summary>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Calibration model for converting light source duty cycle to power output.")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     public partial class LightSourceCalibration
@@ -1715,7 +1735,11 @@ namespace AindPhysiologyFip
     }
 
 
+    /// <summary>
+    /// Output of the light source calibration process.
+    /// </summary>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Output of the light source calibration process.")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     public partial class LightSourceCalibrationOutput
@@ -1782,7 +1806,11 @@ namespace AindPhysiologyFip
     }
 
 
+    /// <summary>
+    /// Network configuration settings for ZeroMQ communication.
+    /// </summary>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Network configuration settings for ZeroMQ communication.")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     public partial class Networking
@@ -1950,6 +1978,9 @@ namespace AindPhysiologyFip
     }
 
 
+    /// <summary>
+    /// Available hardware ports in the FIP cuttlefish board.
+    /// </summary>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
     public enum Ports
     {
@@ -1983,7 +2014,11 @@ namespace AindPhysiologyFip
     }
 
 
+    /// <summary>
+    /// Region of Interest (ROI) settings for camera channels in the FIP system.
+    /// </summary>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.5.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Region of Interest (ROI) settings for camera channels in the FIP system.")]
     [Bonsai.CombinatorAttribute()]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     public partial class RoiSettings

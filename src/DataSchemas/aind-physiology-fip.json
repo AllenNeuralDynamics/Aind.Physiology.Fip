@@ -111,6 +111,7 @@
       "type": "object"
     },
     "AindPhysioFipRig": {
+      "description": "Complete rig configuration model for AIND FIP photometry system.",
       "properties": {
         "aind_behavior_services_pkg_version": {
           "default": "0.11.0",
@@ -231,6 +232,7 @@
       "type": "object"
     },
     "FipCamera": {
+      "description": "Camera device configuration for FIP photometry system.",
       "properties": {
         "device_type": {
           "const": "FipCamera",
@@ -303,6 +305,7 @@
       "type": "object"
     },
     "FipTask": {
+      "description": "Task configuration for FIP timing and triggering parameters.",
       "properties": {
         "delta_1": {
           "default": 15650,
@@ -444,6 +447,7 @@
       "type": "object"
     },
     "LightSource": {
+      "description": "Light source device configuration with power control and timing tasks.",
       "properties": {
         "device_type": {
           "const": "LightSource",
@@ -509,6 +513,7 @@
       "type": "object"
     },
     "LightSourceCalibration": {
+      "description": "Calibration model for converting light source duty cycle to power output.",
       "properties": {
         "device_name": {
           "description": "Name of the device being calibrated",
@@ -577,6 +582,7 @@
       "type": "object"
     },
     "LightSourceCalibrationOutput": {
+      "description": "Output of the light source calibration process.",
       "properties": {
         "power_lut": {
           "additionalProperties": {
@@ -597,6 +603,7 @@
       "type": "object"
     },
     "Networking": {
+      "description": "Network configuration settings for ZeroMQ communication.",
       "properties": {
         "zmq_publisher": {
           "$ref": "#/$defs/ZmqConnection",
@@ -637,6 +644,7 @@
       "type": "object"
     },
     "Ports": {
+      "description": "Available hardware ports in the FIP cuttlefish board.",
       "enum": [
         0,
         1,
@@ -663,6 +671,7 @@
       ]
     },
     "RoiSettings": {
+      "description": "Region of Interest (ROI) settings for camera channels in the FIP system.",
       "properties": {
         "camera_green_iso_background": {
           "$ref": "#/$defs/Circle",

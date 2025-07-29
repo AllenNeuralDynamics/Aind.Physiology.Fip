@@ -1,1 +1,0 @@
-"./bonsai/bonsai.exe" "./src/main.bonsai" -p TaskLogicPath="..\local\AindPhysioFipTaskLogic.json" -p RigPath="..\local\AindPhysioFipRig.json" -p SessionPath="..\local\AindBehaviorSessionModel.json"

@@ -10,6 +10,8 @@ __version__ = "0.1.0"
 
 
 class FipCamera(rig.Device):
+    """Camera device configuration for FIP photometry system."""
+
     device_type: Literal["FipCamera"] = "FipCamera"
     serial_number: str = Field(..., description="Camera serial number")
     gain: float = Field(default=0, ge=0, description="Gain")
@@ -21,6 +23,8 @@ def _make_default_rois() -> List[Circle]:
 
 
 class RoiSettings(BaseModel):
+    """Region of Interest (ROI) settings for camera channels in the FIP system."""
+
     camera_green_iso_background: Circle = Field(
         default=Circle(center=Point2f(x=10, y=10), radius=10),
         description="ROI to compute the background for the green/iso camera channel",
@@ -36,6 +40,8 @@ class RoiSettings(BaseModel):
 
 
 class Networking(BaseModel):
+    """Network configuration settings for ZeroMQ communication."""
+
     zmq_publisher: ZmqConnection = Field(
         default=ZmqConnection(connection_string="@tcp://localhost:5556", topic="fip"), validate_default=True
     )
@@ -49,16 +55,22 @@ DutyCycle = Annotated[float, Field(default=0, ge=0, le=1, description="Duty cycl
 
 
 class LightSourceCalibrationOutput(BaseModel):
+    """Output of the light source calibration process."""
+
     power_lut: Dict[DutyCycle, LightSourcePower] = Field(
         ..., description="Look-up table for LightSource power vs. duty cycle"
     )
 
 
 class LightSourceCalibration(calibration.Calibration):
+    """Calibration model for converting light source duty cycle to power output."""
+
     output: LightSourceCalibrationOutput = Field(..., title="Lookup table to convert duty cycle to power (mW)")
 
 
 class Ports(IntFlag):
+    """Available hardware ports in the FIP cuttlefish board."""
+
     NONE = 0
     IO0 = 1 << 0
     IO1 = 1 << 1
@@ -71,6 +83,8 @@ class Ports(IntFlag):
 
 
 class FipTask(BaseModel):
+    """Task configuration for FIP timing and triggering parameters."""
+
     delta_1: int = Field(default=15650, ge=0, description="Delta 1 (us)")
     delta_2: int = Field(default=666, ge=0, description="Delta 2 (us)")
     delta_3: int = Field(default=300, ge=0, description="Delta 3 (us)")
@@ -89,6 +103,8 @@ class FipTask(BaseModel):
 
 
 class LightSource(rig.Device):
+    """Light source device configuration with power control and timing tasks."""
+
     device_type: Literal["LightSource"] = "LightSource"
     power: float = Field(default=0, ge=0, description="Power (mW)")
     calibration: Optional[LightSourceCalibration] = Field(
@@ -107,6 +123,8 @@ class LightSource(rig.Device):
 
 
 class AindPhysioFipRig(rig.AindBehaviorRigModel):
+    """Complete rig configuration model for AIND FIP photometry system."""
+
     version: Literal[__version__] = __version__
     camera_green_iso: FipCamera = Field(title="G/Iso Camera", description="Camera for the green and iso channels")
     camera_red: FipCamera = Field(title="Red Camera", description="Red camera")

@@ -77,13 +77,12 @@ This cycling occurs at 60 Hz, allowing near-simultaneous measurement of multiple
 * [UV Python environment manager](https://docs.astral.sh/uv/getting-started/installation/)
 
 ### Installation Steps
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/AllenNeuralDynamics/FIP_DAQ_Control
-   ```
+
+1. Clone this repository
 2. Run `./scripts/deploy.ps1` to bootstrap a Python and Bonsai environment for the project.
 
 ### Generating input configurations
+
 The current pipeline relies on two input configuration files. These configure the rig/instruments and session parameters, respectively. These files are formalized as pydantic models as shown in `examples/examples.py`.
 Briefly:
 

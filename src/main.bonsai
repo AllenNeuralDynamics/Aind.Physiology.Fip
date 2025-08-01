@@ -735,22 +735,6 @@
                     <Name>RigSchema</Name>
                   </Expression>
                   <Expression xsi:type="MemberSelector">
-                    <Selector>LightSourceUv</Selector>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p7:CreateTaskFromLightSource" />
-                  </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p5:ToFipFrame,p5:FipCameraSource">
-                    <MemberName>CameraSource</MemberName>
-                    <Value>Iso</Value>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="rx:Zip" />
-                  </Expression>
-                  <Expression xsi:type="SubscribeSubject">
-                    <Name>RigSchema</Name>
-                  </Expression>
-                  <Expression xsi:type="MemberSelector">
                     <Selector>LightSourceBlue</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
@@ -759,6 +743,22 @@
                   <Expression xsi:type="PropertySource" TypeArguments="p5:ToFipFrame,p5:FipCameraSource">
                     <MemberName>CameraSource</MemberName>
                     <Value>Green</Value>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Zip" />
+                  </Expression>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>RigSchema</Name>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>LightSourceUv</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="p7:CreateTaskFromLightSource" />
+                  </Expression>
+                  <Expression xsi:type="PropertySource" TypeArguments="p5:ToFipFrame,p5:FipCameraSource">
+                    <MemberName>CameraSource</MemberName>
+                    <Value>Iso</Value>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Zip" />

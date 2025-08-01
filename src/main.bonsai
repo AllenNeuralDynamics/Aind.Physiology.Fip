@@ -2217,6 +2217,12 @@
                 <rx:DueTime>PT2S</rx:DueTime>
               </Combinator>
             </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>EndExperiment</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:TakeUntil" />
+            </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
           <Edges>
@@ -2226,7 +2232,9 @@
             <Edge From="3" To="4" Label="Source1" />
             <Edge From="4" To="5" Label="Source2" />
             <Edge From="5" To="6" Label="Source1" />
-            <Edge From="6" To="7" Label="Source1" />
+            <Edge From="6" To="8" Label="Source1" />
+            <Edge From="7" To="8" Label="Source2" />
+            <Edge From="8" To="9" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
@@ -2257,7 +2265,7 @@
           <Nodes>
             <Expression xsi:type="PropertySource" TypeArguments="p6:CreateSetTaskStatePayload,p6:TaskState">
               <MemberName>SetTaskState</MemberName>
-              <Value>Abort</Value>
+              <Value>Stop</Value>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:Take">

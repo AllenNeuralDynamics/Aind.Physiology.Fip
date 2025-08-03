@@ -18,7 +18,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "aind_behavior_services<0.12",
+    "aind_behavior_services<0.13",
 ]
 
 [project.urls]

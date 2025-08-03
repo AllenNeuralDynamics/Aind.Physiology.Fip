@@ -1,13 +1,9 @@
-import json
 import typing as t
 from pathlib import Path
 
 import pydantic
 from aind_behavior_services.session import AindBehaviorSessionModel
-from aind_behavior_services.utils import (
-    CustomGenerateJsonSchema,
-    bonsai_sgen,
-)
+from aind_behavior_services.utils import BonsaiSgenSerializers, convert_pydantic_to_bonsai
 
 from aind_physiology_fip import rig
 
@@ -23,20 +19,14 @@ def main():
     ]
 
     model = pydantic.RootModel[t.Union[tuple(models)]]
-    json_schema = model.model_json_schema(schema_generator=CustomGenerateJsonSchema, mode="serialization")
-
-    for to_remove in ["$schema", "title", "description", "properties", "required", "type", "oneOf"]:
-        json_schema.pop(to_remove, None)
-
-    with open(schema_path := SCHEMA_ROOT / "aind-physiology-fip.json", "w", encoding="utf-8") as f:
-        literal = json.dumps(json_schema, indent=2)
-        f.write(literal)
-
-    bonsai_sgen(
-        schema_path=schema_path,
+    convert_pydantic_to_bonsai(
+        model,
+        model_name="aind_physiology_fip",
         root_element="Root",
-        namespace=NAMESPACE_PREFIX,
-        output_path=EXTENSIONS_ROOT / "AindPhysiologyFip.cs",
+        cs_namespace=NAMESPACE_PREFIX,
+        json_schema_output_dir=SCHEMA_ROOT,
+        cs_output_dir=EXTENSIONS_ROOT,
+        cs_serializer=[BonsaiSgenSerializers.JSON],
     )
 
 

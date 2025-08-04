@@ -15,6 +15,7 @@
                  xmlns:p7="clr-namespace:;assembly=Extensions"
                  xmlns:zmq="clr-namespace:Bonsai.ZeroMQ;assembly=Bonsai.ZeroMQ"
                  xmlns:p8="clr-namespace:NetMQ;assembly=NetMQ"
+                 xmlns:ui="clr-namespace:Bonsai.Design;assembly=Bonsai.Design"
                  xmlns:scr="clr-namespace:Bonsai.Scripting.Expressions;assembly=Bonsai.Scripting.Expressions"
                  xmlns:p9="clr-namespace:AllenNeuralDynamics.Core;assembly=AllenNeuralDynamics.Core"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
@@ -832,6 +833,16 @@
         </Combinator>
       </Expression>
       <Expression xsi:type="IncludeWorkflow" Path="Extensions\Visualization.bonsai" />
+      <Expression xsi:type="ui:VisualizerWindow">
+        <ui:Text>FipVisualizer</ui:Text>
+        <ui:Visible>true</ui:Visible>
+        <ui:Location xsi:nil="true" />
+        <ui:Size>
+          <ui:Width>1200</ui:Width>
+          <ui:Height>800</ui:Height>
+        </ui:Size>
+        <ui:WindowState>Normal</ui:WindowState>
+      </Expression>
       <Expression xsi:type="GroupWorkflow">
         <Name>OperationLogic</Name>
         <Workflow>
@@ -2299,16 +2310,17 @@
     <Edges>
       <Edge From="0" To="1" Label="Source1" />
       <Edge From="5" To="6" Label="Source1" />
-      <Edge From="8" To="9" Label="Source1" />
-      <Edge From="11" To="14" Label="Source1" />
-      <Edge From="12" To="13" Label="Source1" />
-      <Edge From="13" To="14" Label="Source2" />
-      <Edge From="14" To="16" Label="Source1" />
-      <Edge From="15" To="16" Label="Source2" />
-      <Edge From="17" To="18" Label="Source1" />
+      <Edge From="6" To="7" Label="Source1" />
+      <Edge From="9" To="10" Label="Source1" />
+      <Edge From="12" To="15" Label="Source1" />
+      <Edge From="13" To="14" Label="Source1" />
+      <Edge From="14" To="15" Label="Source2" />
+      <Edge From="15" To="17" Label="Source1" />
+      <Edge From="16" To="17" Label="Source2" />
       <Edge From="18" To="19" Label="Source1" />
       <Edge From="19" To="20" Label="Source1" />
       <Edge From="20" To="21" Label="Source1" />
+      <Edge From="21" To="22" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>

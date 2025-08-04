@@ -319,7 +319,8 @@ namespace Bonsai.Vision.Design
                         graphics.FillEllipse(brush, rect);
                         if (LabelRegions)
                         {
-                            graphics.DrawString(i.ToString(CultureInfo.InvariantCulture), labelFont, Brushes.White, rect, format);
+                            var label = i > 0 ? (i - 1).ToString(CultureInfo.InvariantCulture) : "B";
+                            graphics.DrawString(label, labelFont, Brushes.White, rect, format);
                         }
                     }
                 }

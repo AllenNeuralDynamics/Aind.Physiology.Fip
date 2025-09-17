@@ -4,6 +4,7 @@ import typing as t
 from pathlib import Path
 
 import contraqctor.contract as contract
+import contraqctor.qc
 import cv2
 import matplotlib
 import matplotlib.figure
@@ -15,10 +16,10 @@ from contraqctor.qc import ContextExportableObj, Runner, Suite
 from contraqctor.qc.contract import ContractTestSuite
 from contraqctor.qc.csv import CsvTestSuite
 
+from aind_physiology_fip import __version__
 from aind_physiology_fip.data_contract import FipRawFrame, RoiSettings, dataset
 from aind_physiology_fip.data_qc_helpers import plot_sensor_floor
 from aind_physiology_fip.rig import Circle
-from aind_physiology_fip import __version__
 
 
 class FipChannelMetadataTestSuite(Suite):
@@ -287,7 +288,7 @@ class FipRawImageTestSuite(Suite):
             )
 
 
-def run_tests(dataset: contract.Dataset, args: "QcCli") -> None:
+def _run_tests(dataset: contract.Dataset) -> t.Dict[str | None, t.List[contraqctor.qc.Result]]:
     runner = Runner()
 
     runner.add_suite(ContractTestSuite(dataset.load_all()), "Contract tests")
@@ -320,17 +321,21 @@ def run_tests(dataset: contract.Dataset, args: "QcCli") -> None:
     )
 
     results = runner.run_all_with_progress()
+    return results
 
-    if args.asset_path:
-        args.asset_path.mkdir(parents=True, exist_ok=True)
-        for _, group_results in results.items():
-            for result in group_results:
-                if isinstance(result.context, dict):
-                    asset = result.context.get("asset", None)
-                    if isinstance(asset, ContextExportableObj) and isinstance(asset.asset, matplotlib.figure.Figure):
-                        asset.asset.savefig(
-                            args.asset_path / f"{result.suite_name}_{result.test_name}_{secrets.token_hex(4)}.png"
-                        )
+
+def _save_assets(results: t.Dict[str | None, t.List[contraqctor.qc.Result]], asset_path: t.Optional[Path]) -> None:
+    if asset_path is None:
+        return None
+    asset_path.mkdir(parents=True, exist_ok=True)
+    for _, group_results in results.items():
+        for result in group_results:
+            if isinstance(result.context, dict):
+                asset = result.context.get("asset", None)
+                if isinstance(asset, ContextExportableObj) and isinstance(asset.asset, matplotlib.figure.Figure):
+                    asset.asset.savefig(
+                        asset_path / f"{result.suite_name}_{result.test_name}_{secrets.token_hex(4)}.png"
+                    )
 
 
 class QcCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
@@ -347,7 +352,8 @@ class QcCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
         if not Path(self.data_path).exists():
             raise FileNotFoundError(f"Dataset path {self.data_path} does not exist.")
         _dataset = dataset(Path(self.data_path))
-        run_tests(_dataset, self)
+        results = _run_tests(_dataset)
+        _save_assets(results, self.asset_path)
 
 
 if __name__ == "__main__":

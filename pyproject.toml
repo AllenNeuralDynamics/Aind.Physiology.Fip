@@ -50,10 +50,6 @@ docs = [
     "sphinx_mdinclude",
 ]
 
-[project.scripts]
-qc = "aind_physiology_fip.data_qc:_cmd"
-regenerate = "aind_physiology_fip.regenerate:main"
-
 
 [tool.setuptools.packages.find]
 where = ["src"]

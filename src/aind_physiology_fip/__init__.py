@@ -23,7 +23,7 @@ def pep440_to_semver(ver: str) -> str:
 
 
 try:
-    __version__ = version("aind_behavior_services")
+    __version__ = version(__name__)
 except PackageNotFoundError:
     __version__ = "0.0.0"
 

@@ -338,7 +338,7 @@ def _save_assets(results: t.Dict[str | None, t.List[contraqctor.qc.Result]], ass
                     )
 
 
-class QcCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
+class DataQcCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
     data_path: pydantic_settings.CliPositionalArg[Path] = pydantic.Field(
         description="Path to the session data directory."
     )
@@ -357,4 +357,4 @@ class QcCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
 
 
 if __name__ == "__main__":
-    cli = pydantic_settings.CliApp().run(QcCli)
+    cli = pydantic_settings.CliApp().run(DataQcCli)

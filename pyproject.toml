@@ -42,11 +42,8 @@ docs = [
     "sphinx_mdinclude",
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-data]
-aind_physiology_fip = ["py.typed"]
+[project.scripts]
+fip = "aind_physiology_fip.cli:main"
 
 [tool.ruff]
 line-length = 120

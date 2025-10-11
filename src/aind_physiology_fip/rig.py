@@ -5,7 +5,9 @@ from aind_behavior_services import calibration, rig
 from aind_behavior_services.rig.cameras import Circle, Point2f
 from aind_behavior_services.rig.network import ZmqConnection
 from pydantic import BaseModel, Field, model_validator
+
 from . import __semver__
+
 
 class FipCamera(rig.Device):
     """Camera device configuration for FIP photometry system."""

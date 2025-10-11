@@ -13,12 +13,12 @@ For FIP photometry data acquisition and hardware control.
 
 ## Overview
 
-The FIP (Frame-projected Independent Photometry) system is a low-cost, scalable photometry setup designed for chronic recording of optical signals from behaving mice during daily training. The system is based on a modified design of Frame-projected Independent Photometry (Kim et al., 2016), using inexpensive, commercially available, off-the-shelf components.
+The FIP (Frame-projected Independent Photometry) system is a low-cost, scalable photometry setup designed for chronic recording of optical signals from behaving mice during daily training. The system is based on a modified design of Frame-projected Independent Photometry (Kim et al., 2016), using inexpensive, commercially available, off-the-shelf components. StimIntegratedRigs are using HARP behavior board to trigger behavaior cameras but are not using HARP system for aligning FIP data and Optogenetic stimulations. Instead, Optogenetic Stimulation is directly controled by the same microcontroller, Teensy as the one used for FIP control (both 2 excitation LEDs and a CMOS), and thus, they are already time aligned.
 
 ![FIP System Light Path](assets/images/fip_light_path.png)
 
 For more information, see the [AIND Fiber Photometry Platform Page](https://www.allenneuraldynamics.org/platforms/fiber-photometry) and the following protocols:  
-* Protocol for system assembly: https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2
+* Protocol for system assembly: TBA
 * Protocol for system triggering setup: https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2
 
 ## Wavelength Information

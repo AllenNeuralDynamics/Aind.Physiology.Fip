@@ -51,6 +51,7 @@ wheels = [
 
 [[package]]
 name = "aind-physiology-fip"
+version = "0.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "aind-behavior-services" },
@@ -62,7 +63,10 @@ data = [
     { name = "opencv-python" },
     { name = "pydantic-settings" },
 ]
+
+[package.dev-dependencies]
 dev = [
+    { name = "aind-physiology-fip", extra = ["data"] },
     { name = "codespell" },
     { name = "ruff" },
 ]
@@ -79,20 +83,27 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "aind-behavior-services", specifier = "<0.13" },
-    { name = "autodoc-pydantic", extras = ["erdantic"], marker = "extra == 'docs'" },
-    { name = "codespell", marker = "extra == 'dev'" },
     { name = "contraqctor", marker = "extra == 'data'", specifier = "<0.5.0" },
-    { name = "furo", marker = "extra == 'docs'" },
     { name = "opencv-python", marker = "extra == 'data'" },
     { name = "pydantic-settings", marker = "extra == 'data'" },
-    { name = "ruff", marker = "extra == 'dev'" },
-    { name = "sphinx", marker = "extra == 'docs'", specifier = "<7.3" },
-    { name = "sphinx-copybutton", marker = "extra == 'docs'" },
-    { name = "sphinx-jinja", marker = "extra == 'docs'" },
-    { name = "sphinx-jsonschema", marker = "extra == 'docs'" },
-    { name = "sphinx-mdinclude", marker = "extra == 'docs'" },
 ]
-provides-extras = ["dev", "data", "docs"]
+provides-extras = ["data"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "aind-physiology-fip", extras = ["data"] },
+    { name = "codespell" },
+    { name = "ruff" },
+]
+docs = [
+    { name = "autodoc-pydantic", extras = ["erdantic"] },
+    { name = "furo" },
+    { name = "sphinx", specifier = "<7.3" },
+    { name = "sphinx-copybutton" },
+    { name = "sphinx-jinja" },
+    { name = "sphinx-jsonschema" },
+    { name = "sphinx-mdinclude" },
+]
 
 [[package]]
 name = "alabaster"

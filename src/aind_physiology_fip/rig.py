@@ -5,9 +5,7 @@ from aind_behavior_services import calibration, rig
 from aind_behavior_services.rig.cameras import Circle, Point2f
 from aind_behavior_services.rig.network import ZmqConnection
 from pydantic import BaseModel, Field, model_validator
-
-__version__ = "0.1.0"
-
+from . import __semver__
 
 class FipCamera(rig.Device):
     """Camera device configuration for FIP photometry system."""
@@ -125,7 +123,7 @@ class LightSource(rig.Device):
 class AindPhysioFipRig(rig.AindBehaviorRigModel):
     """Complete rig configuration model for AIND FIP photometry system."""
 
-    version: Literal[__version__] = __version__
+    version: Literal[__semver__] = __semver__
     camera_green_iso: FipCamera = Field(title="G/Iso Camera", description="Camera for the green and iso channels")
     camera_red: FipCamera = Field(title="Red Camera", description="Red camera")
     light_source_uv: LightSource = Field(title="UV light source", description="UV (415nm) light source")

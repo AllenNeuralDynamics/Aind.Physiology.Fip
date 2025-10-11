@@ -17,7 +17,7 @@ SOURCE_ROOT = "https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/tree/m
 project = "Aind Physiology Fip project"
 copyright = "2025, Allen Institute for Neural Dynamics"
 author = "Bruno Cruz"
-release = aind_physiology_fip.__version__
+release = aind_physiology_fip.__semver__
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

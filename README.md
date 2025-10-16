@@ -1,6 +1,10 @@
 # FIP_DAQ_Control
 
+![CI](https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/actions/workflows/ci.yml/badge.svg)
+<!-- [![PyPI - Version](https://img.shields.io/pypi/v/aind-behavior-experiment-launcher)](https://pypi.org/project/aind_physiology_fip/) -->
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
+[![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 For FIP photometry data acquisition and hardware control.
 
@@ -9,7 +13,7 @@ For FIP photometry data acquisition and hardware control.
 
 ## Overview
 
-The FIP (Frame-projected Independent Photometry) system is a low-cost, scalable photometry setup designed for chronic recording of optical signals from behaving mice during daily training. The system is based on a modified design of Frame-projected Independent Photometry (Kim et al., 2016), using inexpensive, commercially available, off-the-shelf components.
+The FIP (Frame-projected Independent Photometry) system is a low-cost, scalable photometry setup designed for chronic recording of optical signals from behaving mice during daily training. The system is based on a modified design of Frame-projected Independent Photometry (Kim et al., 2016), using inexpensive, commercially available, off-the-shelf components. 
 
 ![FIP System Light Path](assets/images/fip_light_path.png)
 
@@ -61,21 +65,74 @@ The temporal multiplexing sequence:
 
 This cycling occurs at 60 Hz, allowing near-simultaneous measurement of multiple signals while preventing crosstalk between channels. Each LED is activated in sequence and cameras are synchronized to capture data only during their respective LED's ON period.
 
-## Installation
-1. Arduino/Teensy
-2. Bonsai:
-	- To deploy the Bonsai code, run `./bonsai/setup.cmd`. This small script will download and regenerate the current bonsai environment ([see tutorial for further details.](https://bonsai-rx.org/docs/articles/environments.html))
-	- Dependencies:
-		- Windows 10 or 11
-		- [Visual Studio Code](https://code.visualstudio.com/) (highly recommended for editing code scripts and git commits)
-		- [Git for Windows](https://gitforwindows.org/) (highly recommended for cloning and manipulating this repository)
-		- [.NET Framework 4.7.2 Developer Pack](https://dotnet.microsoft.com/download/dotnet-framework/thank-you/net472-developer-pack-offline-installer) (required for intellisense when editing code scripts)
-		- [Visual C++ Redistributable for Visual Studio 2012](https://www.microsoft.com/en-us/download/details.aspx?id=30679) (native dependency for OpenCV)
-		- [Spinnaker SDK 1.29.0.5](https://www.flir.co.uk/support/products/spinnaker-sdk/#Downloads) (device drivers for FLIR cameras)
-		  - On FLIR website: `Download > archive > 1.29.0.5 > SpinnakerSDK_FULL_1.29.0.5_x64.exe`
+## Using the acquisition system
 
-3. Copy paste 4 CSV files in the LocalDependency folder to Users\svc_aind_behavior\Documents\FIPSettings and change the CameraSerial based on FLIR cameras used in the rig.
+### Pre-requisites (some of these are optional, but recommended for a smoother experience)
+* [Visual Studio Code](https://code.visualstudio.com/) (highly recommended for editing code scripts and git commits)
+* [Git for Windows](https://gitforwindows.org/) (highly recommended for cloning and manipulating this repository)
+* [.NET Framework 4.7.2 Developer Pack](https://dotnet.microsoft.com/download/dotnet-framework/thank-you/net472-developer-pack-offline-installer) (required for intellisense when editing code scripts)
+* [Visual C++ Redistributable for Visual Studio 2012](https://www.microsoft.com/en-us/download/details.aspx?id=30679) (native dependency for OpenCV)
+* [Spinnaker SDK 1.29.0.5](https://www.teledynevisionsolutions.com/support/support-center/software-firmware-downloads/iis/spinnaker-sdk-download/spinnaker-sdk--download-files/#anchor6) (device drivers for FLIR cameras)
+ * On FLIR website: `Download > archive > 1.29.0.5 > SpinnakerSDK_FULL_1.29.0.5_x64.exe`
+* [UV Python environment manager](https://docs.astral.sh/uv/getting-started/installation/)
+
+### Installation Steps
+
+1. Clone this repository
+2. Run `./scripts/deploy.ps1` to bootstrap a Python and Bonsai environment for the project.
+
+### Generating input configurations
+
+The current pipeline relies on two input configuration files. These configure the rig/instruments and session parameters, respectively. These files are formalized as pydantic models as shown in `examples/examples.py`.
+Briefly:
+
+```python
+from aind_behavior_services.session import AindBehaviorSessionModel
+from aind_physiology_fip.rig import AindPhysioFipRig
+
+this_rig = AindPhysioFipRig(...)
+this_session = AindBehaviorSessionModel(...)
+
+for model in [this_session, this_rig]:
+	with open(model.__class__.__name__ + ".json", "w", encoding="utf-8") as f:
+		f.write(model.model_dump_json(indent=2))
+```
+
+### Running the acquisition
+
+#### Running manually
+
+Acquisition is done through Bonsai via a single entry-point workflow. As any Bonsai workflow, one can run the acquisition workflow via the editor:
+
+* Open Bonsai from the bootstrapped environment in `./bonsai/bonsai.exe`
+* Open the workflow file `.src/main.bonsai`
+* Manually set the two highest level properties `RigPath` and `SessionPath` to the paths of the configuration files generated in the [previous step](#generating-input-configurations).
+* Launch the workflow by clicking the "Run" button in the Bonsai editor.
+
+> [!Important]
+> `AindBehaviorSessionModel.allow_dirty` property will be checked at the start of the workflow. If set to `False` the workflow will immediately throw an error and stop execution if the repository has uncommitted changes. If the user intends to run the workflow with a dirty repository, they should set this property to `True` in the session configuration file.
+
+#### Running via CLI
+
+The workflow can be launched via the Bonsai Command Line Interface (CLI). Additional documentation on the CLI can be found [here](https://bonsai-rx.org/docs/articles/cli.html).
+To run the acquisition workflow using the CLI, use the following command:
+
+```bash
+"./bonsai/bonsai.exe" "./src/main.bonsai" -p RigPath="../path/to/rig.json" -p SessionPath="../path/to/session.json"
+```
+
+> [!Note]
+> The paths to the configuration file are relative to the workflow working directory (i.e. `./src/`)
+
+Additional flags can be passed to automatically start the workflow (`--start`) or run in headless mode (`--no-editor`) as stated in the Bonsai CLI documentation.
+
+#### Acquiring data
+
+Once the workflow is running, a UI will pop up and users can start acquisition by clicking `Start`. The system will then begin to acquire data from the cameras and store it in the specified session directory. Once the session is ready to stop, users can click `Stop` in the UI. The system will then save the session data and stop/close the workflow.
 
 ## Contributing
-Describe how other software developers can contribute to the codebase.
+
+## Regenerating schemas
+
+Instructions for regenerating schemas can be found [here](https://github.com/AllenNeuralDynamics/Aind.Behavior.Services?tab=readme-ov-file#regenerating-schemas).
 

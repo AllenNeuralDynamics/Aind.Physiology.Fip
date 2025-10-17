@@ -43,9 +43,10 @@ namespace AindPhysiologyFip
     
         public AindBehaviorSessionModel()
         {
-            _aindBehaviorServicesPkgVersion = "0.12.0";
-            _version = "0.3.1";
+            _aindBehaviorServicesPkgVersion = "0.12.2";
+            _version = "0.12.2";
             _experimenter = new System.Collections.Generic.List<string>();
+            _experimentVersion = "";
             _allowDirtyRepo = false;
             _skipHardwareValidation = false;
         }
@@ -96,7 +97,7 @@ namespace AindPhysiologyFip
         /// <summary>
         /// Name of the experiment
         /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("experiment", Required=Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonPropertyAttribute("experiment")]
         [System.ComponentModel.DescriptionAttribute("Name of the experiment")]
         public string Experiment
         {
@@ -164,10 +165,11 @@ namespace AindPhysiologyFip
         }
     
         /// <summary>
-        /// Name of the session. This will be used to create a folder in the root path.
+        /// Name of the session. This will be used to create a folder in the root path. If not provided, it will be generated using subject and date.
         /// </summary>
         [Newtonsoft.Json.JsonPropertyAttribute("session_name")]
-        [System.ComponentModel.DescriptionAttribute("Name of the session. This will be used to create a folder in the root path.")]
+        [System.ComponentModel.DescriptionAttribute("Name of the session. This will be used to create a folder in the root path. If no" +
+            "t provided, it will be generated using subject and date.")]
         public string SessionName
         {
             get
@@ -200,7 +202,7 @@ namespace AindPhysiologyFip
         /// <summary>
         /// Version of the experiment
         /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("experiment_version", Required=Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonPropertyAttribute("experiment_version")]
         [System.ComponentModel.DescriptionAttribute("Version of the experiment")]
         public string ExperimentVersion
         {
@@ -361,8 +363,8 @@ namespace AindPhysiologyFip
     
         public AindPhysioFipRig()
         {
-            _aindBehaviorServicesPkgVersion = "0.12.0";
-            _version = "0.1.0";
+            _aindBehaviorServicesPkgVersion = "0.12.2";
+            _version = "0.12.2";
             _cameraGreenIso = new FipCamera();
             _cameraRed = new FipCamera();
             _lightSourceUv = new LightSource();

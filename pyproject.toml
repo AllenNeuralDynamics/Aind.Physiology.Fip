@@ -1,25 +1,22 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.8.22"]
+build-backend = "uv_build"
 
 [project]
 name = "aind-physiology-fip"
 description = "A repository for Fiber Photometry data acquisition"
-authors = [
-    { name = "Bruno Cruz", email = "bruno.cruz@alleninstitute.org" },
-]
-license = {text = "MIT"}
+authors = [{ name = "Bruno Cruz", email = "bruno.cruz@alleninstitute.org" }]
+license = { text = "MIT" }
 requires-python = ">=3.11"
-dynamic = ["version", "readme"]
+version = "0.0.0"
+readme = { file = "README.md", content-type = "text/markdown" }
 classifiers = [
     "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: MIT License",
     "Operating System :: Microsoft :: Windows",
 ]
 
-dependencies = [
-    "aind_behavior_services<0.13",
-]
+dependencies = ["aind_behavior_services<0.13"]
 
 [project.urls]
 Documentation = "https://allenneuraldynamics.github.io/Aind.Physiology.Fip/"
@@ -29,16 +26,11 @@ Changelog = "https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/releases
 
 [project.optional-dependencies]
 
-dev = [
-    "ruff",
-    "codespell"
-]
+data = ["contraqctor < 0.5.0", "pydantic_settings", "opencv-python"]
 
-data = [
-    "contraqctor < 0.5.0",
-    "pydantic_settings",
-    "opencv-python",
-    ]
+[dependency-groups]
+
+dev = ["ruff", "codespell", "aind-physiology-fip[data]"]
 
 docs = [
     'Sphinx<7.3',
@@ -50,16 +42,8 @@ docs = [
     "sphinx_mdinclude",
 ]
 
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-data]
-aind_physiology_fip = ["py.typed"]
-
-[tool.setuptools.dynamic]
-version = {attr = "aind_physiology_fip.__version__"}
-readme = {file = "README.md", content-type = "text/markdown"}
+[project.scripts]
+fip = "aind_physiology_fip.cli:main"
 
 [tool.ruff]
 line-length = 120
@@ -74,3 +58,7 @@ pydocstyle = { convention = 'google' }
 [tool.codespell]
 skip = '.git,*.pdf,*.svg,./bonsai,*.bonsai,./docs/_build,uv.lock'
 ignore-words-list = 'nd'
+
+[tool.uv]
+default-groups = ['dev']
+required-version = '>=0.8.4'

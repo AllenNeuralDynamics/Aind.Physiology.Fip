@@ -16,7 +16,7 @@ from contraqctor.qc import ContextExportableObj, Runner, Suite
 from contraqctor.qc.contract import ContractTestSuite
 from contraqctor.qc.csv import CsvTestSuite
 
-from aind_physiology_fip import __version__
+from aind_physiology_fip import __semver__
 from aind_physiology_fip.data_contract import FipRawFrame, RoiSettings, dataset
 from aind_physiology_fip.data_qc_helpers import plot_sensor_floor
 from aind_physiology_fip.rig import Circle
@@ -338,7 +338,7 @@ def _save_assets(results: t.Dict[str | None, t.List[contraqctor.qc.Result]], ass
                     )
 
 
-class QcCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
+class DataQcCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
     data_path: pydantic_settings.CliPositionalArg[Path] = pydantic.Field(
         description="Path to the session data directory."
     )
@@ -346,7 +346,7 @@ class QcCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
         default=Path("."),
         description="Path to the asset root directory. If not provided, the current working directory will be used. Set None to disable saving assets.",
     )
-    version: str = pydantic.Field(default=__version__, description="Version of the dataset.")
+    version: str = pydantic.Field(default=__semver__, description="Version of the dataset.")
 
     def cli_cmd(self):
         if not Path(self.data_path).exists():
@@ -357,4 +357,4 @@ class QcCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
 
 
 if __name__ == "__main__":
-    cli = pydantic_settings.CliApp().run(QcCli)
+    cli = pydantic_settings.CliApp().run(DataQcCli)

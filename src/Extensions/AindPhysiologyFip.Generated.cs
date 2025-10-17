@@ -43,8 +43,8 @@ namespace AindPhysiologyFip
     
         public AindBehaviorSessionModel()
         {
-            _aindBehaviorServicesPkgVersion = "0.12.2";
-            _version = "0.12.2";
+            _aindBehaviorServicesPkgVersion = "0.12.3";
+            _version = "0.12.3";
             _experimenter = new System.Collections.Generic.List<string>();
             _experimentVersion = "";
             _allowDirtyRepo = false;
@@ -363,8 +363,8 @@ namespace AindPhysiologyFip
     
         public AindPhysioFipRig()
         {
-            _aindBehaviorServicesPkgVersion = "0.12.2";
-            _version = "0.12.2";
+            _aindBehaviorServicesPkgVersion = "0.12.3";
+            _version = "0.1.0";
             _cameraGreenIso = new FipCamera();
             _cameraRed = new FipCamera();
             _lightSourceUv = new LightSource();

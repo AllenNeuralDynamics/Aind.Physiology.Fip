@@ -12,7 +12,7 @@ For FIP photometry data acquisition and hardware control.
 
 The FIP (Frame-projected Independent Photometry) system is a low-cost, scalable photometry setup designed for chronic recording of optical signals from behaving mice during daily training. The system is based on a modified design of Frame-projected Independent Photometry (Kim et al., 2016), using inexpensive, commercially available, off-the-shelf components. 
 
-![FIP System Light Path](assets/images/fip_light_path.png)
+![FIP System Light Path](assets/images/fip_light_path.png) 
 
 For more information, see the [AIND Fiber Photometry Platform Page](https://www.allenneuraldynamics.org/platforms/fiber-photometry) and the following protocols:  
 
@@ -74,20 +74,18 @@ This cycling occurs at 60 Hz, allowing near-simultaneous measurement of multiple
 * [Visual C++ Redistributable for Visual Studio 2012](https://www.microsoft.com/en-us/download/details.aspx?id=30679) (native dependency for OpenCV)
 * [Spinnaker SDK 1.29.0.5](https://www.teledynevisionsolutions.com/support/support-center/software-firmware-downloads/iis/spinnaker-sdk-download/spinnaker-sdk--download-files/#anchor6) (device drivers for FLIR cameras)
  * On FLIR website: `Download > archive > 1.29.0.5 > SpinnakerSDK_FULL_1.29.0.5_x64.exe`
-* [UV Python environment manager](https://docs.astral.sh/uv/getting-started/installation/) (highly recommended for managing the Python environment for this project. All examples will assume usage of `uv`. Alternatively, you can use other environment managers such as `venv` or `conda` to create a Python environment and install the required dependencies listed in the package metadata: `pyproject.toml`)
+* [Optional] [UV Python environment manager](https://docs.astral.sh/uv/getting-started/installation/) (highly recommended for managing the Python environment for this project. All examples will assume usage of `uv`. Alternatively, you can use other environment managers such as `venv` or `conda` to create a Python environment and install the required dependencies listed in the package metadata: `pyproject.toml`)
 
 ### Installation Steps
 
 1. Clone this repository
-2. Create the environments for Bonsai and Python:
+2. Create the environments for Bonsai, run `./bonsai/setup.cmd` (can be by double-clickin it too). This is required to run experiments using the Bonsai script in an experimental PC.
+3. [Optional] Create the environments for Python, run `uv venv` if using uv, or create a virtual environment using your preferred method. This is only used to run the Python script generating configuration files. (rig PCs can inherit those files from somewhere else)
+ * Alternatively, if you are using uv, run `./scripts/deploy.ps1` to bootstrap a Python and Bonsai environment at the same time for the project automatically.
 
- * For Bonsai, run `./bonsai/setup.cmd`
- * For Python, run `uv venv` if using uv, or create a virtual environment using your preferred method.
- * Alternatively, if you are using uv, run `./scripts/deploy.ps1` to bootstrap a Python and Bonsai environment for the project automatically.
+### Generating input configurations [Optional]
 
-### Generating input configurations
-
-The current pipeline relies on two input configuration files. These configure the rig/instruments and session parameters, respectively. These files are formalized as pydantic models as shown in `./examples/examples.py`.
+The current pipeline relies on two input configuration files. These configure the rig/instruments and session parameters, respectively. These files are formalized as pydantic models as shown in `./examples/examples.py`. Template configuration files are included in the `./examples/` folder, and running the `examples.py` will create configuration files into  `./local/`
 
 Briefly:
 
@@ -113,6 +111,7 @@ Acquisition is done through Bonsai via a single entry-point workflow. As any Bon
 * Open the workflow file `./src/main.bonsai`
 * Manually set the two highest level properties `RigPath` and `SessionPath` to the paths of the configuration files generated in the [previous step](#generating-input-configurations).
 * Launch the workflow by clicking the "Run" button in the Bonsai editor.
+* Settings in FipRig.json such as `camera_green_iso` `serial_number` and `cuttlefish_fip` `port_name` needs to be modified per PC for Bonsai to detect those hardware.
 
 > [!Important]
 > `AindBehaviorSessionModel.allow_dirty` property will be checked at the start of the workflow. If set to `False` the workflow will immediately throw an error and stop execution if the repository has uncommitted changes. If the user intends to run the workflow with a dirty repository, they should set this property to `True` in the session configuration file.

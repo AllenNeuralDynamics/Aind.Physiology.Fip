@@ -50,7 +50,7 @@ wheels = [
 
 [[package]]
 name = "aind-physiology-fip"
-version = "0.1.0"
+version = "0.1.1rc1"
 source = { editable = "." }
 dependencies = [
     { name = "aind-behavior-services" },
@@ -82,7 +82,7 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "aind-behavior-services", specifier = "<0.13" },
-    { name = "contraqctor", marker = "extra == 'data'", specifier = "<0.6.0" },
+    { name = "contraqctor", marker = "extra == 'data'", specifier = "<0.6" },
     { name = "opencv-python", marker = "extra == 'data'" },
     { name = "pydantic-settings", marker = "extra == 'data'" },
 ]

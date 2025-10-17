@@ -74,12 +74,16 @@ This cycling occurs at 60 Hz, allowing near-simultaneous measurement of multiple
 * [Visual C++ Redistributable for Visual Studio 2012](https://www.microsoft.com/en-us/download/details.aspx?id=30679) (native dependency for OpenCV)
 * [Spinnaker SDK 1.29.0.5](https://www.teledynevisionsolutions.com/support/support-center/software-firmware-downloads/iis/spinnaker-sdk-download/spinnaker-sdk--download-files/#anchor6) (device drivers for FLIR cameras)
  * On FLIR website: `Download > archive > 1.29.0.5 > SpinnakerSDK_FULL_1.29.0.5_x64.exe`
-* [UV Python environment manager](https://docs.astral.sh/uv/getting-started/installation/)
+* [UV Python environment manager](https://docs.astral.sh/uv/getting-started/installation/) (highly recommended for managing the Python environment for this project. All examples will assume usage of `uv`. Alternatively, you can use other environment managers such as `venv` or `conda` to create a Python environment and install the required dependencies listed in the package metadata: `pyproject.toml`)
 
 ### Installation Steps
 
 1. Clone this repository
-2. Run `./scripts/deploy.ps1` to bootstrap a Python and Bonsai environment for the project.
+2. Create the environments for Bonsai and Python:
+
+ * For Bonsai, run `./bonsai/setup.cmd`
+ * For Python, run `uv venv` if using uv, or create a virtual environment using your preferred method.
+ * Alternatively, if you are using uv, run `./scripts/deploy.ps1` to bootstrap a Python and Bonsai environment for the project automatically.
 
 ### Generating input configurations
 
@@ -146,6 +150,8 @@ For a list of available subcommands and options, run:
 ```bash
     uv run fip --help
 ```
+
+(If you are not using `uv`, activate your python environment and run the `fip` tool directly.)
 
 ## Regenerating schemas
 

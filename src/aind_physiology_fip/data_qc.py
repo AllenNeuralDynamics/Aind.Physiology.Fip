@@ -291,7 +291,7 @@ class FipRawImageTestSuite(Suite):
 def _run_tests(dataset: contract.Dataset) -> t.Dict[str | None, t.List[contraqctor.qc.Result]]:
     runner = Runner()
 
-    runner.add_suite(ContractTestSuite(dataset.load_all()), "Contract tests")
+    runner.add_suite(ContractTestSuite(dataset.load_all().collect_errors()), "Contract tests")
 
     for data_stream in dataset.iter_all():
         if isinstance(data_stream, contract.csv.Csv):

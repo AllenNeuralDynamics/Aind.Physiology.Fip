@@ -5,10 +5,13 @@ build-backend = "uv_build"
 [project]
 name = "aind-physiology-fip"
 description = "A repository for Fiber Photometry data acquisition"
-authors = [{ name = "Bruno Cruz", email = "bruno.cruz@alleninstitute.org" }]
+authors = [
+    { name = "Bruno Cruz", email = "bruno.cruz@alleninstitute.org" },
+    { name = "Kenta Hagihara", email = "kenta.hagihara@alleninstitute.org" },
+]
 license = { text = "MIT" }
 requires-python = ">=3.11"
-version = "0.0.0"
+version = "0.1.0"
 readme = { file = "README.md", content-type = "text/markdown" }
 classifiers = [
     "Programming Language :: Python :: 3.11",
@@ -26,14 +29,14 @@ Changelog = "https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/releases
 
 [project.optional-dependencies]
 
-data = ["contraqctor < 0.5.0", "pydantic_settings", "opencv-python"]
+data = ["contraqctor < 0.6", "pydantic_settings", "opencv-python"]
 
 [dependency-groups]
 
 dev = ["ruff", "codespell", "aind-physiology-fip[data]"]
 
 docs = [
-    'Sphinx<7.3',
+    'Sphinx',
     'furo',
     'sphinx-jinja',
     'autodoc_pydantic[erdantic]',

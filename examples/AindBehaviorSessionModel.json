@@ -1,14 +1,14 @@
 {
-  "aind_behavior_services_pkg_version": "0.12.0",
-  "version": "0.3.1",
+  "aind_behavior_services_pkg_version": "0.12.3",
+  "version": "0.12.3",
   "experiment": "AindPhysioFip",
   "experimenter": [
     "Foo",
     "Bar"
   ],
-  "date": "2025-10-17T22:17:57.377659Z",
+  "date": "2025-10-18T00:24:52.277101Z",
   "root_path": "c://",
-  "session_name": "test_2025-10-17T221757Z",
+  "session_name": "test_2025-10-18T002452Z",
   "subject": "test",
   "experiment_version": "0.0.0",
   "notes": "test session",

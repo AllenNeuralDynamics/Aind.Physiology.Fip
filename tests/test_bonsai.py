@@ -20,7 +20,7 @@ TModel = TypeVar("TModel", bound=Union[AindPhysioFipRig, AindBehaviorSessionMode
 
 class BonsaiTests(unittest.TestCase):
     def test_deserialization(self):
-        example.main("./local/{schema}.json")
+        example.main()
 
         models_to_test = [
             TestModel(bonsai_property="SessionPath", json_root=JSON_ROOT, model=AindBehaviorSessionModel),

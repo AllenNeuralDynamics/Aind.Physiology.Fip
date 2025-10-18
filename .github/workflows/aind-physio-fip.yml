@@ -209,7 +209,7 @@ jobs:
         run: uv run fip regenerate
 
       - name: Regenerate examples
-        run: uv run ./examples/example.py --path-seed "./examples/{schema}.json
+        run: uv run ./examples/example.py --path-seed "./examples/{schema}.json"
 
       - name: Commit version, schema changes and create tag
         run: |

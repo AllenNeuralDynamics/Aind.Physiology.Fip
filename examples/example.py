@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import os
 
@@ -39,13 +40,14 @@ def mock_rig() -> AindPhysioFipRig:
 
     return AindPhysioFipRig(
         rig_name="test_rig",
+        computer_name="test_computer",
         camera_green_iso=FipCamera(serial_number="000000"),
         camera_red=FipCamera(serial_number="000001"),
         light_source_blue=LightSource(
             power=10,
             calibration=mock_calibration,
             task=FipTask(
-                camera_port=Ports.IO1,
+                camera_port=Ports.IO0,  # GreenCamera + 470nm
                 light_source_port=Ports.IO2,
             ),
         ),
@@ -53,12 +55,17 @@ def mock_rig() -> AindPhysioFipRig:
             power=20,
             calibration=mock_calibration,
             task=FipTask(
-                camera_port=Ports.IO5,
+                camera_port=Ports.IO1,  # RedCamera + 560nm
                 light_source_port=Ports.IO4,
             ),
         ),
         light_source_uv=LightSource(
-            power=0.1, calibration=None, task=FipTask(camera_port=Ports.IO1, light_source_port=Ports.IO0)
+            power=0.1,
+            calibration=None,
+            task=FipTask(
+                camera_port=Ports.IO0,  # GreenCamera + 410nm
+                light_source_port=Ports.IO3,
+            ),
         ),
         roi_settings=RoiSettings(),
         networking=Networking(),
@@ -68,14 +75,22 @@ def mock_rig() -> AindPhysioFipRig:
     )
 
 
-def main(path_seed: str = "./local/{schema}.json"):
+def main():
+    parser = argparse.ArgumentParser(description="Generate mock session and rig JSON files")
+    parser.add_argument(
+        "--path-seed",
+        default="./local/{schema}.json",
+        help="Path template for output files (default: ./local/{schema}.json)",
+    )
+    args = parser.parse_args()
+
     example_session = mock_session()
     example_rig = mock_rig()
 
-    os.makedirs(os.path.dirname(path_seed), exist_ok=True)
+    os.makedirs(os.path.dirname(args.path_seed), exist_ok=True)
 
     for model in [example_session, example_rig]:
-        with open(path_seed.format(schema=model.__class__.__name__), "w", encoding="utf-8") as f:
+        with open(args.path_seed.format(schema=model.__class__.__name__), "w", encoding="utf-8") as f:
             f.write(model.model_dump_json(indent=2))
 
 

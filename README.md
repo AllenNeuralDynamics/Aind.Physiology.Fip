@@ -10,9 +10,9 @@ For FIP photometry data acquisition and hardware control.
 
 ## Overview
 
-The FIP (Frame-projected Independent Photometry) system is a low-cost, scalable photometry setup designed for chronic recording of optical signals from behaving mice during daily training. The system is based on a modified design of Frame-projected Independent Photometry (Kim et al., 2016), using inexpensive, commercially available, off-the-shelf components. 
+The FIP (Frame-projected Independent Photometry) system is a low-cost, scalable photometry setup designed for chronic recording of optical signals from behaving mice during daily training. The system is based on a modified design of Frame-projected Independent Photometry (Kim et al., 2016), using inexpensive, commercially available, off-the-shelf components.
 
-![FIP System Light Path](assets/images/fip_light_path.png) 
+![FIP System Light Path](assets/images/fip_light_path.png)
 
 For more information, see the [AIND Fiber Photometry Platform Page](https://www.allenneuraldynamics.org/platforms/fiber-photometry) and the following protocols:  
 
@@ -136,7 +136,27 @@ Additional flags can be passed to automatically start the workflow (`--start`) o
 
 Once the workflow is running, a UI will pop up and users can start acquisition by clicking `Start`. The system will then begin to acquire data from the cameras and store it in the specified session directory. Once the session is ready to stop, users can click `Stop` in the UI. The system will then save the session data and stop/close the workflow.
 
-## Contributing
+## Contributors
+
+Contributions to this repository are welcome! However, please ensure that your code adheres to the recommended DevOps practices below:
+
+### Linting
+
+We use [ruff](https://docs.astral.sh/ruff/) as our primary linting tool:.
+
+```bash
+    uv run ruff format .
+    uv run ruff check .
+```
+
+### Testing
+
+Attempt to add tests when new features are added.
+To run the currently available tests, run `uv run python -m unittest` from the root of the repository.
+
+### Lock files
+
+We use [uv](https://docs.astral.sh/uv/) to manage our lock files and therefore encourage everyone to use uv as a package manager as well.
 
 ## CLI
 

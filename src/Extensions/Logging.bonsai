@@ -52,11 +52,10 @@
                   <Expression xsi:type="WorkflowInput">
                     <Name>Source1</Name>
                   </Expression>
-                  <Expression xsi:type="SubscribeSubject">
-                    <Name>RigSchema</Name>
-                  </Expression>
-                  <Expression xsi:type="MemberSelector">
-                    <Selector>RigName</Selector>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="StringProperty">
+                      <Value>fip</Value>
+                    </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>DateTimeSuffix</Name>
@@ -97,7 +96,9 @@
                           <Name>SessionSchema</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p2:SerializeToJson" />
+                          <Combinator xsi:type="p2:SerializeToJson">
+                            <p2:Formatting>None</p2:Formatting>
+                          </Combinator>
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
                           <Name>DeviceName</Name>
@@ -117,7 +118,9 @@
                           <Name>RigSchema</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p2:SerializeToJson" />
+                          <Combinator xsi:type="p2:SerializeToJson">
+                            <p2:Formatting>None</p2:Formatting>
+                          </Combinator>
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
                           <Name>DeviceName</Name>
@@ -369,7 +372,9 @@ Item4 as CpuTime)</scr:Expression>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p2:SerializeToJson" />
+                    <Combinator xsi:type="p2:SerializeToJson">
+                      <p2:Formatting>None</p2:Formatting>
+                    </Combinator>
                   </Expression>
                   <Expression xsi:type="IncludeWorkflow" Path="AllenNeuralDynamics.Core:LogAllText.bonsai">
                     <SubjectName>LoggingRootPath</SubjectName>
@@ -499,20 +504,19 @@ Item4 as CpuTime)</scr:Expression>
                   </Expression>
                 </Nodes>
                 <Edges>
-                  <Edge From="0" To="4" Label="Source1" />
-                  <Edge From="1" To="2" Label="Source1" />
-                  <Edge From="2" To="4" Label="Source2" />
-                  <Edge From="3" To="4" Label="Source3" />
+                  <Edge From="0" To="3" Label="Source1" />
+                  <Edge From="1" To="3" Label="Source2" />
+                  <Edge From="2" To="3" Label="Source3" />
+                  <Edge From="3" To="4" Label="Source1" />
                   <Edge From="4" To="5" Label="Source1" />
                   <Edge From="5" To="6" Label="Source1" />
-                  <Edge From="6" To="7" Label="Source1" />
+                  <Edge From="8" To="9" Label="Source1" />
                   <Edge From="9" To="10" Label="Source1" />
-                  <Edge From="10" To="11" Label="Source1" />
+                  <Edge From="11" To="12" Label="Source1" />
                   <Edge From="12" To="13" Label="Source1" />
-                  <Edge From="13" To="14" Label="Source1" />
+                  <Edge From="14" To="15" Label="Source1" />
                   <Edge From="15" To="16" Label="Source1" />
                   <Edge From="16" To="17" Label="Source1" />
-                  <Edge From="17" To="18" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>

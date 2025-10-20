@@ -11,7 +11,6 @@
                  xmlns:p4="clr-namespace:AllenNeuralDynamics.Core.Design;assembly=AllenNeuralDynamics.Core.Design"
                  xmlns:p5="clr-namespace:AllenNeuralDynamics.CuttlefishFip;assembly=AllenNeuralDynamics.CuttlefishFip"
                  xmlns:num="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
-                 xmlns:ui="clr-namespace:Bonsai.Design;assembly=Bonsai.Design"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
     <Nodes>
@@ -2119,17 +2118,6 @@
               <gui:RowStyles />
               <gui:CellSpans />
             </Expression>
-            <Expression xsi:type="ui:VisualizerWindow">
-              <ui:VisualizerType xsi:type="TypeMapping" TypeArguments="gui:TableLayoutPanelVisualizer" />
-              <ui:Text>Fip</ui:Text>
-              <ui:Visible>true</ui:Visible>
-              <ui:Location xsi:nil="true" />
-              <ui:Size>
-                <ui:Width>1200</ui:Width>
-                <ui:Height>600</ui:Height>
-              </ui:Size>
-              <ui:WindowState>Normal</ui:WindowState>
-            </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
           <Edges>
@@ -2157,7 +2145,6 @@
             <Edge From="24" To="25" Label="Source1" />
             <Edge From="25" To="26" Label="Source2" />
             <Edge From="26" To="27" Label="Source1" />
-            <Edge From="27" To="28" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>

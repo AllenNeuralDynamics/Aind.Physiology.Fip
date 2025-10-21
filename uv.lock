@@ -49,6 +49,34 @@ wheels = [
 ]
 
 [[package]]
+name = "aind-data-schema"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aind-data-schema-models" },
+    { name = "pydantic" },
+    { name = "semver" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9a/93/a283d16a6ffb59f9cd558edcb0fcea5b1099d81921c3ac167a43cc3c4f3d/aind_data_schema-2.1.0.tar.gz", hash = "sha256:899d1a209211c742ece04c9506500983f0a8ffc7e0911f0e82e4d9501f50134e", size = 750414, upload-time = "2025-10-20T18:30:42.133Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/86/1c/40593876feb8cb106ca45b9d25a708abf68db544358286abfd950074a109/aind_data_schema-2.1.0-py3-none-any.whl", hash = "sha256:0b59880cc3c22f703b2f8f99249d178cd177b2ab6fd2cb115e37251606404957", size = 86103, upload-time = "2025-10-20T18:30:40.413Z" },
+]
+
+[[package]]
+name = "aind-data-schema-models"
+version = "4.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "importlib-resources" },
+    { name = "pydantic" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2d/ea/a6b5bacf52de8e904ca9bb88dc1a5f8596dfa0b12fa5812e44041835d535/aind_data_schema_models-4.3.0.tar.gz", hash = "sha256:3608c89d91192d54dee40823e385e4f6dbdac658987af7fadefd68c02d3490fb", size = 324212, upload-time = "2025-09-22T21:54:25.374Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/11/e6/136ff5288b154c022c4cb7a047faf946755aca597a75490767a479936921/aind_data_schema_models-4.3.0-py3-none-any.whl", hash = "sha256:62703b4425009c930511de366a85fb57e5dc52f7493fd0a49871a90429e5832f", size = 297854, upload-time = "2025-09-22T21:54:24.216Z" },
+]
+
+[[package]]
 name = "aind-physiology-fip"
 version = "0.1.2rc3"
 source = { editable = "." }
@@ -58,6 +86,12 @@ dependencies = [
 
 [package.optional-dependencies]
 data = [
+    { name = "contraqctor" },
+    { name = "opencv-python" },
+    { name = "pydantic-settings" },
+]
+mappers = [
+    { name = "aind-data-schema" },
     { name = "contraqctor" },
     { name = "opencv-python" },
     { name = "pydantic-settings" },
@@ -82,11 +116,13 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "aind-behavior-services", specifier = "<0.13" },
+    { name = "aind-data-schema", marker = "extra == 'mappers'" },
+    { name = "aind-physiology-fip", extras = ["data"], marker = "extra == 'mappers'" },
     { name = "contraqctor", marker = "extra == 'data'", specifier = "<0.6" },
     { name = "opencv-python", marker = "extra == 'data'" },
     { name = "pydantic-settings", marker = "extra == 'data'" },
 ]
-provides-extras = ["data"]
+provides-extras = ["data", "mappers"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -533,6 +569,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a7/84/62473fb57d61e31fef6e36d64a179c8781605429fd927b5dd608c997be31/imagesize-1.4.1.tar.gz", hash = "sha256:69150444affb9cb0d5cc5a92b3676f0b2fb7cd9ae39e947a5e11a36b4497cd4a", size = 1280026, upload-time = "2022-07-01T12:21:05.687Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ff/62/85c4c919272577931d407be5ba5d71c20f0b616d31a0befe0ae45bb79abd/imagesize-1.4.1-py2.py3-none-any.whl", hash = "sha256:0d8d18d08f840c19d0ee7ca1fd82490fdc3729b7ac93f49870406ddde8ef8d8b", size = 8769, upload-time = "2022-07-01T12:21:02.467Z" },
+]
+
+[[package]]
+name = "importlib-resources"
+version = "6.5.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cf/8c/f834fbf984f691b4f7ff60f50b514cc3de5cc08abfc3295564dd89c5e2e7/importlib_resources-6.5.2.tar.gz", hash = "sha256:185f87adef5bcc288449d98fb4fba07cea78bc036455dd44c5fc4a2fe78fed2c", size = 44693, upload-time = "2025-01-03T18:51:56.698Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl", hash = "sha256:789cfdc3ed28c78b67a06acb8126751ced69a3d5f79c095a98298cd8a760ccec", size = 37461, upload-time = "2025-01-03T18:51:54.306Z" },
 ]
 
 [[package]]

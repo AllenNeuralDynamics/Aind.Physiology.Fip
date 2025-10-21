@@ -73,7 +73,7 @@
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="rx:AsyncSubject">
-                    <Name>RootLoggingPath</Name>
+                    <Name>LoggingRootPath</Name>
                   </Expression>
                   <Expression xsi:type="rx:Defer">
                     <Name>Logs</Name>

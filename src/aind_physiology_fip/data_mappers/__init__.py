@@ -16,8 +16,9 @@ class DataMapperCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
     def cli_cmd(self):
         logger.info("Mapping metadata directly from dataset.")
         acquisition_mapped = ProtoAcquisitionMapper(self.data_path).map()
-        logger.info("Writing fib_extracted_acquisition.json to %s", self.data_path)
-        with open(Path(self.data_path) / "fib_extracted_acquisition.json", "w", encoding="utf-8") as f:
+        logger.info("Writing fip.json to %s", self.data_path)
+        # According to @dbirman, the name of this file MUST match the extractor, so we hardcode it here.
+        with open(Path(self.data_path) / "fip.json", "w", encoding="utf-8") as f:
             f.write(acquisition_mapped.model_dump_json(indent=2))
         logger.info("Mapping completed!")
 

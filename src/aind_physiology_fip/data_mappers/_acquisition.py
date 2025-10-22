@@ -9,13 +9,15 @@ if importlib.util.find_spec("aind_data_schema") is None:
     )
 import logging
 from pathlib import Path
-from typing import cast
+from typing import Optional, cast
 
 import pydantic
+from aind_behavior_services.session import AindBehaviorSessionModel
 from pandas import DataFrame
 
 from aind_physiology_fip.data_contract import dataset
 from aind_physiology_fip.data_mappers._base import AindDataSchemaMapper
+from aind_physiology_fip.rig import AindPhysioFipRig
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +29,13 @@ class ProtoAcquisitionDataSchema(pydantic.BaseModel):
     create a final Acquisition object.
     """
 
-    data_stream_metadata: list["_DataStream"] = pydantic.Field(min_length=1)
+    data_stream_metadata: list["_DataStream"] = pydantic.Field(
+        min_length=1, description="Metadata for each data stream in the acquisition."
+    )
+    session: AindBehaviorSessionModel = pydantic.Field(
+        description="The session information that instantiated the acquisition."
+    )
+    rig: AindPhysioFipRig = pydantic.Field(description="The rig configuration that instantiated the acquisition.")
 
 
 class _DataStream(pydantic.BaseModel):
@@ -46,11 +54,11 @@ class ProtoAcquisitionMapper(AindDataSchemaMapper[ProtoAcquisitionDataSchema]):
         self._data_directory = data_directory
 
     def map(self) -> ProtoAcquisitionDataSchema:
-        epochs = (Path(self._data_directory) / "fib").glob("fip_*")
+        epochs = list((Path(self._data_directory) / "fib").glob("fip_*"))
+        session, rig = self._extract_session_and_rig(epochs)
+        data_streams_metadata = self._extract_start_end_times(epochs)
 
-        data_streams_metadata = self._extract_start_end_times(list(epochs))
-
-        return ProtoAcquisitionDataSchema(data_stream_metadata=data_streams_metadata)
+        return ProtoAcquisitionDataSchema(data_stream_metadata=data_streams_metadata, session=session, rig=rig)
 
     @staticmethod
     def _extract_start_end_times(epochs: list[Path]) -> list[_DataStream]:
@@ -79,3 +87,38 @@ class ProtoAcquisitionMapper(AindDataSchemaMapper[ProtoAcquisitionDataSchema]):
         start_utc = datetime.fromisoformat(df["CpuTime"].iloc[0])
         end_utc = datetime.fromisoformat(df["CpuTime"].iloc[-1])
         return start_utc, end_utc
+
+    @staticmethod
+    def _extract_session_and_rig(epochs: list[Path]) -> tuple[AindBehaviorSessionModel, AindPhysioFipRig]:
+        session: Optional[AindBehaviorSessionModel] = None
+        rig: Optional[AindPhysioFipRig] = None
+        for epoch in epochs:
+            if not epoch.is_dir():
+                continue
+            _dataset = dataset(root=epoch)
+            if session is None:
+                try:
+                    session = _dataset["session_input"].read()
+                except Exception as e:
+                    logger.debug(f"No session_input found in dataset at {epoch}: {e}")
+            if rig is None:
+                try:
+                    rig = _dataset["rig_input"].read()
+                except Exception as e:
+                    logger.debug(f"No rig_input found in dataset at {epoch}: {e}")
+                    continue
+        if session is None:
+            raise ValueError("No session_input found in any of the provided epochs.")
+        if rig is None:
+            raise ValueError("No rig_input found in any of the provided epochs.")
+        return session, rig
+
+
+if __name__ == "__main__":
+    import logging
+
+    logging.basicConfig(level=logging.DEBUG)
+    path = r"\\allen\aind\scratch\bruno.cruz\fip_tests\781896_2025-07-18T190319Z"
+    mapper = ProtoAcquisitionMapper(data_directory=path)
+    acquisition = mapper.map()
+    print(acquisition.model_dump_json(indent=4))

@@ -19,6 +19,7 @@ classifiers = [
 
 dependencies = [
     "aind_behavior_services<0.13",
+    "pandas",
 ]
 
 [project.urls]

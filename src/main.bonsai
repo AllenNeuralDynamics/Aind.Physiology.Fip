@@ -2286,12 +2286,29 @@
             <Expression xsi:type="MulticastSubject">
               <Name>SetTaskState</Name>
             </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>LoggingRootPath</Name>
+            </Expression>
+            <Expression xsi:type="scr:ExpressionTransform">
+              <scr:Name>AddSessionTiming</scr:Name>
+              <scr:Expression>System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+{
+    FileName = "python",
+    Arguments = "src/aind_physiology_fip/add_session_timing.py \"" + it + "\" America/Los_Angeles",
+    UseShellExecute = false,
+    RedirectStandardOutput = true,
+    RedirectStandardError = true,
+    CreateNoWindow = true
+}).WaitForExit()</scr:Expression>
+            </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
           <Edges>
             <Edge From="0" To="1" Label="Source1" />
             <Edge From="1" To="2" Label="Source1" />
-            <Edge From="2" To="3" Label="Source1" />
+            <Edge From="2" To="5" Label="Source1" />
+            <Edge From="3" To="4" Label="Source1" />
+            <Edge From="4" To="5" Label="Source2" />
           </Edges>
         </Workflow>
       </Expression>

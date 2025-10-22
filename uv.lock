@@ -99,7 +99,7 @@ mappers = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "aind-physiology-fip", extra = ["data"] },
+    { name = "aind-physiology-fip", extra = ["data", "mappers"] },
     { name = "codespell" },
     { name = "ruff" },
 ]
@@ -127,6 +127,7 @@ provides-extras = ["data", "mappers"]
 [package.metadata.requires-dev]
 dev = [
     { name = "aind-physiology-fip", extras = ["data"] },
+    { name = "aind-physiology-fip", extras = ["mappers"] },
     { name = "codespell" },
     { name = "ruff" },
 ]

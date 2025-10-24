@@ -11,7 +11,7 @@ Welcome to the Aind Physiology Fip project documentation!
    self
    api
    json-schemas
-   articles/*
+   dataset
    GitHub Source Code <https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip>
 
 Indices and tables

@@ -9,6 +9,7 @@ from aind_behavior_services.session import AindBehaviorSessionModel
 from contraqctor.contract import Dataset, DataStream, FilePathBaseParam, csv
 from contraqctor.contract.json import PydanticModel
 
+from aind_physiology_fip import __semver__
 from aind_physiology_fip.rig import AindPhysioFipRig, RoiSettings
 
 
@@ -96,9 +97,10 @@ class FipRawFrame(DataStream[FipFrameReader, FipRawFrameParams]):
         )
 
 
-def dataset(root: os.PathLike) -> Dataset:
+def dataset(root: os.PathLike, version: t.Literal[__semver__]) -> Dataset:
     root = Path(root)
     dataset = Dataset(
+        version=version,
         name="fip",
         data_streams=[
             FipRawFrame(
@@ -163,3 +165,12 @@ def dataset(root: os.PathLike) -> Dataset:
         ],
     )
     return dataset
+
+
+def render_dataset(version: str = __semver__) -> str:
+    """Renders the dataset as a tree-like structure for visualization."""
+    from contraqctor.contract.utils import print_data_stream_tree_html
+
+    return print_data_stream_tree_html(
+        dataset(Path("<RootPath>"), version=version), show_missing_indicator=False, show_type=True
+    )

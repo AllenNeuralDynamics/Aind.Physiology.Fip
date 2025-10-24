@@ -5,6 +5,7 @@ import erdantic as erd
 from pydantic import BaseModel
 
 import aind_physiology_fip
+import aind_physiology_fip.data_contract as contract
 import aind_physiology_fip.rig
 
 sys.path.insert(0, os.path.abspath("../src/DataSchemas"))
@@ -78,5 +79,10 @@ def export_model_diagram(model: BaseModel, root: str = "_static") -> None:
     diagram.draw(f"{root}/{model.__name__}.svg")
 
 
-_diagram_root = "_static"
-# export_model_diagram(MyPydanticBaseModel, _diagram_root)
+_static_path = "_static"
+# export_model_diagram(MyPydanticBaseModel, _static_path)
+
+# -- Dataset rendering
+
+with open(f"{_static_path}/dataset.html", "w", encoding="utf-8") as f:
+    f.write(contract.render_dataset())

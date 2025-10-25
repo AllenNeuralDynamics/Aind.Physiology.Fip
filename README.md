@@ -66,7 +66,7 @@ This cycling occurs at 60 Hz, allowing near-simultaneous measurement of multiple
 
 ## Using the acquisition system
 
-See [wiki](https://github.com/AllenNeuralDynamics/FIP_DAQ_Control/wiki) for AIND internal installation instructions.
+See [wiki](https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/wiki) for AIND internal installation instructions.
 
 ### Pre-requisites (some of these are optional, but recommended for a smoother experience)
 

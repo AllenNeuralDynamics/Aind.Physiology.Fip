@@ -29,7 +29,7 @@ class ProtoAcquisitionDataSchema(pydantic.BaseModel):
     create a final Acquisition object.
     """
 
-    data_stream_metadata: list["_DataStream"] = pydantic.Field(
+    data_stream_metadata: list["_FipDataStreamMetadata"] = pydantic.Field(
         min_length=1, description="Metadata for each data stream in the acquisition."
     )
     session: AindBehaviorSessionModel = pydantic.Field(
@@ -38,7 +38,7 @@ class ProtoAcquisitionDataSchema(pydantic.BaseModel):
     rig: AindPhysioFipRig = pydantic.Field(description="The rig configuration that instantiated the acquisition.")
 
 
-class _DataStream(pydantic.BaseModel):
+class _FipDataStreamMetadata(pydantic.BaseModel):
     id: str
     start_time: pydantic.AwareDatetime
     end_time: pydantic.AwareDatetime
@@ -61,7 +61,7 @@ class ProtoAcquisitionMapper(AindDataSchemaMapper[ProtoAcquisitionDataSchema]):
         return ProtoAcquisitionDataSchema(data_stream_metadata=data_streams_metadata, session=session, rig=rig)
 
     @staticmethod
-    def _extract_start_end_times(epochs: list[Path]) -> list[_DataStream]:
+    def _extract_start_end_times(epochs: list[Path]) -> list[_FipDataStreamMetadata]:
         data_streams = []
         _candidate_streams = ["camera_green_iso_metadata", "camera_red_metadata"]
         for epoch in epochs:
@@ -74,7 +74,7 @@ class ProtoAcquisitionMapper(AindDataSchemaMapper[ProtoAcquisitionDataSchema]):
                     start_utc, end_utc = ProtoAcquisitionMapper._extract_from_df(
                         cast(DataFrame, this_epoch[stream].read())
                     )
-                    data_streams.append(_DataStream(id=epoch.name, start_time=start_utc, end_time=end_utc))
+                    data_streams.append(_FipDataStreamMetadata(id=epoch.name, start_time=start_utc, end_time=end_utc))
             except Exception as e:
                 logger.warning(f"Failed to load FIP dataset at {epoch}: {e}")
                 continue

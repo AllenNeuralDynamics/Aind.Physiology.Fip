@@ -5,6 +5,7 @@ from pathlib import Path
 import pydantic
 import pydantic_settings
 
+from ._acquisition import ProtoAcquisitionDataSchema as ProtoAcquisitionDataSchema
 from ._acquisition import ProtoAcquisitionMapper
 
 logger = logging.getLogger(__name__)

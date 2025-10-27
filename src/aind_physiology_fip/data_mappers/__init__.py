@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class DataMapperCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
+    """CLI for generating AIND metadata from raw FIP data."""
+
     data_path: os.PathLike = pydantic.Field(description="Path to the session data directory.")
 
     def cli_cmd(self):

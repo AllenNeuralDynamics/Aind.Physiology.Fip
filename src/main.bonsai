@@ -15,11 +15,12 @@
                  xmlns:p7="clr-namespace:;assembly=Extensions"
                  xmlns:zmq="clr-namespace:Bonsai.ZeroMQ;assembly=Bonsai.ZeroMQ"
                  xmlns:p8="clr-namespace:NetMQ;assembly=NetMQ"
+                 xmlns:p9="clr-namespace:AindPhysiologyFip.MessageProtocol;assembly=Extensions"
                  xmlns:ui="clr-namespace:Bonsai.Design;assembly=Bonsai.Design"
                  xmlns:scr="clr-namespace:Bonsai.Scripting.Expressions;assembly=Bonsai.Scripting.Expressions"
-                 xmlns:p9="clr-namespace:AllenNeuralDynamics.Core;assembly=AllenNeuralDynamics.Core"
+                 xmlns:p10="clr-namespace:AllenNeuralDynamics.Core;assembly=AllenNeuralDynamics.Core"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
-                 xmlns:p10="clr-namespace:AllenNeuralDynamics.Core.Design;assembly=AllenNeuralDynamics.Core.Design"
+                 xmlns:p11="clr-namespace:AllenNeuralDynamics.Core.Design;assembly=AllenNeuralDynamics.Core.Design"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
     <Nodes>
@@ -690,13 +691,14 @@
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="zmq:Subscriber">
                       <zmq:ConnectionString>tcp://localhost:5557</zmq:ConnectionString>
+                      <zmq:Topic />
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="rx:PublishSubject">
-                    <Name>SocketResponse</Name>
+                    <Name>ZmqSub</Name>
                   </Expression>
                   <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p8:NetMQMessage">
-                    <rx:Name>SocketRequest</rx:Name>
+                    <rx:Name>ZmqPub</rx:Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>RigSchema</Name>
@@ -713,7 +715,43 @@
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="zmq:Publisher">
                       <zmq:ConnectionString>tcp://localhost:5557</zmq:ConnectionString>
+                      <zmq:Topic />
                     </Combinator>
+                  </Expression>
+                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p9:Message">
+                    <rx:Name>SendMessage</rx:Name>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="p9:SerializeToJson">
+                      <p9:Formatting>None</p9:Formatting>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="rx:SelectMany">
+                    <Name>ConvertToNetMQ</Name>
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="rx:Take">
+                            <rx:Count>1</rx:Count>
+                          </Combinator>
+                        </Expression>
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="zmq:ToMessage" />
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="0" To="1" Label="Source1" />
+                        <Edge From="1" To="2" Label="Source1" />
+                        <Edge From="2" To="3" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="MulticastSubject">
+                    <Name>ZmqPub</Name>
                   </Expression>
                 </Nodes>
                 <Edges>
@@ -725,6 +763,9 @@
                   <Edge From="6" To="7" Label="Source1" />
                   <Edge From="7" To="8" Label="Source1" />
                   <Edge From="8" To="9" Label="Source2" />
+                  <Edge From="10" To="11" Label="Source1" />
+                  <Edge From="11" To="12" Label="Source1" />
+                  <Edge From="12" To="13" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -1316,18 +1357,23 @@
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:WithLatestFrom" />
                   </Expression>
-                  <Expression xsi:type="Format">
-                    <Format>{{state: {1}, timestamp: {0}}}</Format>
-                    <Selector>Item1,Item2</Selector>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>ExperimentState</Name>
+                  </Expression>
+                  <Expression xsi:type="PropertyMapping">
+                    <PropertyMappings>
+                      <Property Name="Context" />
+                    </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="zmq:ToMessage" />
+                    <Combinator xsi:type="p9:HeartbeatPayload" />
                   </Expression>
+                  <Expression xsi:type="IncludeWorkflow" Path="Extensions\CreateMessage.bonsai" />
                   <Expression xsi:type="MulticastSubject">
-                    <Name>SocketRequest</Name>
+                    <Name>SendMessage</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>SocketResponse</Name>
+                    <Name>ZmqSub</Name>
                   </Expression>
                   <Expression xsi:type="MemberSelector">
                     <Selector>Last</Selector>
@@ -1335,57 +1381,25 @@
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="zmq:ConvertToString" />
                   </Expression>
-                  <Expression xsi:type="Equal">
-                    <Operand xsi:type="StringProperty">
-                      <Value>Start</Value>
-                    </Operand>
+                  <Expression xsi:type="p9:DeserializeFromJson">
+                    <p9:Type xsi:type="TypeMapping" TypeArguments="p9:RegisteredMessages" />
                   </Expression>
-                  <Expression xsi:type="rx:Condition">
-                    <Workflow>
-                      <Nodes>
-                        <Expression xsi:type="WorkflowInput">
-                          <Name>Source1</Name>
-                        </Expression>
-                        <Expression xsi:type="WorkflowOutput" />
-                      </Nodes>
-                      <Edges>
-                        <Edge From="0" To="1" Label="Source1" />
-                      </Edges>
-                    </Workflow>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Payload</Selector>
+                  </Expression>
+                  <Expression xsi:type="scr:ExpressionTransform">
+                    <scr:Name>object(it)</scr:Name>
+                    <scr:Expression>object(it)</scr:Expression>
+                  </Expression>
+                  <Expression xsi:type="p9:MatchRegisteredPayload">
+                    <p9:Type xsi:type="TypeMapping" TypeArguments="p9:StartPayload" />
                   </Expression>
                   <Expression xsi:type="Unit" />
                   <Expression xsi:type="MulticastSubject">
                     <Name>StartExperimentShortcut</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>HarpTimestampSource</Name>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="rx:WithLatestFrom" />
-                  </Expression>
-                  <Expression xsi:type="Format">
-                    <Format>{{start: 1, timestamp: {0}}}</Format>
-                    <Selector>Item1,Item2</Selector>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="zmq:ToMessage" />
-                  </Expression>
-                  <Expression xsi:type="MulticastSubject">
-                    <Name>SocketRequest</Name>
-                  </Expression>
-                  <Expression xsi:type="SubscribeSubject">
-                    <Name>SocketResponse</Name>
-                  </Expression>
-                  <Expression xsi:type="MemberSelector">
-                    <Selector>Last</Selector>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="zmq:ConvertToString" />
-                  </Expression>
-                  <Expression xsi:type="Equal">
-                    <Operand xsi:type="StringProperty">
-                      <Value>End</Value>
-                    </Operand>
+                    <Name>ExperimentState</Name>
                   </Expression>
                   <Expression xsi:type="rx:Condition">
                     <Workflow>
@@ -1400,55 +1414,95 @@
                       </Edges>
                     </Workflow>
                   </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Zip" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Take">
+                      <rx:Count>1</rx:Count>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="p9:StartPayload" />
+                  </Expression>
+                  <Expression xsi:type="IncludeWorkflow" Path="Extensions\CreateMessage.bonsai" />
+                  <Expression xsi:type="MulticastSubject">
+                    <Name>SendMessage</Name>
+                  </Expression>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>ZmqSub</Name>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Last</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="zmq:ConvertToString" />
+                  </Expression>
+                  <Expression xsi:type="p9:DeserializeFromJson">
+                    <p9:Type xsi:type="TypeMapping" TypeArguments="p9:RegisteredMessages" />
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Payload</Selector>
+                  </Expression>
+                  <Expression xsi:type="scr:ExpressionTransform">
+                    <scr:Name>object(it)</scr:Name>
+                    <scr:Expression>object(it)</scr:Expression>
+                  </Expression>
+                  <Expression xsi:type="p9:MatchRegisteredPayload">
+                    <p9:Type xsi:type="TypeMapping" TypeArguments="p9:StopPayload" />
+                  </Expression>
                   <Expression xsi:type="Unit" />
                   <Expression xsi:type="MulticastSubject">
                     <Name>EndExperiment</Name>
                   </Expression>
-                  <Expression xsi:type="SubscribeSubject">
-                    <Name>HarpTimestampSource</Name>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Take">
+                      <rx:Count>1</rx:Count>
+                    </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="rx:WithLatestFrom" />
+                    <Combinator xsi:type="p9:StopPayload" />
                   </Expression>
-                  <Expression xsi:type="Format">
-                    <Format>{{end: 1, timestamp: {0}}}</Format>
-                    <Selector>Item1,Item2</Selector>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="zmq:ToMessage" />
-                  </Expression>
+                  <Expression xsi:type="IncludeWorkflow" Path="Extensions\CreateMessage.bonsai" />
                   <Expression xsi:type="MulticastSubject">
-                    <Name>SocketRequest</Name>
+                    <Name>SendMessage</Name>
                   </Expression>
                 </Nodes>
                 <Edges>
                   <Edge From="0" To="2" Label="Source1" />
                   <Edge From="1" To="2" Label="Source2" />
-                  <Edge From="2" To="3" Label="Source1" />
+                  <Edge From="2" To="5" Label="Source1" />
                   <Edge From="3" To="4" Label="Source1" />
-                  <Edge From="4" To="5" Label="Source1" />
+                  <Edge From="4" To="5" Label="Source2" />
+                  <Edge From="5" To="6" Label="Source1" />
                   <Edge From="6" To="7" Label="Source1" />
-                  <Edge From="7" To="8" Label="Source1" />
                   <Edge From="8" To="9" Label="Source1" />
                   <Edge From="9" To="10" Label="Source1" />
                   <Edge From="10" To="11" Label="Source1" />
                   <Edge From="11" To="12" Label="Source1" />
-                  <Edge From="12" To="14" Label="Source1" />
-                  <Edge From="13" To="14" Label="Source2" />
+                  <Edge From="12" To="13" Label="Source1" />
+                  <Edge From="13" To="14" Label="Source1" />
                   <Edge From="14" To="15" Label="Source1" />
                   <Edge From="15" To="16" Label="Source1" />
-                  <Edge From="16" To="17" Label="Source1" />
-                  <Edge From="18" To="19" Label="Source1" />
+                  <Edge From="16" To="19" Label="Source1" />
+                  <Edge From="17" To="18" Label="Source1" />
+                  <Edge From="18" To="19" Label="Source2" />
                   <Edge From="19" To="20" Label="Source1" />
                   <Edge From="20" To="21" Label="Source1" />
                   <Edge From="21" To="22" Label="Source1" />
                   <Edge From="22" To="23" Label="Source1" />
-                  <Edge From="23" To="24" Label="Source1" />
-                  <Edge From="24" To="26" Label="Source1" />
-                  <Edge From="25" To="26" Label="Source2" />
+                  <Edge From="24" To="25" Label="Source1" />
+                  <Edge From="25" To="26" Label="Source1" />
                   <Edge From="26" To="27" Label="Source1" />
                   <Edge From="27" To="28" Label="Source1" />
                   <Edge From="28" To="29" Label="Source1" />
+                  <Edge From="29" To="30" Label="Source1" />
+                  <Edge From="30" To="31" Label="Source1" />
+                  <Edge From="31" To="32" Label="Source1" />
+                  <Edge From="32" To="33" Label="Source1" />
+                  <Edge From="33" To="34" Label="Source1" />
+                  <Edge From="34" To="35" Label="Source1" />
+                  <Edge From="35" To="36" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -1859,8 +1913,8 @@
                     </Workflow>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p9:ThrowException">
-                      <p9:Message>Repository is not clean! Please discard all local changes.</p9:Message>
+                    <Combinator xsi:type="p10:ThrowException">
+                      <p10:Message>Repository is not clean! Please discard all local changes.</p10:Message>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="GroupWorkflow">
@@ -1967,8 +2021,8 @@
                           <Selector>it</Selector>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p9:ThrowException">
-                            <p9:Message>Dropped frame detected during pre-session!</p9:Message>
+                          <Combinator xsi:type="p10:ThrowException">
+                            <p10:Message>Dropped frame detected during pre-session!</p10:Message>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
@@ -2087,10 +2141,10 @@
                                       </PropertyMappings>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p10:MessageBox">
-                                        <p10:Text />
-                                        <p10:Title>Warning</p10:Title>
-                                        <p10:MessageBoxIcon>Exclamation</p10:MessageBoxIcon>
+                                      <Combinator xsi:type="p11:MessageBox">
+                                        <p11:Text />
+                                        <p11:Title>Warning</p11:Title>
+                                        <p11:MessageBoxIcon>Exclamation</p11:MessageBoxIcon>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="SubscribeSubject">
@@ -2110,8 +2164,8 @@
                                       <Combinator xsi:type="rx:WithLatestFrom" />
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p9:CreateSoftwareEvent">
-                                        <p9:EventName>HardwareQA</p9:EventName>
+                                      <Combinator xsi:type="p10:CreateSoftwareEvent">
+                                        <p10:EventName>HardwareQA</p10:EventName>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="MulticastSubject">

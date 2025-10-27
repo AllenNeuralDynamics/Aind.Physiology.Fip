@@ -6,9 +6,9 @@
     "Foo",
     "Bar"
   ],
-  "date": "2025-10-25T16:55:56.715231Z",
+  "date": "2025-01-01T12:00:00Z",
   "root_path": "c://",
-  "session_name": "test_2025-10-25T165556Z",
+  "session_name": "test_2025-01-01T120000Z",
   "subject": "test",
   "experiment_version": "0.0.0",
   "notes": "test session",

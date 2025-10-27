@@ -4,6 +4,7 @@ from pydantic import Field, RootModel
 from pydantic_settings import BaseSettings, CliApp, CliSubCommand
 
 from aind_physiology_fip import __semver__, regenerate
+from aind_physiology_fip.data_mappers import DataMapperCli
 from aind_physiology_fip.data_qc import DataQcCli
 
 
@@ -26,6 +27,7 @@ class FipCli(BaseSettings, cli_prog_name="fip", cli_kebab_case=True):
     version: CliSubCommand[VersionCli] = Field(
         description="Print the version of the aind-physiology-fip package.",
     )
+    data_mappers: CliSubCommand[DataMapperCli] = Field(description="Generate metadata for aind-data-schema.")
     regenerate: CliSubCommand[DslRegenerateCli] = Field(
         description="Regenerate the aind-physiology-fip dsl dependencies.",
     )

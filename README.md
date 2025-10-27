@@ -194,7 +194,7 @@ uv run fip data-mapper -h
 Alternatively, you can use the mapping classes directly. For instance to run the mapper/extractor for acquisition data:
 
 ```python
-from aind_physiology_fip.data_mapper import ProtoAcquisitionMapper
+from aind_physiology_fip.data_mappers import ProtoAcquisitionMapper
 
 data_path = "path to dataset"
 acquisition_mapped = ProtoAcquisitionMapper(data_path).map()

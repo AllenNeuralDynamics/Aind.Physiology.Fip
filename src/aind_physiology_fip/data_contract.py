@@ -66,7 +66,7 @@ class FipRawFrame(DataStream[FipFrameReader, FipRawFrameParams]):
     @staticmethod
     def _reader(params: FipRawFrameParams) -> FipFrameReader:
         if params.metadata_file is None:
-            metadata_file = Path(str(params.path).replace(".bin", "_meta.json"))
+            metadata_file = Path(str(params.path).replace(".bin", "_metadata.json"))
         else:
             metadata_file = params.metadata_file
         if not metadata_file.exists():
@@ -105,18 +105,39 @@ def dataset(root: os.PathLike, version: t.Literal[__semver__]) -> Dataset:
         data_streams=[
             FipRawFrame(
                 "raw_green",
-                reader_params=FipRawFrame.make_params(Path(root) / "green.bin"),
+                reader_params=FipRawFrame.make_params(path=Path(root) / "green.bin"),
                 description="Green camera channel raw frames.",
             ),
             FipRawFrame(
                 "raw_red",
-                reader_params=FipRawFrame.make_params(Path(root) / "red.bin"),
+                reader_params=FipRawFrame.make_params(path=Path(root) / "red.bin"),
                 description="Red camera channel raw frames.",
             ),
             FipRawFrame(
                 "raw_iso",
-                reader_params=FipRawFrame.make_params(Path(root) / "iso.bin"),
+                reader_params=FipRawFrame.make_params(path=Path(root) / "iso.bin"),
                 description="Iso camera channel raw frames.",
+            ),
+            FipRawFrame(
+                "background_raw_green",
+                reader_params=FipRawFrame.make_params(
+                    path=Path(root) / "background_green.bin", metadata_file=Path(root) / "green_metadata.json"
+                ),
+                description="Green camera channel raw background frames. This file is optional.",
+            ),
+            FipRawFrame(
+                "background_raw_red",
+                reader_params=FipRawFrame.make_params(
+                    path=Path(root) / "background_red.bin", metadata_file=Path(root) / "red_metadata.json"
+                ),
+                description="Red camera channel raw background frames. This file is optional.",
+            ),
+            FipRawFrame(
+                "background_raw_iso",
+                reader_params=FipRawFrame.make_params(
+                    path=Path(root) / "background_iso.bin", metadata_file=Path(root) / "iso_metadata.json"
+                ),
+                description="Iso camera channel raw background frames. This file is optional.",
             ),
             csv.Csv(
                 "green",
@@ -132,6 +153,21 @@ def dataset(root: os.PathLike, version: t.Literal[__semver__]) -> Dataset:
                 "iso",
                 reader_params=csv.CsvParams(path=Path(root) / "iso.csv", index="ReferenceTime"),
                 description="Timeseries of integrated fluorescence for iso camera channel.",
+            ),
+            csv.Csv(
+                "background_green",
+                reader_params=csv.CsvParams(path=Path(root) / "background_green.csv", index="ReferenceTime"),
+                description="Timeseries of integrated fluorescence for background green camera channel.",
+            ),
+            csv.Csv(
+                "background_red",
+                reader_params=csv.CsvParams(path=Path(root) / "background_red.csv", index="ReferenceTime"),
+                description="Timeseries of integrated fluorescence for background red camera channel.",
+            ),
+            csv.Csv(
+                "background_iso",
+                reader_params=csv.CsvParams(path=Path(root) / "background_iso.csv", index="ReferenceTime"),
+                description="Timeseries of integrated fluorescence for background iso camera channel.",
             ),
             csv.Csv(
                 "camera_green_iso_metadata",

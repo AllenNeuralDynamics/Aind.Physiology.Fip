@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.8.5"
+<WorkflowBuilder Version="2.9.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:p1="clr-namespace:AllenNeuralDynamics.Core;assembly=AllenNeuralDynamics.Core"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
@@ -61,18 +61,22 @@
           <Property Name="FileName" />
         </PropertyMappings>
       </Expression>
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="SaveMetadata" />
+      </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="p2:FipWriter">
           <p2:Suffix>None</p2:Suffix>
           <p2:Buffered>true</p2:Buffered>
           <p2:Overwrite>false</p2:Overwrite>
           <p2:ExpectedRegionCount xsi:nil="true" />
+          <p2:SaveMetadata>true</p2:SaveMetadata>
         </Combinator>
       </Expression>
       <Expression xsi:type="WorkflowOutput" />
     </Nodes>
     <Edges>
-      <Edge From="0" To="15" Label="Source1" />
+      <Edge From="0" To="16" Label="Source1" />
       <Edge From="1" To="2" Label="Source1" />
       <Edge From="2" To="4" Label="Source1" />
       <Edge From="3" To="4" Label="Source2" />
@@ -86,8 +90,9 @@
       <Edge From="11" To="12" Label="Source2" />
       <Edge From="12" To="13" Label="Source1" />
       <Edge From="13" To="14" Label="Source1" />
-      <Edge From="14" To="15" Label="Source2" />
-      <Edge From="15" To="16" Label="Source1" />
+      <Edge From="14" To="16" Label="Source2" />
+      <Edge From="15" To="16" Label="Source3" />
+      <Edge From="16" To="17" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>

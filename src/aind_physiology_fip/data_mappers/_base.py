@@ -4,7 +4,7 @@ from typing import Generic, Optional, TypeVar
 TMapTo = TypeVar("TMapTo")
 
 
-class AindDataSchemaMapper(abc.ABC, Generic[TMapTo]):
+class DataMapper(abc.ABC, Generic[TMapTo]):
     """
     Abstract base class for data mappers.
 

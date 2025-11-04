@@ -28,18 +28,9 @@ Example:
     >>> print(acquisition.model_dump_json(indent=4))
 """
 
-import importlib.util
+import logging
 import os
 from datetime import datetime
-
-# Check if the required aind-data-schema package is available
-# This package contains the core data schemas used by AIND
-if importlib.util.find_spec("aind_data_schema") is None:
-    raise ImportError(
-        "The 'aind-data-schema' package is required to use this module. "
-        "Install the optional dependencies defined in `project.toml` "
-    )
-import logging
 from pathlib import Path
 from typing import Optional, cast
 
@@ -48,10 +39,10 @@ from aind_behavior_services.session import AindBehaviorSessionModel
 from pandas import DataFrame
 
 from aind_physiology_fip.data_contract import dataset
-from aind_physiology_fip.data_mappers._base import AindDataSchemaMapper
 from aind_physiology_fip.rig import AindPhysioFipRig
 
-# Initialize module-level logger for debugging and status messages
+from ._base import DataMapper
+
 logger = logging.getLogger(__name__)
 
 
@@ -109,7 +100,7 @@ class _FipDataStreamMetadata(pydantic.BaseModel):
     end_time: pydantic.AwareDatetime
 
 
-class ProtoAcquisitionMapper(AindDataSchemaMapper[ProtoAcquisitionDataSchema]):
+class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
     """
     Maps raw acquisition data to the prototype acquisition schema format.
 

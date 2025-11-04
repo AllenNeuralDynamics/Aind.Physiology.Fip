@@ -1,6 +1,6 @@
 {
   "aind_behavior_services_pkg_version": "0.12.3",
-  "version": "0.1.4-rc1",
+  "version": "0.1.4-rc2",
   "computer_name": "test_computer",
   "rig_name": "test_rig",
   "camera_green_iso": {

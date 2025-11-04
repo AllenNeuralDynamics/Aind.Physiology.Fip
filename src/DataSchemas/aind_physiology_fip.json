@@ -128,8 +128,8 @@
           "type": "string"
         },
         "version": {
-          "const": "0.1.3",
-          "default": "0.1.3",
+          "const": "0.1.4-rc0",
+          "default": "0.1.4-rc0",
           "title": "Version",
           "type": "string"
         },

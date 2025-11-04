@@ -21,6 +21,13 @@ namespace FipExtensions
     {
         public int? ExpectedRegionCount = null;
 
+        private bool saveMetadata = true;
+        public bool SaveMetadata
+        {
+            get { return saveMetadata; }
+            set { saveMetadata = value; }
+        }
+
         public IObservable<Timestamped<CircleActivityCollection>> Process(IObservable<Timestamped<CircleActivityCollection>> source)
         {
             var filePath = Path.Combine(Path.GetDirectoryName(FileName), Path.GetFileNameWithoutExtension(FileName));
@@ -41,8 +48,8 @@ namespace FipExtensions
             {
                 var fipCsv = fipCsvWriter.Process(ps);
                 var fipMatrix = fipMatrixWriter.Process(ps.Select(v => v.Value.FipFrame.Image.GetMat())).IgnoreElements().Cast<Timestamped<CircleActivityCollection>>();
-                var fipMetadata = ps.Take(1).Do(f => File.WriteAllText(
-                    filePath + "_meta.json",
+                var fipMetadata = ps.Take(1).Where(_ => SaveMetadata).Do(f => File.WriteAllText(
+                    filePath + "_metadata.json",
                     ImageMetadata.FromImage(f.Value.FipFrame.Image).ToJson())).IgnoreElements();
                 return Observable.Merge(fipCsv, fipMatrix, fipMetadata);
             });

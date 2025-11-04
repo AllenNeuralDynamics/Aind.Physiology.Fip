@@ -364,7 +364,7 @@ namespace AindPhysiologyFip
         public AindPhysioFipRig()
         {
             _aindBehaviorServicesPkgVersion = "0.12.3";
-            _version = "0.1.2";
+            _version = "0.1.3";
             _cameraGreenIso = new FipCamera();
             _cameraRed = new FipCamera();
             _lightSourceUv = new LightSource();

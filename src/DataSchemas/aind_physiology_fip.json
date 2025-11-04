@@ -594,7 +594,6 @@
       "properties": {
         "power_lut": {
           "additionalProperties": {
-            "default": 0,
             "description": "Power (mW)",
             "minimum": 0,
             "type": "number"

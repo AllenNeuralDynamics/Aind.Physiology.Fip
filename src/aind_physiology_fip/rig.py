@@ -50,8 +50,8 @@ class Networking(BaseModel):
     )
 
 
-LightSourcePower = Annotated[float, Field(default=0, ge=0, description="Power (mW)")]
-DutyCycle = Annotated[float, Field(default=0, ge=0, le=1, description="Duty cycle (0-100%)")]
+LightSourcePower = Annotated[float, Field(ge=0, description="Power (mW)")]
+DutyCycle = Annotated[float, Field(ge=0, le=1, description="Duty cycle (0-100%)")]
 
 
 class LightSourceCalibrationOutput(BaseModel):

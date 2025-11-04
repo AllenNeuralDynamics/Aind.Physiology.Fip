@@ -217,7 +217,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           git commit -m "v${{ steps.get_version.outputs.version }} [skip ci]"
-          git tag -a "v${{ steps.get_version.outputs.version }}" -m "Release v${{ steps.get_version.outputs.version }}"
+          git tag -a "v${{ steps.get_version.outputs.version }}" -m "v${{ steps.get_version.outputs.version }}"
           git push origin main
           git push origin "v${{ steps.get_version.outputs.version }}"
 
@@ -238,11 +238,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
-          name: Release v${{ steps.get_version.outputs.version }}
+          name: v${{ steps.get_version.outputs.version }}
           generate_release_notes: true
           prerelease: ${{ steps.check_prerelease.outputs.prerelease }}
           body: |
-            Release v${{ steps.get_version.outputs.version }}
+            v${{ steps.get_version.outputs.version }}
 
             This release was manually triggered.
 

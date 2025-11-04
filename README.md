@@ -174,6 +174,34 @@ For a list of available subcommands and options, run:
 
 (If you are not using `uv`, activate your python environment and run the `fip` tool directly.)
 
+
+## Generating `aind-data-schema` metadata
+
+The repository will maintain tools to generate `aind-data-schema` compliant metadata for experiments run using the IsoForce task:
+
+1. Install the `mappers` optional dependencies:
+
+```powershell
+uv sync --extra mappers
+```
+
+2. Run the metadata generation tool via the command line and provide the necessary arguments
+
+```powershell
+uv run fip data-mapper -h
+```
+
+Alternatively, you can use the mapping classes directly. For instance to run the mapper/extractor for acquisition data:
+
+```python
+from aind_physiology_fip.data_mappers import ProtoAcquisitionMapper
+
+data_path = "path to dataset"
+acquisition_mapped = ProtoAcquisitionMapper(data_path).map()
+with open("fip.json", "w", encoding="utf-8") as f:
+    f.write(acquisition_mapped.model_dump_json(indent=2))
+```
+
 ## Regenerating schemas
 
 Instructions for regenerating schemas can be found [here](https://github.com/AllenNeuralDynamics/Aind.Behavior.Services?tab=readme-ov-file#regenerating-schemas).

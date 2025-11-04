@@ -91,6 +91,7 @@ provides-extras = ["data"]
 [package.metadata.requires-dev]
 dev = [
     { name = "aind-physiology-fip", extras = ["data"] },
+    { name = "aind-physiology-fip", extras = ["mappers"] },
     { name = "codespell" },
     { name = "ruff" },
 ]

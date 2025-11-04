@@ -33,7 +33,12 @@ data = ["contraqctor < 0.6", "pydantic_settings", "opencv-python"]
 
 [dependency-groups]
 
-dev = ["ruff", "codespell", "aind-physiology-fip[data]"]
+dev = [
+    "ruff",
+    "codespell",
+    "aind-physiology-fip[data]",
+    "aind-physiology-fip[mappers]",
+]
 
 docs = [
     'Sphinx',

@@ -961,7 +961,7 @@
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:Delay">
-                <rx:DueTime>PT0.05S</rx:DueTime>
+                <rx:DueTime>PT0.3S</rx:DueTime>
               </Combinator>
             </Expression>
             <Expression xsi:type="PropertySource" TypeArguments="p6:CreateSetTaskStatePayload,p6:TaskState">
@@ -1040,7 +1040,7 @@
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:Delay">
-                <rx:DueTime>PT0.05S</rx:DueTime>
+                <rx:DueTime>PT0.2S</rx:DueTime>
               </Combinator>
             </Expression>
             <Expression xsi:type="MulticastSubject">

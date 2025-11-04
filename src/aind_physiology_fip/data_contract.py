@@ -1,5 +1,6 @@
 import dataclasses
 import json
+import logging
 import os
 import typing as t
 from pathlib import Path
@@ -11,6 +12,8 @@ from contraqctor.contract.json import PydanticModel
 
 from aind_physiology_fip import __semver__
 from aind_physiology_fip.rig import AindPhysioFipRig, RoiSettings
+
+logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass
@@ -97,10 +100,10 @@ class FipRawFrame(DataStream[FipFrameReader, FipRawFrameParams]):
         )
 
 
-def dataset(root: os.PathLike, version: t.Literal[__semver__]) -> Dataset:
+def dataset(root: os.PathLike) -> Dataset:
     root = Path(root)
     dataset = Dataset(
-        version=version,
+        version=__semver__,
         name="fip",
         data_streams=[
             FipRawFrame(

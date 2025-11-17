@@ -1,9 +1,10 @@
+import dataclasses
 import datetime
 import logging
 import os
 import sys
 from pathlib import Path
-from typing import List, Optional, Union, cast
+from typing import List, Literal, Optional, Union, cast
 
 import aind_behavior_services.rig as AbsRig
 import git
@@ -17,21 +18,25 @@ from aind_data_schema_models.modalities import Modality
 from clabe.apps import BonsaiAppSettings
 from clabe.data_mapper import aind_data_schema as ads
 from clabe.data_mapper import helpers as data_mapper_helpers
-
-from ._utils import _make_origin_coordinate_system
-
-logger = logging.getLogger(__name__)
-
-
-import logging
-
 from clabe.ui import DefaultUIHelper
 from pandas import DataFrame
 
 from aind_physiology_fip import rig as fip_rig
 from aind_physiology_fip.data_contract import dataset
 
+from ._utils import _make_origin_coordinate_system
+
 logger = logging.getLogger(__name__)
+
+
+@dataclasses.dataclass
+class _ChannelInformation:
+    camera_name: str
+    light_source_name: str
+    camera: fip_rig.FipCamera
+    task: fip_rig.FipTask
+    excitation_wavelength_nm: int
+    emission_wavelength_nm: int
 
 
 class AindAcquisitionDataMapper(ads.AindDataSchemaSessionDataMapper):
@@ -176,33 +181,18 @@ class AindAcquisitionDataMapper(ads.AindDataSchemaSessionDataMapper):
         return data_streams
 
     def _get_cameras_config(self) -> List[acquisition.DetectorConfig]:
-        def _map_camera(name: str, camera: fip_rig.FipCamera) -> acquisition.DetectorConfig:
+        def _map_camera(name: str) -> acquisition.DetectorConfig:
             return acquisition.DetectorConfig(
                 device_name=name,
-                exposure_time=getattr(camera, "exposure", -1),
+                exposure_time=-1,
                 exposure_time_unit=units.TimeUnit.US,
                 trigger_type=configs.TriggerType.EXTERNAL,
-                compression=_map_compression(camera.video_writer),
+                compression=None,
             )
 
-        def _map_compression(compression: AbsRig.cameras.VideoWriter) -> acquisition.Code:
-            if compression is None:
-                raise ValueError("Camera does not have a video writer configured.")
-            if isinstance(compression, AbsRig.cameras.VideoWriterFfmpeg):
-                return acquisition.Code(
-                    url="https://ffmpeg.org/",
-                    name="FFMPEG",
-                    parameters=acquisition.GenericModel.model_validate(compression.model_dump()),
-                )
-            elif isinstance(compression, AbsRig.cameras.VideoWriterOpenCv):
-                bonsai = self._get_bonsai_as_code()
-                bonsai.parameters = acquisition.GenericModel.model_validate(compression.model_dump())
-                return bonsai
-            else:
-                raise ValueError("Camera does not have a valid video writer configured.")
-
         cameras = get_fields_of_type(self.rig_model, fip_rig.FipCamera)
-        return [_map_camera(name, camera) for name, camera in cameras]
+        assert all(name is not None for name, _ in cameras)
+        return [_map_camera(name) for name in cameras]
 
     def _get_bonsai_as_code(self) -> acquisition.Code:
         bonsai_folder = Path(self.bonsai_app.executable).parent
@@ -266,3 +256,69 @@ class AindAcquisitionDataMapper(ads.AindDataSchemaSessionDataMapper):
         start_utc = datetime.datetime.fromisoformat(df["CpuTime"].iloc[0])
         end_utc = datetime.datetime.fromisoformat(df["CpuTime"].iloc[-1])
         return start_utc, end_utc
+
+    def _create_channel(
+        self, fiber_name: str, channel_name: Literal["iso", "green", "red"], intended_measurement: Optional[str]
+    ) -> configs.Channel:
+        camera_task = self.get_camera_task_from_channel_name(channel_name)
+        return configs.Channel(
+            channel_name=f"{fiber_name}_{channel_name}",
+            intended_measurement=intended_measurement,
+            detector=configs.DetectorConfig(
+                device_name=camera_task.camera_name,
+                exposure_time=camera_task.task.delta_1,
+                exposure_time_unit=measurements.TimeUnit.US,
+                trigger_type=configs.TriggerType.EXTERNAL,
+            ),
+            light_sources=[self._get_led_config_from_light_source(camera_task.light_source_name)],
+            excitation_filters=[],
+            emission_filters=[],
+            emission_wavelength=camera_task.emission_wavelength_nm,
+            emission_wavelength_unit=configs.SizeUnit.NM,
+        )
+
+    def _get_led_config_from_light_source(self, name: str) -> configs.LightEmittingDiodeConfig:
+        light_source = getattr(self.rig_model, name, None)
+        if light_source is None:
+            raise ValueError(f"Light source {name} not found in rig model.")
+        if not isinstance(light_source, fip_rig.LightSource):
+            raise TypeError(f"Expected LightSource instance for {name}, got {type(light_source)}")
+
+        return configs.LightEmittingDiodeConfig(
+            device_name=name,
+            power=light_source.power,
+            power_unit=measurements.PowerUnit.MW
+            if light_source.calibration is not None
+            else measurements.PowerUnit.PERCENT,
+        )
+
+    def get_camera_task_from_channel_name(self, channel_name: str) -> _ChannelInformation:
+        if "green" in channel_name:
+            return _ChannelInformation(
+                camera_name="camera_green_iso",
+                light_source_name="light_source_blue",
+                camera=self.rig_model.camera_green_iso,
+                task=self.rig_model.light_source_blue.task,
+                excitation_wavelength_nm=470,
+                emission_wavelength_nm=525,
+            )
+        elif "iso" in channel_name:
+            return _ChannelInformation(
+                camera_name="camera_green_iso",
+                light_source_name="light_source_uv",
+                camera=self.rig_model.camera_green_iso,
+                task=self.rig_model.light_source_uv.task,
+                excitation_wavelength_nm=415,
+                emission_wavelength_nm=520,
+            )
+        elif "red" in channel_name:
+            return _ChannelInformation(
+                camera_name="camera_red",
+                light_source_name="light_source_lime",
+                camera=self.rig_model.camera_red,
+                task=self.rig_model.light_source_lime.task,
+                excitation_wavelength_nm=565,
+                emission_wavelength_nm=590,
+            )
+        else:
+            raise ValueError(f"Invalid channel name: {channel_name}")

@@ -77,4 +77,5 @@ def _make_origin_coordinate_system() -> coordinates.CoordinateSystem:
     )
 
 
-class TrackedDevices(enum.StrEnum): ...
+class TrackedDevices(enum.StrEnum):
+    FIBER_PREFIX = "fiber_"

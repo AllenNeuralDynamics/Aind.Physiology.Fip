@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 from typing import List, Literal, Optional, Union, cast
 
-import aind_behavior_services.rig as AbsRig
 import git
 import pydantic
 from aind_behavior_services.session import AindBehaviorSessionModel
@@ -24,7 +23,7 @@ from pandas import DataFrame
 from aind_physiology_fip import rig as fip_rig
 from aind_physiology_fip.data_contract import dataset
 
-from ._utils import _make_origin_coordinate_system
+from ._utils import TrackedDevices
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +38,27 @@ class _ChannelInformation:
     emission_wavelength_nm: int
 
 
+IntendedMeasurement = dict[str, dict[str, Optional[str]]]
+
+
+def get_intended_measurement(
+    source: Optional[IntendedMeasurement], fiber_name: str, channel_name: Literal["green", "iso", "red"]
+) -> Optional[str]:
+    _channel_mapping = {
+        "green": "G",
+        "iso": "Iso",
+        "red": "R",
+    }
+    if source is None:
+        return None
+    out = source.get(fiber_name, {}).get(_channel_mapping[channel_name], None)
+    if out is None:
+        logger.warning(
+            f"No intended measurement found for fiber {fiber_name}, channel {channel_name} ({_channel_mapping[channel_name]})."
+        )
+    return out
+
+
 class AindAcquisitionDataMapper(ads.AindDataSchemaSessionDataMapper):
     def __init__(
         self,
@@ -49,6 +69,7 @@ class AindAcquisitionDataMapper(ads.AindDataSchemaSessionDataMapper):
         repository: Union[os.PathLike, git.Repo] = Path("."),
         *,
         ui_helper: Optional[DefaultUIHelper] = None,
+        intended_measurement: IntendedMeasurement = None,
     ):
         self.session_directory = session_directory
         self.session_model = session
@@ -60,6 +81,7 @@ class AindAcquisitionDataMapper(ads.AindDataSchemaSessionDataMapper):
         self._mapped: Optional[acquisition.Acquisition] = None
         self._session_end_time: Optional[datetime.datetime] = None
         self._ui_helper = ui_helper or DefaultUIHelper()
+        self._intended_measurement = intended_measurement
 
     @property
     def session_end_time(self) -> datetime.datetime:
@@ -96,10 +118,10 @@ class AindAcquisitionDataMapper(ads.AindDataSchemaSessionDataMapper):
             return self._mapped
 
     def _map(self) -> acquisition.Acquisition:
-        epochs_time = self._get_start_end_times_per_epoch(self.session_directory)
-        if len(epochs_time) == 0:
+        epochs = self._get_start_end_times_per_epoch(self.session_directory)
+        if len(epochs) == 0:
             raise ValueError("No valid FIP epochs found in the session directory.")
-        min_start, max_end = (min([t[0] for t in epochs_time]), max([t[1] for t in epochs_time]))
+        min_start, max_end = (min([t[1] for t in epochs]), max([t[2] for t in epochs]))
         min_start = min_start.replace(tzinfo=datetime.timezone.utc)
         max_end = max_end.replace(tzinfo=datetime.timezone.utc)
 
@@ -111,8 +133,7 @@ class AindAcquisitionDataMapper(ads.AindDataSchemaSessionDataMapper):
             acquisition_start_time=min_start,
             experimenters=self.session_model.experimenter,
             acquisition_type=self.session_model.experiment or self._ui_helper.prompt_text("Enter experiment name: "),
-            coordinate_system=_make_origin_coordinate_system(),
-            data_streams=self._get_data_streams(epochs_time),
+            data_streams=self._get_data_streams(epochs),
             calibrations=self._get_calibrations(),
             stimulus_epochs=[],
         )
@@ -150,35 +171,68 @@ class AindAcquisitionDataMapper(ads.AindDataSchemaSessionDataMapper):
                 output_unit=measurements.PowerUnit.PERCENT,
             )
 
-    @staticmethod
-    def _include_device(device: AbsRig.Device) -> bool:
-        return True
-
     def _get_data_streams(
-        self, epochs_time: List[tuple[datetime.datetime, datetime.datetime]]
+        self, epochs: List[tuple[Path, datetime.datetime, datetime.datetime]]
     ) -> List[acquisition.DataStream]:
         assert self.session_end_time is not None, "Session end time is not set."
 
         modalities: list[Modality] = [getattr(Modality, "FIB")]
 
-        active_devices = [
-            _device[0]
-            for _device in get_fields_of_type(self.rig_model, AbsRig.Device, stop_recursion_on_type=True)
-            if _device[0] is not None and self._include_device(_device[1])
-        ]
+        active_devices = self._get_active_devices()
         data_streams: list[acquisition.DataStream] = []
-        for epoch in epochs_time:
+        for epoch in epochs:
+            patch_cord_config, patch_cord_names, fiber_names = self._get_fiber_and_patch_cord_configuration(epoch[0])
             data_streams.append(
                 acquisition.DataStream(
-                    stream_start_time=epoch[0],
-                    stream_end_time=epoch[1],
+                    stream_start_time=epoch[1],
+                    stream_end_time=epoch[2],
                     code=[self._get_bonsai_as_code(), self._get_python_as_code()],
-                    active_devices=active_devices,
+                    active_devices=active_devices + fiber_names + patch_cord_names,
                     modalities=modalities,
-                    configurations=self._get_cameras_config(),
+                    configurations=self._get_cameras_config() + patch_cord_config,
                 )
             )
         return data_streams
+
+    def _get_fiber_and_patch_cord_configuration(
+        self, epoch_path: Path
+    ) -> tuple[List[configs.PatchCordConfig], List[str], List[str]]:
+        fiber_count = self._get_fiber_count(epoch_path)
+        patch_cord_names = [f"{TrackedDevices.PATCH_CORD_PREFIX}_{i}" for i in range(fiber_count)]
+        fiber_names = [f"{TrackedDevices.FIBER_PREFIX}_{i}" for i in range(fiber_count)]
+        configuration: List[configs.PatchCordConfig] = []
+        for patch_cord in patch_cord_names:
+            channels: list[configs.Channel] = []
+            for fiber_name in fiber_names:
+                for channel_name in Literal["iso", "green", "red"]:
+                    fiber_measurement = get_intended_measurement(self._intended_measurement, fiber_name, "channel_name")
+                    channels.append(self._create_channel(fiber_name, channel_name, fiber_measurement))
+            configuration.append(
+                configs.PatchCordConfig(
+                    device_name=patch_cord,
+                    channels=channels,
+                )
+            )
+        return configuration, patch_cord_names, fiber_names
+
+    def _get_fiber_count(self, epoch_path: Path) -> int:
+        epoch_dataset = dataset(root=epoch_path)
+        roi_settings = cast(fip_rig.RoiSettings, epoch_dataset["fib"]["regions"].read())
+        if len(roi_settings.camera_green_iso_roi) != len(roi_settings.camera_red_roi):
+            raise ValueError("Number of ROIs for green_iso and red cameras do not match.")
+        return len(roi_settings.camera_green_iso_roi)
+
+    def _get_active_devices(self) -> List[str]:
+        other_devices = [
+            "camera_green_iso",
+            "camera_red",
+            "light_source_blue",
+            "light_source_uv",
+            "light_source_lime",
+            "cuttlefish_fip",
+        ]
+        other_devices = map(lambda d: validate_name(self.rig_model, d), other_devices)
+        return list(other_devices)
 
     def _get_cameras_config(self) -> List[acquisition.DetectorConfig]:
         def _map_camera(name: str) -> acquisition.DetectorConfig:
@@ -227,7 +281,7 @@ class AindAcquisitionDataMapper(ads.AindDataSchemaSessionDataMapper):
     @classmethod
     def _get_start_end_times_per_epoch(
         cls, data_directory: os.PathLike
-    ) -> list[tuple[datetime.datetime, datetime.datetime]]:
+    ) -> list[tuple[Path, datetime.datetime, datetime.datetime]]:
         epochs = list((Path(data_directory) / "fib").glob("fip_*"))
         data_streams = []
         _candidate_streams = [
@@ -242,7 +296,7 @@ class AindAcquisitionDataMapper(ads.AindDataSchemaSessionDataMapper):
                 for stream in _candidate_streams:
                     logger.debug(f"Checking for timing in stream: {stream}")
                     start_utc, end_utc = cls._extract_from_df(cast(DataFrame, this_epoch[stream].read()))
-                    data_streams.append((start_utc, end_utc))
+                    data_streams.append((epoch, start_utc, end_utc))
             except Exception as e:
                 # Log warning but continue processing other epochs
                 logger.warning(f"Failed to load FIP dataset at {epoch}: {e}")
@@ -322,3 +376,10 @@ class AindAcquisitionDataMapper(ads.AindDataSchemaSessionDataMapper):
             )
         else:
             raise ValueError(f"Invalid channel name: {channel_name}")
+
+
+def validate_name(obj: object, name: str) -> str:
+    if hasattr(obj, name):
+        return name
+    else:
+        raise ValueError(f"Model {obj.__class__.__name__} does not contain a field {name}.")

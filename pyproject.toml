@@ -31,6 +31,8 @@ Changelog = "https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/releases
 
 data = ["contraqctor < 0.6", "pydantic_settings", "opencv-python"]
 
+mappers = ["aind-data-schema >=2.1", "aind-clabe"]
+
 [dependency-groups]
 
 dev = [

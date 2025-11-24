@@ -17,7 +17,7 @@ The FIP (Frame-projected Independent Photometry) system is a low-cost, scalable 
 For more information, see the [AIND Fiber Photometry Platform Page](https://www.allenneuraldynamics.org/platforms/fiber-photometry) and the following protocols:  
 
 * Protocol for system assembly: <https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2>
-* Protocol for system triggering setup: <https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2>
+* Protocol for system triggering setup: <https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-kxygx3e6wg8j/v1>
 
 ## Wavelength Information
 

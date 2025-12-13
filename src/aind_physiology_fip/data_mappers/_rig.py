@@ -16,11 +16,8 @@ import aind_data_schema.core.instrument as instrument
 from aind_data_schema_models.modalities import Modality
 from aind_data_schema.base import GenericModel
 
-from aind_physiology_fip.rig import AindPhysioFipRig
-from aind_data_schema_models import units, coordinates
-from aind_data_schema_models.coordinates import Point2f
-
-from aind_data_schema_models import aind_schema_model_coordinates
+from aind_physiology_fip.rig import AindPhysioFipRig, FipCamera
+from aind_data_schema_models import units
 
 logger = logging.getLogger(__name__)
 
@@ -48,16 +45,11 @@ class AindInstrumentDataMapper:
     def _map(cls, root_path: os.PathLike) -> instrument.Instrument:
         rig = model_from_json_file(Path(root_path) / "rig_input.json", AindPhysioFipRig)
 
-        components, connections_ = cls._get_all_components_and_connections(rig)
-        computer = cls._get_computer(rig)
-        components.append(computer)
-
+        # TODO finish this
         return instrument.Instrument(
             instrument_id=rig.rig_name,
             modalities=[Modality.FIB],
             modification_date=date.today(),
-            components=components,
-            connections=connections_,
         )
 
     @staticmethod
@@ -108,10 +100,10 @@ class AindInstrumentDataMapper:
     def _get_detectors(rig: AindPhysioFipRig) -> List[devices.Detector]:
         """Return cameras / detectors in the rig."""
         detectors = []
-        for cam_attr in ["camera_red", "camera_green", "camera_blue"]:
+        for cam_attr in ["camera_red", "camera_green_iso"]:
             if not hasattr(rig, cam_attr):
                 continue
-            cam = getattr(rig, cam_attr)
+            cam: FipCamera = getattr(rig, cam_attr)
             detectors.append(
                 devices.Detector(
                     name=cam.name,
@@ -154,40 +146,3 @@ class AindInstrumentDataMapper:
                 center_wavelength=473,
             ),
         ]
-
-    @classmethod
-    def _get_all_components_and_connections(cls, rig: AindPhysioFipRig) -> Tuple[List[devices.Device], List[connections.Connection]]:
-        """Return all components and connections for the rig."""
-        components: List[devices.Device] = []
-        connections_: List[connections.Connection] = []
-
-        # Patch cords
-        patch_cords = cls._get_fiber_patch_cords()
-        components.extend(patch_cords)
-
-        # Light sources
-        leds = cls._get_light_sources(rig)
-        components.extend(leds)
-
-        # Cameras / detectors
-        detectors = cls._get_detectors(rig)
-        components.extend(detectors)
-
-        # Filters
-        filters = cls._get_filters()
-        components.extend(filters)
-
-        # Example: create simple connections from computer to detectors
-        computer_name = socket.gethostname()
-        for det in detectors:
-            connections_.append(
-                connections.Connection(
-                    source_device=computer_name,
-                    target_device=det.name,
-                    source_port="USB",
-                    target_port="USB",
-                    send_and_receive=True,
-                )
-            )
-
-        return components, connections_

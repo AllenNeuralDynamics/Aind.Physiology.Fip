@@ -120,9 +120,9 @@ class AindInstrumentDataMapper:
             devices.FiberPatchCord(
                 name=f"Patch Cord {i}",
                 manufacturer=devices.Organization.DORIC,
-                model="BBP(4)_200/220/900-0.37_Custom_FCM-4xMF1.25",
-                core_diameter=200,
-                numerical_aperture=0.37,
+                model=TrackedDevicesInfo.PATCH_CORD_MODEL,
+                core_diameter=TrackedDevicesInfo.PATCH_CORD_DIAMETER,
+                numerical_aperture=TrackedDevicesInfo.PATCH_CORD_NUMERICAL_APERTURE,
                 notes=note,
             )
             for i in range(4)

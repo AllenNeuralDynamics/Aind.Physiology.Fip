@@ -11,10 +11,9 @@ import aind_data_schema.components.devices as devices
 import aind_data_schema.core.instrument as instrument
 from aind_behavior_services.utils import model_from_json_file
 from aind_data_schema.components.connections import Connection
-from aind_data_schema_models import units
 from aind_data_schema_models.modalities import Modality
 
-from aind_physiology_fip.data_mappers._utils import FilterId, TrackedDevicesInfo, make_filter
+from aind_physiology_fip.data_mappers._utils import FilterId, LedId, TrackedDevicesInfo, make_filter, make_led
 from aind_physiology_fip.rig import AindPhysioFipRig, FipCamera
 
 logger = logging.getLogger(__name__)
@@ -153,22 +152,12 @@ class AindInstrumentDataMapper:
     @staticmethod
     def _get_light_sources(rig: AindPhysioFipRig) -> List[devices.LightEmittingDiode]:
         """Return all LEDs used in the rig."""
-        sources = []
-        for color, src in [
-            ("uv", rig.light_source_uv),
-            ("blue", rig.light_source_blue),
-            ("lime", rig.light_source_lime),
-        ]:
-            sources.append(
-                devices.LightEmittingDiode(
-                    name=src.name,
-                    manufacturer=devices.Organization.THORLABS,
-                    model={"uv": "M470F3", "blue": "M415F3", "lime": "M565F3"}[color],
-                    wavelength=int(src.power),
-                    wavelength_unit=units.SizeUnit.NM,
-                )
-            )
-        return sources
+        mapping = [
+            (LedId.UV, rig.light_source_uv),
+            (LedId.BLUE, rig.light_source_blue),
+            (LedId.LIME, rig.light_source_lime),
+        ]
+        return [make_led(color, src) for color, src in mapping]
 
     @staticmethod
     def _get_detectors(rig: AindPhysioFipRig) -> List[devices.Detector]:

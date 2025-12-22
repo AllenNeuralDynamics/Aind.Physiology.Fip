@@ -303,11 +303,3 @@ class AindInstrumentDataMapper:
                 cut_off_wavelength=500,
             ),
         ]
-
-
-if __name__ == "__main__":
-    inst = AindInstrumentDataMapper(
-        r"\\allen\aind\stage\vr-foraging\data\804434\804434_2025-11-14T010241Z\fib\fip_2025-11-13T170614\Logs"
-    )
-    schema = inst.map()
-    pass

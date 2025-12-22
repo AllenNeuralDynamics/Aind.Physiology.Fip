@@ -1,4 +1,6 @@
+"""Tracks device information not found in input schema"""
 import enum
+
 
 class TrackedDevicesInfo(enum.Enum):
     COMPUTER = "computer"

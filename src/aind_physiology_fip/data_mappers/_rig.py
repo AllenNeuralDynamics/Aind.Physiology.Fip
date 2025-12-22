@@ -1,22 +1,21 @@
 """Maps to aind-data-schema instrument file"""
+
 import logging
 import os
 import platform
 from datetime import date
 from pathlib import Path
-from typing import Optional, List
-
-from aind_behavior_services.utils import model_from_json_file
+from typing import List, Optional
 
 import aind_data_schema.components.devices as devices
-from aind_data_schema.components.connections import Connection
 import aind_data_schema.core.instrument as instrument
+from aind_behavior_services.utils import model_from_json_file
+from aind_data_schema.components.connections import Connection
+from aind_data_schema_models import units
 from aind_data_schema_models.modalities import Modality
 
-from aind_physiology_fip.rig import AindPhysioFipRig, FipCamera
-from aind_data_schema_models import units
-
 from aind_physiology_fip.data_mappers._utils import TrackedDevicesInfo
+from aind_physiology_fip.rig import AindPhysioFipRig, FipCamera
 
 logger = logging.getLogger(__name__)
 
@@ -59,20 +58,30 @@ class AindInstrumentDataMapper:
             Connection(
                 source_device=cuttlefish_device.name,
                 source_port=TrackedDevicesInfo.PORT_COM,
-                target_device=computer.name
+                target_device=computer.name,
             ),
             Connection(
                 source_device=white_rabbit.name,
                 source_port=TrackedDevicesInfo.PORT_CLOCK,
                 target_device=cuttlefish_device.name,
                 target_port=TrackedDevicesInfo.PORT_COM,
-                send_and_receive=False
-            )
+                send_and_receive=False,
+            ),
         ]
 
         # Put everything in a list and unwrap lists
         all_components = []
-        for item in [computer, patch_coords, light_sources, detectors, objective, filters, lens, cuttlefish_device, white_rabbit]:
+        for item in [
+            computer,
+            patch_coords,
+            light_sources,
+            detectors,
+            objective,
+            filters,
+            lens,
+            cuttlefish_device,
+            white_rabbit,
+        ]:
             if isinstance(item, list):
                 all_components.extend(item)  # unwrap lists
             else:
@@ -97,7 +106,7 @@ class AindInstrumentDataMapper:
             modification_date=date.today(),
             components=all_components,
             coordinate_system=coordinate_system,
-            connections=connections
+            connections=connections,
         )
 
     @staticmethod
@@ -109,9 +118,9 @@ class AindInstrumentDataMapper:
             manufacturer=devices.Organization.NIKON,
             numerical_aperture=TrackedDevicesInfo.OBJECTIVE_NUMERICAL_APERTURE.value,
             magnification=TrackedDevicesInfo.OBJECTIVE_MAGNIFICATION.value,
-            immersion=devices.ImmersionMedium.AIR
+            immersion=devices.ImmersionMedium.AIR,
         )
-    
+
     @staticmethod
     def _get_computer(rig: AindPhysioFipRig) -> devices.Computer:
         """Gets the computer metadata"""
@@ -119,7 +128,7 @@ class AindInstrumentDataMapper:
             name=TrackedDevicesInfo.COMPUTER,
             manufacturer=devices.Organization.AIND,
             operating_system=platform.platform(),
-            serial_number=rig.computer_name
+            serial_number=rig.computer_name,
         )
 
     @staticmethod
@@ -145,7 +154,11 @@ class AindInstrumentDataMapper:
     def _get_light_sources(rig: AindPhysioFipRig) -> List[devices.LightEmittingDiode]:
         """Return all LEDs used in the rig."""
         sources = []
-        for color, src in [("uv", rig.light_source_uv), ("blue", rig.light_source_blue), ("lime", rig.light_source_lime)]:
+        for color, src in [
+            ("uv", rig.light_source_uv),
+            ("blue", rig.light_source_blue),
+            ("lime", rig.light_source_lime),
+        ]:
             sources.append(
                 devices.LightEmittingDiode(
                     name=src.name,
@@ -181,14 +194,12 @@ class AindInstrumentDataMapper:
                 chroma=devices.CameraChroma.BW,
                 bit_depth=TrackedDevicesInfo.DETECTOR_BIT_DEPTH.value,
             )
-    
+
         """Return list of cameras / detectors in the rig."""
         detectors = []
         for cam_attr in ["camera_red", "camera_green_iso"]:
             cam: FipCamera = getattr(rig, cam_attr)
-            detectors.append(
-                _get_detector(cam)
-            )
+            detectors.append(_get_detector(cam))
         return detectors
 
     @staticmethod
@@ -211,9 +222,9 @@ class AindInstrumentDataMapper:
             name=rig.cuttlefish_fip.name,
             harp_device_type=devices.HarpDeviceType.CUTTLEFISHFIP,
             is_clock_generator=False,
-            data_interface=devices.DataInterface.USB
+            data_interface=devices.DataInterface.USB,
         )
-        
+
     @staticmethod
     def _get_lens() -> devices.Lens:
         """Gets the lens used"""
@@ -222,7 +233,7 @@ class AindInstrumentDataMapper:
             model=TrackedDevicesInfo.LENS_MODEL,
             name=TrackedDevicesInfo.LENS_NAME,
         )
-    
+
     @staticmethod
     def _get_filters() -> List[devices.Filter]:
         """Return optical filters used in the rig."""
@@ -290,10 +301,13 @@ class AindInstrumentDataMapper:
                 model="#69-899",
                 filter_type="Dichroic",
                 cut_off_wavelength=500,
-            )
+            ),
         ]
 
+
 if __name__ == "__main__":
-    inst = AindInstrumentDataMapper(r"\\allen\aind\stage\vr-foraging\data\804434\804434_2025-11-14T010241Z\fib\fip_2025-11-13T170614\Logs")
+    inst = AindInstrumentDataMapper(
+        r"\\allen\aind\stage\vr-foraging\data\804434\804434_2025-11-14T010241Z\fib\fip_2025-11-13T170614\Logs"
+    )
     schema = inst.map()
     pass

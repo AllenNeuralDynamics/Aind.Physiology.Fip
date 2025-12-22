@@ -90,13 +90,13 @@ data = [
     { name = "opencv-python" },
     { name = "pydantic-settings" },
 ]
-metadata = [
+mappers = [
     { name = "aind-data-schema" },
 ]
 
 [package.dev-dependencies]
 dev = [
-    { name = "aind-physiology-fip", extra = ["data"] },
+    { name = "aind-physiology-fip", extra = ["data", "mappers"] },
     { name = "codespell" },
     { name = "ruff" },
 ]
@@ -113,12 +113,12 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "aind-behavior-services", specifier = "<0.13" },
-    { name = "aind-data-schema", marker = "extra == 'metadata'", specifier = ">=2.2" },
+    { name = "aind-data-schema", marker = "extra == 'mappers'", specifier = ">=2.2" },
     { name = "contraqctor", marker = "extra == 'data'", specifier = "<0.6" },
     { name = "opencv-python", marker = "extra == 'data'" },
     { name = "pydantic-settings", marker = "extra == 'data'" },
 ]
-provides-extras = ["data", "metadata"]
+provides-extras = ["data", "mappers"]
 
 [package.metadata.requires-dev]
 dev = [

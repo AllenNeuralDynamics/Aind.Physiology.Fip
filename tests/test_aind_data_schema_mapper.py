@@ -17,8 +17,6 @@ from aind_physiology_fip.data_mappers._rig import AindInstrumentDataMapper
 sys.path.append(".")
 from examples.example import mock_rig
 
-sys.path.append(".")
-
 
 class MockCsv(DataStream[pd.DataFrame, Any]):
     _inner_data: pd.DataFrame

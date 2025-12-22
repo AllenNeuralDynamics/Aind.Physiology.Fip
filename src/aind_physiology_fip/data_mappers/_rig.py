@@ -14,7 +14,7 @@ from aind_data_schema.components.connections import Connection
 from aind_data_schema_models import units
 from aind_data_schema_models.modalities import Modality
 
-from aind_physiology_fip.data_mappers._utils import TrackedDevicesInfo
+from aind_physiology_fip.data_mappers._utils import FilterId, TrackedDevicesInfo, make_filter
 from aind_physiology_fip.rig import AindPhysioFipRig, FipCamera
 
 logger = logging.getLogger(__name__)
@@ -238,68 +238,16 @@ class AindInstrumentDataMapper:
     def _get_filters() -> List[devices.Filter]:
         """Return optical filters used in the rig."""
         return [
-            devices.Filter(
-                name="Green emission filter",
-                manufacturer=devices.Organization.SEMROCK,
-                model="FF01-520/35-25",
-                filter_type="Band pass",
-                center_wavelength=520,
-            ),
-            devices.Filter(
-                name="Red emission filter",
-                manufacturer=devices.Organization.SEMROCK,
-                model="FF01-600/37-25",
-                filter_type="Band pass",
-                center_wavelength=600,
-            ),
-            devices.Filter(
-                name="Emission Dichroic",
-                model="FF562-Di03-25x36",
-                manufacturer=devices.Organization.SEMROCK,
-                filter_type="Dichroic",
-                cut_off_wavelength=562,
-            ),
-            devices.Filter(
-                name="dual-edge standard epi-fluorescence dichroic beamsplitter",
-                model="FF493/574-Di01-25x36",
-                manufacturer=devices.Organization.SEMROCK,
-                notes="BrightLine dual-edge standard epi-fluorescence dichroic beamsplitter",
-                filter_type="Multiband",
-                center_wavelength=[493, 574],
-            ),
-            devices.Filter(
-                name="Excitation filter 410nm",
-                manufacturer=devices.Organization.THORLABS,
-                model="FB410-10",
-                filter_type="Band pass",
-                center_wavelength=410,
-            ),
-            devices.Filter(
-                name="Excitation filter 470nm",
-                manufacturer=devices.Organization.THORLABS,
-                model="FB470-10",
-                filter_type="Band pass",
-                center_wavelength=470,
-            ),
-            devices.Filter(
-                name="Excitation filter 560nm",
-                manufacturer=devices.Organization.THORLABS,
-                model="FB560-10",
-                filter_type="Band pass",
-                center_wavelength=560,
-            ),
-            devices.Filter(
-                name="450 Dichroic Longpass Filter",
-                manufacturer=devices.Organization.EDMUND_OPTICS,
-                model="#69-898",
-                filter_type="Dichroic",
-                cut_off_wavelength=450,
-            ),
-            devices.Filter(
-                name="500 Dichroic Longpass Filter",
-                manufacturer=devices.Organization.EDMUND_OPTICS,
-                model="#69-899",
-                filter_type="Dichroic",
-                cut_off_wavelength=500,
-            ),
+            make_filter(fid)
+            for fid in [
+                FilterId.GREEN_EMISSION,
+                FilterId.RED_EMISSION,
+                FilterId.EMISSION_DICHROIC,
+                FilterId.DUAL_EDGE_DICHROIC,
+                FilterId.EXCITATION_410,
+                FilterId.EXCITATION_470,
+                FilterId.EXCITATION_560,
+                FilterId.DICHROIC_450_LONGPASS,
+                FilterId.DICHROIC_500_LONGPASS,
+            ]
         ]

@@ -41,7 +41,7 @@ class AindInstrumentDataMapper:
 
     @classmethod
     def _map(cls, root_path: os.PathLike) -> instrument.Instrument:
-        """Helper to map to insturment schema"""
+        """Helper to map to instrument schema"""
         rig = model_from_json_file(Path(root_path) / "rig_input.json", AindPhysioFipRig)
 
         computer = cls._get_computer(rig)

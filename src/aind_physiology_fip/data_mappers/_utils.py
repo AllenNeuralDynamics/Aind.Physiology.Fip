@@ -12,6 +12,7 @@ from aind_physiology_fip.rig import LightSource
 # Device constants
 # -------------------------------
 
+
 class TrackedDevicesInfo(enum.Enum):
     # Computer
     COMPUTER = "computer"
@@ -46,10 +47,11 @@ class TrackedDevicesInfo(enum.Enum):
     OBJECTIVE_SERIAL_NUMBER = "12812388"
     OBJECTIVE_MAGNIFICATION = 10
 
-    
+
 # -------------------------------
 # Filters
 # -------------------------------
+
 
 class FilterId(enum.Enum):
     GREEN_EMISSION = enum.auto()
@@ -139,6 +141,7 @@ def make_filter(filter_id: FilterId) -> devices.Filter:
 # -------------------------------
 # LEDs
 # -------------------------------
+
 
 class LedId(enum.Enum):
     UV = enum.auto()

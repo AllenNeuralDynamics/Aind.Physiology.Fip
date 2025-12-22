@@ -1,6 +1,6 @@
 import enum
 
-class TrackedDevicesInfo(enum.StrEnum):
+class TrackedDevicesInfo(enum.Enum):
     COMPUTER = "computer"
     LENS_NAME = "Image focusing lens"
     LENS_MODEL = "AC254-080-A-ML"
@@ -16,3 +16,7 @@ class TrackedDevicesInfo(enum.StrEnum):
     PATCH_CORD_MODEL = "BBP(4)_200/220/900-0.37_Custom_FCM-4xMF1.25"
     PATCH_CORD_DIAMETER = 200
     PATCH_CORD_NUMERICAL_APERTURE = 0.37
+    OBJECTIVE_MODEL = "CFI Plan Apochromat Lambda D 10x"
+    OBJECTIVE_NUMERICAL_APERTURE = 0.45
+    OBJECTIVE_SERIAL_NUMBER = "12812388"
+    OBJECTIVE_MAGNIFICATION = 10

@@ -16,7 +16,7 @@ from aind_data_schema_models.modalities import Modality
 from aind_physiology_fip.rig import AindPhysioFipRig, FipCamera
 from aind_data_schema_models import units
 
-from ._utils import TrackedDevicesInfo
+from aind_physiology_fip.data_mappers._utils import TrackedDevicesInfo
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,7 @@ class AindInstrumentDataMapper:
         lens = cls._get_lens()
         cuttlefish_device = cls._get_cuttlefish_device(rig)
         white_rabbit = cls._get_white_rabbit_device()
+        objective = cls._get_objective()
 
         connections = [
             Connection(
@@ -71,7 +72,7 @@ class AindInstrumentDataMapper:
 
         # Put everything in a list and unwrap lists
         all_components = []
-        for item in [computer, patch_coords, light_sources, detectors, filters, lens, cuttlefish_device, white_rabbit]:
+        for item in [computer, patch_coords, light_sources, detectors, objective, filters, lens, cuttlefish_device, white_rabbit]:
             if isinstance(item, list):
                 all_components.extend(item)  # unwrap lists
             else:
@@ -100,6 +101,18 @@ class AindInstrumentDataMapper:
         )
 
     @staticmethod
+    def _get_objective() -> devices.Objective:
+        return devices.Objective(
+            model=TrackedDevicesInfo.OBJECTIVE_MODEL,
+            name="Objective",
+            serial_number=TrackedDevicesInfo.OBJECTIVE_SERIAL_NUMBER,
+            manufacturer=devices.Organization.NIKON,
+            numerical_aperture=TrackedDevicesInfo.OBJECTIVE_NUMERICAL_APERTURE.value,
+            magnification=TrackedDevicesInfo.OBJECTIVE_MAGNIFICATION.value,
+            immersion=devices.ImmersionMedium.AIR
+        )
+    
+    @staticmethod
     def _get_computer(rig: AindPhysioFipRig) -> devices.Computer:
         """Gets the computer metadata"""
         return devices.Computer(
@@ -121,8 +134,8 @@ class AindInstrumentDataMapper:
                 name=f"Patch Cord {i}",
                 manufacturer=devices.Organization.DORIC,
                 model=TrackedDevicesInfo.PATCH_CORD_MODEL,
-                core_diameter=TrackedDevicesInfo.PATCH_CORD_DIAMETER,
-                numerical_aperture=TrackedDevicesInfo.PATCH_CORD_NUMERICAL_APERTURE,
+                core_diameter=TrackedDevicesInfo.PATCH_CORD_DIAMETER.value,
+                numerical_aperture=TrackedDevicesInfo.PATCH_CORD_NUMERICAL_APERTURE.value,
                 notes=note,
             )
             for i in range(4)
@@ -151,21 +164,22 @@ class AindInstrumentDataMapper:
             return devices.Detector(
                 name=cam.name,
                 serial_number=cam.serial_number,
+                manufacturer=devices.Organization.FLIR,
                 model=TrackedDevicesInfo.DETECTOR_MODEL,
                 detector_type=devices.DetectorType.CAMERA,
                 data_interface=devices.DataInterface.USB,
                 cooling=devices.Cooling.AIR,
                 immersion=devices.ImmersionMedium.AIR,
-                bin_width=TrackedDevicesInfo.DETECTOR_BIN_WIDTH,
-                bin_height=TrackedDevicesInfo.DETECTOR_BIN_HEIGHT,
+                bin_width=TrackedDevicesInfo.DETECTOR_BIN_WIDTH.value,
+                bin_height=TrackedDevicesInfo.DETECTOR_BIN_HEIGHT.value,
                 bin_mode=devices.BinMode.ADDITIVE,
                 crop_offset_x=cam.offset.x,
                 crop_offset_y=cam.offset.y,
-                crop_width=TrackedDevicesInfo.DETECTOR_CROP_WIDTH,
-                crop_height=TrackedDevicesInfo.DETECTOR_CROP_HEIGHT,
+                crop_width=TrackedDevicesInfo.DETECTOR_CROP_WIDTH.value,
+                crop_height=TrackedDevicesInfo.DETECTOR_CROP_HEIGHT.value,
                 gain=cam.gain,
                 chroma=devices.CameraChroma.BW,
-                bit_depth=TrackedDevicesInfo.DETECTOR_BIT_DEPTH,
+                bit_depth=TrackedDevicesInfo.DETECTOR_BIT_DEPTH.value,
             )
     
         """Return list of cameras / detectors in the rig."""
@@ -278,3 +292,8 @@ class AindInstrumentDataMapper:
                 cut_off_wavelength=500,
             )
         ]
+
+if __name__ == "__main__":
+    inst = AindInstrumentDataMapper(r"\\allen\aind\stage\vr-foraging\data\804434\804434_2025-11-14T010241Z\fib\fip_2025-11-13T170614\Logs")
+    schema = inst.map()
+    pass

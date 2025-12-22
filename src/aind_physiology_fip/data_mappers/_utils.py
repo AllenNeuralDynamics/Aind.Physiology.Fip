@@ -1,4 +1,5 @@
 """Tracks device information not found in input schema"""
+
 import enum
 
 

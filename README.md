@@ -1,4 +1,5 @@
 # Fiber Photometry System Configuration
+from https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/
 
 ![CI](https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/actions/workflows/aind-physiology-fip.yml/badge.svg)
 [![PyPI - Version](https://img.shields.io/pypi/v/aind-physiology-fip)](https://pypi.org/project/aind-physiology-fip/)

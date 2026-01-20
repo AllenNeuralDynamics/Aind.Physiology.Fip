@@ -2,8 +2,8 @@ from enum import IntFlag
 from typing import Annotated, Dict, List, Literal, Optional, Self
 
 from aind_behavior_services import rig
+from aind_behavior_services.common import Circle, Point2f
 from aind_behavior_services.rig import harp
-from aind_behavior_services.rig.cameras import Circle, Point2f
 from pydantic import BaseModel, Field, model_validator
 
 from . import __semver__
@@ -69,7 +69,7 @@ class LightSourceCalibration(BaseModel):
     """Calibration model for converting light source duty cycle to power output."""
 
     power_lut: Dict[DutyCycle, LightSourcePower] = Field(
-        ..., description="Look-up table for LightSource power vs. duty cycle"
+        description="Look-up table for LightSource power vs. duty cycle"
     )
 
 

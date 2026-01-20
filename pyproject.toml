@@ -19,7 +19,7 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 
-dependencies = ["aind_behavior_services<0.13"]
+dependencies = ["aind_behavior_services>=0.13.0rc1"]
 
 [project.urls]
 Documentation = "https://allenneuraldynamics.github.io/Aind.Physiology.Fip/"
@@ -37,7 +37,6 @@ dev = [
     "ruff",
     "codespell",
     "aind-physiology-fip[data]",
-    "aind-physiology-fip[mappers]",
 ]
 
 docs = [

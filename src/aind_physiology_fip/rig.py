@@ -1,19 +1,28 @@
 from enum import IntFlag
 from typing import Annotated, Dict, List, Literal, Optional, Self
 
-from aind_behavior_services import calibration, rig
+from aind_behavior_services import rig
+from aind_behavior_services.rig import harp
 from aind_behavior_services.rig.cameras import Circle, Point2f
-from aind_behavior_services.rig.network import ZmqConnection
 from pydantic import BaseModel, Field, model_validator
 
 from . import __semver__
+
+
+class ZmqConnection(BaseModel):
+    """ZeroMQ connection settings."""
+
+    connection_string: str = Field(
+        default="@tcp://localhost:5556", description="The connection string for the ZMQ socket."
+    )
+    topic: str = Field(default="")
 
 
 class FipCamera(rig.Device):
     """Camera device configuration for FIP photometry system."""
 
     device_type: Literal["FipCamera"] = "FipCamera"
-    serial_number: str = Field(..., description="Camera serial number")
+    serial_number: str = Field(description="Camera serial number")
     gain: float = Field(default=0, ge=0, description="Gain")
     offset: Point2f = Field(default=Point2f(x=0, y=0), description="Offset (px)", validate_default=True)
 
@@ -34,9 +43,11 @@ class RoiSettings(BaseModel):
         description="ROI to compute the background for the red camera channel",
     )
     camera_green_iso_roi: List[Circle] = Field(
-        default=_make_default_rois(), description="ROI for the green/iso camera channel"
+        default_factory=_make_default_rois, description="ROI for the green/iso camera channel", validate_default=True
     )
-    camera_red_roi: List[Circle] = Field(default=_make_default_rois(), description="ROI for the red camera channel")
+    camera_red_roi: List[Circle] = Field(
+        default_factory=_make_default_rois, description="ROI for the red camera channel", validate_default=True
+    )
 
 
 class Networking(BaseModel):
@@ -54,18 +65,12 @@ LightSourcePower = Annotated[float, Field(ge=0, description="Power (mW)")]
 DutyCycle = Annotated[float, Field(ge=0, le=1, description="Duty cycle (0-100%)")]
 
 
-class LightSourceCalibrationOutput(BaseModel):
-    """Output of the light source calibration process."""
+class LightSourceCalibration(BaseModel):
+    """Calibration model for converting light source duty cycle to power output."""
 
     power_lut: Dict[DutyCycle, LightSourcePower] = Field(
         ..., description="Look-up table for LightSource power vs. duty cycle"
     )
-
-
-class LightSourceCalibration(calibration.Calibration):
-    """Calibration model for converting light source duty cycle to power output."""
-
-    output: LightSourceCalibrationOutput = Field(..., title="Lookup table to convert duty cycle to power (mW)")
 
 
 class Ports(IntFlag):
@@ -136,7 +141,7 @@ class AindPhysioFipRig(rig.AindBehaviorRigModel):
         title="Region of interest settings",
         description="Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program.",
     )
-    cuttlefish_fip: rig.harp.HarpCuttlefishfip = Field(
+    cuttlefish_fip: harp.HarpCuttlefishfip = Field(
         title="CuttlefishFip",
         description="CuttlefishFip board for controlling the trigger of cameras and light-sources",
     )

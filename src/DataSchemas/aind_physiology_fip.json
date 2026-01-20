@@ -3,14 +3,14 @@
     "AindBehaviorSessionModel": {
       "properties": {
         "aind_behavior_services_pkg_version": {
-          "default": "0.12.3",
+          "default": "0.13.0-rc1",
           "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
           "title": "aind_behavior_services package version",
           "type": "string"
         },
         "version": {
-          "const": "0.12.3",
-          "default": "0.12.3",
+          "const": "0.13.0-rc1",
+          "default": "0.13.0-rc1",
           "title": "Version",
           "type": "string"
         },
@@ -42,11 +42,6 @@
           "title": "Date",
           "type": "string"
         },
-        "root_path": {
-          "description": "Root path where data will be logged",
-          "title": "Root Path",
-          "type": "string"
-        },
         "session_name": {
           "default": null,
           "description": "Name of the session. This will be used to create a folder in the root path. If not provided, it will be generated using subject and date.",
@@ -63,13 +58,6 @@
         "subject": {
           "description": "Name of the subject",
           "title": "Subject",
-          "type": "string"
-        },
-        "experiment_version": {
-          "default": "",
-          "deprecated": true,
-          "description": "Version of the experiment",
-          "title": "Experiment Version",
           "type": "string"
         },
         "notes": {
@@ -112,7 +100,6 @@
         }
       },
       "required": [
-        "root_path",
         "subject"
       ],
       "title": "AindBehaviorSessionModel",
@@ -122,7 +109,7 @@
       "description": "Complete rig configuration model for AIND FIP photometry system.",
       "properties": {
         "aind_behavior_services_pkg_version": {
-          "default": "0.12.3",
+          "default": "0.13.0-rc1",
           "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
           "title": "aind_behavior_services package version",
           "type": "string"
@@ -141,6 +128,12 @@
         "rig_name": {
           "description": "Rig name",
           "title": "Rig Name",
+          "type": "string"
+        },
+        "data_directory": {
+          "description": "Directory where data will be saved to",
+          "format": "path",
+          "title": "Data Directory",
           "type": "string"
         },
         "camera_green_iso": {
@@ -203,6 +196,7 @@
       },
       "required": [
         "rig_name",
+        "data_directory",
         "camera_green_iso",
         "camera_red",
         "light_source_uv",
@@ -219,6 +213,7 @@
       "type": "object"
     },
     "Circle": {
+      "description": "Represents a circle defined by its center point and radius.",
       "properties": {
         "center": {
           "$ref": "#/$defs/Point2f",
@@ -248,34 +243,9 @@
           "title": "Device Type",
           "type": "string"
         },
-        "device_name": {
-          "default": null,
-          "description": "Device name",
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Device Name"
-        },
-        "additional_settings": {
-          "default": null,
-          "description": "Additional settings",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/BaseModel"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "calibration": {
           "default": null,
-          "description": "Calibration",
+          "description": "Calibration for the device.",
           "oneOf": [
             {
               "$ref": "#/$defs/BaseModel"
@@ -386,34 +356,9 @@
           "title": "Device Type",
           "type": "string"
         },
-        "device_name": {
-          "default": null,
-          "description": "Device name",
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Device Name"
-        },
-        "additional_settings": {
-          "default": null,
-          "description": "Additional settings",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/BaseModel"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "calibration": {
           "default": null,
-          "description": "Calibration",
+          "description": "Calibration for the device.",
           "oneOf": [
             {
               "$ref": "#/$defs/BaseModel"
@@ -463,31 +408,6 @@
           "title": "Device Type",
           "type": "string"
         },
-        "device_name": {
-          "default": null,
-          "description": "Device name",
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Device Name"
-        },
-        "additional_settings": {
-          "default": null,
-          "description": "Additional settings",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/BaseModel"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "calibration": {
           "default": null,
           "description": "Calibration for the LightSource. If left empty, 'power' will be used as duty-cycle (0-100).",
@@ -523,75 +443,6 @@
     "LightSourceCalibration": {
       "description": "Calibration model for converting light source duty cycle to power output.",
       "properties": {
-        "device_name": {
-          "description": "Name of the device being calibrated",
-          "title": "Device name",
-          "type": "string"
-        },
-        "input": {
-          "default": null,
-          "oneOf": [
-            {
-              "$ref": "#/$defs/BaseModel"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Input data"
-        },
-        "output": {
-          "$ref": "#/$defs/LightSourceCalibrationOutput",
-          "title": "Lookup table to convert duty cycle to power (mW)"
-        },
-        "date": {
-          "default": null,
-          "oneOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Date"
-        },
-        "description": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Brief description of what is being calibrated"
-        },
-        "notes": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Notes"
-        }
-      },
-      "required": [
-        "device_name",
-        "output"
-      ],
-      "title": "LightSourceCalibration",
-      "type": "object"
-    },
-    "LightSourceCalibrationOutput": {
-      "description": "Output of the light source calibration process.",
-      "properties": {
         "power_lut": {
           "additionalProperties": {
             "description": "Power (mW)",
@@ -606,7 +457,7 @@
       "required": [
         "power_lut"
       ],
-      "title": "LightSourceCalibrationOutput",
+      "title": "LightSourceCalibration",
       "type": "object"
     },
     "Networking": {
@@ -631,6 +482,7 @@
       "type": "object"
     },
     "Point2f": {
+      "description": "Represents a 2D point with float coordinates.",
       "properties": {
         "x": {
           "description": "X coordinate of the point (px)",
@@ -703,36 +555,6 @@
           "description": "ROI to compute the background for the red camera channel"
         },
         "camera_green_iso_roi": {
-          "default": [
-            {
-              "center": {
-                "x": 50.0,
-                "y": 50.0
-              },
-              "radius": 20.0
-            },
-            {
-              "center": {
-                "x": 50.0,
-                "y": 150.0
-              },
-              "radius": 20.0
-            },
-            {
-              "center": {
-                "x": 150.0,
-                "y": 50.0
-              },
-              "radius": 20.0
-            },
-            {
-              "center": {
-                "x": 150.0,
-                "y": 150.0
-              },
-              "radius": 20.0
-            }
-          ],
           "description": "ROI for the green/iso camera channel",
           "items": {
             "$ref": "#/$defs/Circle"
@@ -741,36 +563,6 @@
           "type": "array"
         },
         "camera_red_roi": {
-          "default": [
-            {
-              "center": {
-                "x": 50.0,
-                "y": 50.0
-              },
-              "radius": 20.0
-            },
-            {
-              "center": {
-                "x": 50.0,
-                "y": 150.0
-              },
-              "radius": 20.0
-            },
-            {
-              "center": {
-                "x": 150.0,
-                "y": 50.0
-              },
-              "radius": 20.0
-            },
-            {
-              "center": {
-                "x": 150.0,
-                "y": 150.0
-              },
-              "radius": 20.0
-            }
-          ],
           "description": "ROI for the red camera channel",
           "items": {
             "$ref": "#/$defs/Circle"
@@ -783,6 +575,7 @@
       "type": "object"
     },
     "ZmqConnection": {
+      "description": "ZeroMQ connection settings.",
       "properties": {
         "connection_string": {
           "default": "@tcp://localhost:5556",

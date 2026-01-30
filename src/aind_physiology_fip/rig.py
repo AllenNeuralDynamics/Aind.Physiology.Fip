@@ -127,7 +127,7 @@ class LightSource(rig.Device):
         return self
 
 
-class AindPhysioFipRig(rig.AindBehaviorRigModel):
+class AindPhysioFipRig(rig.Rig):
     """Complete rig configuration model for AIND FIP photometry system."""
 
     version: Literal[__semver__] = __semver__

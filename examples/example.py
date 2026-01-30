@@ -3,7 +3,7 @@ import datetime
 import os
 
 from aind_behavior_services.rig.harp import HarpCuttlefishfip
-from aind_behavior_services.session import AindBehaviorSessionModel
+from aind_behavior_services.session import Session
 
 from aind_physiology_fip.data_mappers._acquisition import ProtoAcquisitionDataSchema, _FipDataStreamMetadata
 from aind_physiology_fip.rig import (
@@ -18,9 +18,9 @@ from aind_physiology_fip.rig import (
 )
 
 
-def mock_session() -> AindBehaviorSessionModel:
-    """Generates a mock AindBehaviorSessionModel model"""
-    return AindBehaviorSessionModel(
+def mock_session() -> Session:
+    """Generates a mock Session model"""
+    return Session(
         date=datetime.datetime(year=2025, month=1, day=1, hour=12, minute=0, second=0, tzinfo=datetime.timezone.utc),
         experiment="AindPhysioFip",
         subject="test",

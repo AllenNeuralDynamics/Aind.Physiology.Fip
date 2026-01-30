@@ -3,7 +3,7 @@ import datetime
 import os
 
 from aind_behavior_services.rig.harp import HarpCuttlefishfip
-from aind_behavior_services.session import AindBehaviorSessionModel
+from aind_behavior_services.session import Session
 
 from aind_physiology_fip.data_mappers._acquisition import ProtoAcquisitionDataSchema, _FipDataStreamMetadata
 from aind_physiology_fip.rig import (
@@ -12,22 +12,19 @@ from aind_physiology_fip.rig import (
     FipTask,
     LightSource,
     LightSourceCalibration,
-    LightSourceCalibrationOutput,
     Networking,
     Ports,
     RoiSettings,
 )
 
 
-def mock_session() -> AindBehaviorSessionModel:
-    """Generates a mock AindBehaviorSessionModel model"""
-    return AindBehaviorSessionModel(
+def mock_session() -> Session:
+    """Generates a mock Session model"""
+    return Session(
         date=datetime.datetime(year=2025, month=1, day=1, hour=12, minute=0, second=0, tzinfo=datetime.timezone.utc),
         experiment="AindPhysioFip",
-        root_path="c://",
         subject="test",
         notes="test session",
-        experiment_version="0.0.0",
         allow_dirty_repo=True,
         skip_hardware_validation=False,
         experimenter=["Foo", "Bar"],
@@ -35,11 +32,10 @@ def mock_session() -> AindBehaviorSessionModel:
 
 
 def mock_rig() -> AindPhysioFipRig:
-    mock_calibration = LightSourceCalibration(
-        device_name="mock_device", output=LightSourceCalibrationOutput(power_lut={0: 0, 0.1: 10, 0.2: 20})
-    )
+    mock_calibration = LightSourceCalibration(power_lut={0: 0, 0.1: 10, 0.2: 20})
 
     return AindPhysioFipRig(
+        data_directory=r"C:/data",
         rig_name="test_rig",
         computer_name="test_computer",
         camera_green_iso=FipCamera(serial_number="000000"),

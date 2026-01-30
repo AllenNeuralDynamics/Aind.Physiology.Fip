@@ -6,7 +6,7 @@ import typing as t
 from pathlib import Path
 
 import numpy as np
-from aind_behavior_services.session import AindBehaviorSessionModel
+from aind_behavior_services.session import Session
 from contraqctor.contract import Dataset, DataStream, FilePathBaseParam, csv
 from contraqctor.contract.json import PydanticModel
 
@@ -189,9 +189,7 @@ def dataset(root: os.PathLike) -> Dataset:
             ),
             PydanticModel(
                 "session_input",
-                reader_params=PydanticModel.make_params(
-                    path=Path(root) / "Logs/session_input.json", model=AindBehaviorSessionModel
-                ),
+                reader_params=PydanticModel.make_params(path=Path(root) / "Logs/session_input.json", model=Session),
                 description="Session input parameters for the FIP experiment.",
             ),
             PydanticModel(

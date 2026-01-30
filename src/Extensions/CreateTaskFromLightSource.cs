@@ -17,7 +17,7 @@ public class CreateTaskFromLightSource
         return source.Select(value => {
             // We take care of the calibration
             if (value== null) throw new ArgumentNullException("Input is null.");
-            var calibrationData = value.Calibration == null ? null : value.Calibration.Output.PowerLut;
+            var calibrationData = value.Calibration == null ? null : value.Calibration.PowerLut;
 
             Tuple<IInterpolation, IInterpolation> interpolator = null;
             // dutyCycle: power

@@ -91,3 +91,6 @@ ipython_config.py
 
 # venv files 
 .venv
+
+# C# solution files
+*.sln

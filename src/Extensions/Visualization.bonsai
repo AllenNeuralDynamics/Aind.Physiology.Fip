@@ -1925,7 +1925,7 @@
                           </Operand>
                         </Expression>
                         <Expression xsi:type="Format">
-                          <Format>Channel{0}</Format>
+                          <Format>ROI{0}</Format>
                           <Selector>it</Selector>
                         </Expression>
                         <Expression xsi:type="Combinator">

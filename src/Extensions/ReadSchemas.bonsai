@@ -22,7 +22,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:ReadAllText">
-          <io:Path>..\local\AindBehaviorSessionModel.json</io:Path>
+          <io:Path>..\local\Session.json</io:Path>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:AsyncSubject">

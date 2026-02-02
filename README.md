@@ -91,11 +91,11 @@ The current pipeline relies on two input configuration files. These configure th
 Briefly:
 
 ```python
-from aind_behavior_services.session import AindBehaviorSessionModel
+from aind_behavior_services.session import Session
 from aind_physiology_fip.rig import AindPhysioFipRig
 
 this_rig = AindPhysioFipRig(...)
-this_session = AindBehaviorSessionModel(...)
+this_session = Session(...)
 
 for model in [this_session, this_rig]:
  with open(model.__class__.__name__ + ".json", "w", encoding="utf-8") as f:
@@ -115,7 +115,7 @@ Acquisition is done through Bonsai via a single entry-point workflow. As any Bon
 * Settings in FipRig.json such as `camera_green_iso` `serial_number` and `cuttlefish_fip` `port_name` needs to be modified per PC for Bonsai to detect those hardware.
 
 > [!Important]
-> `AindBehaviorSessionModel.allow_dirty` property will be checked at the start of the workflow. If set to `False` the workflow will immediately throw an error and stop execution if the repository has uncommitted changes. If the user intends to run the workflow with a dirty repository, they should set this property to `True` in the session configuration file.
+> `Session.allow_dirty` property will be checked at the start of the workflow. If set to `False` the workflow will immediately throw an error and stop execution if the repository has uncommitted changes. If the user intends to run the workflow with a dirty repository, they should set this property to `True` in the session configuration file.
 
 #### Running via CLI
 

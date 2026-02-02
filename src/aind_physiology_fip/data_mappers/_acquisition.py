@@ -35,7 +35,7 @@ from pathlib import Path
 from typing import Optional, cast
 
 import pydantic
-from aind_behavior_services.session import AindBehaviorSessionModel
+from aind_behavior_services.session import Session
 from pandas import DataFrame
 
 from aind_physiology_fip.data_contract import dataset
@@ -62,7 +62,7 @@ class ProtoAcquisitionDataSchema(pydantic.BaseModel):
         data_stream_metadata (list[_FipDataStreamMetadata]): List of
             metadata objects for each data stream in the acquisition,
             including timing information. Must contain at least one entry.
-        session (AindBehaviorSessionModel): The behavior session metadata
+        session (Session): The behavior session metadata
             that instantiated this acquisition.
         rig (AindPhysioFipRig): The FIP rig configuration metadata that
             was used for this acquisition.
@@ -72,9 +72,7 @@ class ProtoAcquisitionDataSchema(pydantic.BaseModel):
         min_length=1,
         description="Metadata for each data stream in the acquisition.",
     )
-    session: AindBehaviorSessionModel = pydantic.Field(
-        description="The session information that instantiated the acquisition."
-    )
+    session: Session = pydantic.Field(description="The session information that instantiated the acquisition.")
     rig: AindPhysioFipRig = pydantic.Field(description="The rig configuration that instantiated the acquisition.")
 
 
@@ -257,7 +255,7 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
     @staticmethod
     def _extract_session_and_rig(
         epochs: list[Path],
-    ) -> tuple[AindBehaviorSessionModel, AindPhysioFipRig]:
+    ) -> tuple[Session, AindPhysioFipRig]:
         """
         Extract session and rig configuration from acquisition epochs.
 
@@ -270,14 +268,14 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
                 epoch directories to search.
 
         Returns:
-            tuple[AindBehaviorSessionModel, AindPhysioFipRig]: A tuple
+            tuple[Session, AindPhysioFipRig]: A tuple
                 containing the session model and rig configuration.
 
         Raises:
             ValueError: If no valid session_input or rig_input is found
                 in any of the provided epochs.
         """
-        session: Optional[AindBehaviorSessionModel] = None
+        session: Optional[Session] = None
         rig: Optional[AindPhysioFipRig] = None
         for epoch in epochs:
             # Skip non-directory entries

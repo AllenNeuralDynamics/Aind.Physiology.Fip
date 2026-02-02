@@ -11,7 +11,7 @@ authors = [
 ]
 license = { text = "MIT" }
 requires-python = ">=3.11"
-version = "0.2.1rc1"
+version = "0.3.0rc0"
 readme = { file = "README.md", content-type = "text/markdown" }
 classifiers = [
     "Programming Language :: Python :: 3.11",
@@ -19,7 +19,7 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 
-dependencies = ["aind_behavior_services<0.13"]
+dependencies = ["aind_behavior_services>=0.13.0"]
 
 [project.urls]
 Documentation = "https://allenneuraldynamics.github.io/Aind.Physiology.Fip/"
@@ -37,7 +37,6 @@ dev = [
     "ruff",
     "codespell",
     "aind-physiology-fip[data]",
-    "aind-physiology-fip[mappers]",
 ]
 
 docs = [

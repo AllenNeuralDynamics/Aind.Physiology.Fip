@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Stream Tree</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .tree {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            white-space: pre;
+        }
+        .tree-node {
+            position: relative;
+            display: inline;
+        }
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: normal;
+            width: 300px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .no-description {
+            font-style: italic;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="tree">
+<span class="tooltip">📂 fip [Dataset]<span class="tooltiptext">Type: Dataset<br>Description: <em>No description available</em></span></span>
+├── <span class="tooltip">📄 raw_green [FipRawFrame]<span class="tooltiptext">Type: FipRawFrame<br>Description: Green camera channel raw frames.</span></span>
+├── <span class="tooltip">📄 raw_red [FipRawFrame]<span class="tooltiptext">Type: FipRawFrame<br>Description: Red camera channel raw frames.</span></span>
+├── <span class="tooltip">📄 raw_iso [FipRawFrame]<span class="tooltiptext">Type: FipRawFrame<br>Description: Iso camera channel raw frames.</span></span>
+├── <span class="tooltip">📄 background_raw_green [FipRawFrame]<span class="tooltiptext">Type: FipRawFrame<br>Description: Green camera channel raw background frames. This file is optional.</span></span>
+├── <span class="tooltip">📄 background_raw_red [FipRawFrame]<span class="tooltiptext">Type: FipRawFrame<br>Description: Red camera channel raw background frames. This file is optional.</span></span>
+├── <span class="tooltip">📄 background_raw_iso [FipRawFrame]<span class="tooltiptext">Type: FipRawFrame<br>Description: Iso camera channel raw background frames. This file is optional.</span></span>
+├── <span class="tooltip">📄 green [Csv]<span class="tooltiptext">Type: Csv<br>Description: Timeseries of integrated fluorescence for green camera channel.</span></span>
+├── <span class="tooltip">📄 red [Csv]<span class="tooltiptext">Type: Csv<br>Description: Timeseries of integrated fluorescence for red camera channel.</span></span>
+├── <span class="tooltip">📄 iso [Csv]<span class="tooltiptext">Type: Csv<br>Description: Timeseries of integrated fluorescence for iso camera channel.</span></span>
+├── <span class="tooltip">📄 background_green [Csv]<span class="tooltiptext">Type: Csv<br>Description: Timeseries of integrated fluorescence for background green camera channel.</span></span>
+├── <span class="tooltip">📄 background_red [Csv]<span class="tooltiptext">Type: Csv<br>Description: Timeseries of integrated fluorescence for background red camera channel.</span></span>
+├── <span class="tooltip">📄 background_iso [Csv]<span class="tooltiptext">Type: Csv<br>Description: Timeseries of integrated fluorescence for background iso camera channel.</span></span>
+├── <span class="tooltip">📄 camera_green_iso_metadata [Csv]<span class="tooltiptext">Type: Csv<br>Description: Metadata for the camera that acquires the iso and green channels</span></span>
+├── <span class="tooltip">📄 camera_red_metadata [Csv]<span class="tooltiptext">Type: Csv<br>Description: Metadata for the camera that acquires the red channel</span></span>
+├── <span class="tooltip">📄 regions [PydanticModel]<span class="tooltiptext">Type: PydanticModel<br>Description: Regions of interest used to integrate fluorescence in the raw frames.</span></span>
+├── <span class="tooltip">📄 session_input [PydanticModel]<span class="tooltiptext">Type: PydanticModel<br>Description: Session input parameters for the FIP experiment.</span></span>
+└── <span class="tooltip">📄 rig_input [PydanticModel]<span class="tooltiptext">Type: PydanticModel<br>Description: Rig input parameters for the FIP experiment.</span></span>
+    </div>
+</body>
+</html>

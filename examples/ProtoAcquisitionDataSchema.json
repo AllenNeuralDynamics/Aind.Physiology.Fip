@@ -1,9 +1,9 @@
 {
   "data_stream_metadata": [
     {
-      "id": "fip_2025-01-01T040000",
-      "start_time": "2025-01-01T04:00:00-08:00",
-      "end_time": "2025-01-01T05:00:00-08:00"
+      "id": "fip_2025-01-01T120000",
+      "start_time": "2025-01-01T12:00:00Z",
+      "end_time": "2025-01-01T13:00:00Z"
     }
   ],
   "session": {
@@ -24,7 +24,7 @@
   },
   "rig": {
     "aind_behavior_services_pkg_version": "0.13.0",
-    "version": "0.3.0-rc0",
+    "version": "0.3.0-rc1",
     "computer_name": "test_computer",
     "rig_name": "test_rig",
     "data_directory": "C:\\data",

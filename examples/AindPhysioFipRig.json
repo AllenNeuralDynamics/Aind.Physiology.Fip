@@ -1,6 +1,6 @@
 {
   "aind_behavior_services_pkg_version": "0.13.0",
-  "version": "0.3.0-rc0",
+  "version": "0.3.0-rc1",
   "computer_name": "test_computer",
   "rig_name": "test_rig",
   "data_directory": "C:\\data",

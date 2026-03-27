@@ -4,7 +4,7 @@
         <UseWindowsForms>true</UseWindowsForms>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Bonsai.Core" Version="2.8.5" />
+        <PackageReference Include="Bonsai.Core" Version="2.9.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="Bonsai.Vision" Version="2.8.1" />
         <PackageReference Include="Bonsai.Vision.Design" Version="2.8.1" />
@@ -15,8 +15,7 @@
         <PackageReference Include="Bonsai.Spinnaker" Version="0.7.1" />
         <PackageReference Include="Bonsai.Dsp.Design" Version="2.8.0" />
         <PackageReference Include="Bonsai.Harp" Version="3.6.0" />
-        <PackageReference Include="AllenNeuralDynamics.CuttlefishFip"
-            Version="0.1.0" />
+        <PackageReference Include="AllenNeuralDynamics.CuttlefishFip" Version="0.1.0" />
         <PackageReference Include="Bonsai.Numerics" Version="0.9.0" />
     </ItemGroup>
 </Project>

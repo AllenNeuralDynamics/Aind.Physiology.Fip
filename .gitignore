@@ -13,7 +13,7 @@ Bonsai.exe.WebView2
 *.bonsai.layout
 local
 *.snl
-bonsai/settings/
+.bonsai/Settings/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

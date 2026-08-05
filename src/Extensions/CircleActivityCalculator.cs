@@ -1,24 +1,32 @@
-﻿using OpenCV.Net;
+using OpenCV.Net;
 using Bonsai.Vision;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.ComponentModel;
 using Bonsai;
 using Bonsai.Harp;
+using AindPhysiologyFip;
 
 namespace FipExtensions
 {
-    [DefaultProperty("Circles")]
+    [DefaultProperty("RoiSettings")]
     [Combinator]
     [WorkflowElementCategory(ElementCategory.Transform)]
-    [Description("Calculates activation intensity inside specified regions of interest for each image in the sequence.")]
+    [Description("Stamps Source onto each frame (replacing a separate ModifyFipCameraSource step) and calculates activation intensity inside the matching RoiSettings circles (Background first, then each Roi in order).")]
     public class CircleActivityCalculator
     {
+        [Description("The Roi settings (Background + per-camera Rois) used to calculate activation intensity. The circles for the current Source are derived automatically: Background first, then each Roi in order.")]
+        public RoiSettings RoiSettings { get; set; }
 
-        [Description("The regions of interest for which to calculate activation intensity.")]
-        [Editor("Bonsai.Vision.Design.IplImageCircleEditor, Bonsai.Vision.Design", DesignTypes.UITypeEditor)]
-        public Circle[] Circles { get; set; }
+        private FipCameraSource source = FipCameraSource.None;
+        [Description("The camera source of the incoming frames. Selects which RoiSettings circles apply (Iso and Green both use the GreenIso circles; Red uses the Red circles) and is stamped onto each outgoing frame's Source.")]
+        public FipCameraSource Source
+        {
+            get { return source; }
+            set { source = value; }
+        }
 
         private ReduceOperation operation = ReduceOperation.Avg;
         [Description("Specifies the reduction operation used to calculate activation intensity.")]
@@ -39,19 +47,28 @@ namespace FipExtensions
             {
                 var roi = default(IplImage);
                 var mask = default(IplImage);
-                var currentCircles = default(Circle[]);
+                var currentRoiSettings = default(RoiSettings);
+                var currentSource = default(FipCameraSource);
+                var currentCircles = default(Bonsai.Vision.Circle[]);
                 var boundingRegions = default(Rect[]);
                 return source.Select(frame =>
                 {
+                    var cameraSource = Source;
+                    frame = new FipFrame(frame) { Source = cameraSource };
+
                     var operation = Operation;
                     var output = new CircleActivityCollection(frame);
                     var img = frame.Image;
                     mask = IplImageHelper.EnsureImageFormat(mask, img.Size, IplDepth.U8, 1);
                     if (operation != ReduceOperation.Sum) roi = null;
                     else roi = IplImageHelper.EnsureImageFormat(roi, img.Size, img.Depth, img.Channels);
-                    if (Circles != currentCircles)
+
+                    var roiSettings = RoiSettings;
+                    if (roiSettings != currentRoiSettings || cameraSource != currentSource)
                     {
-                        currentCircles = Circles;
+                        currentRoiSettings = roiSettings;
+                        currentSource = cameraSource;
+                        currentCircles = ToCircleArray(roiSettings, cameraSource);
                         if (currentCircles != null)
                         {
                             mask.SetZero();
@@ -103,6 +120,45 @@ namespace FipExtensions
                     return output;
                 });
             });
+        }
+
+        // Background first, then each Roi in order - matching the RoiManagerVisualizer/
+        // RoiCircleConverter convention. Iso and Green share the GreenIso circles (same
+        // optics/sensor, just different exposures); Red has its own.
+        private static Bonsai.Vision.Circle[] ToCircleArray(RoiSettings settings, FipCameraSource cameraSource)
+        {
+            if (settings == null) return null;
+
+            AindPhysiologyFip.Circle background;
+            List<AindPhysiologyFip.Circle> rois;
+            switch (cameraSource)
+            {
+                case FipCameraSource.Iso:
+                case FipCameraSource.Green:
+                    background = settings.CameraGreenIsoBackground;
+                    rois = settings.CameraGreenIsoRoi;
+                    break;
+                case FipCameraSource.Red:
+                    background = settings.CameraRedBackground;
+                    rois = settings.CameraRedRoi;
+                    break;
+                default:
+                    return null;
+            }
+
+            var ordered = new List<AindPhysiologyFip.Circle>();
+            if (background != null) ordered.Add(background);
+            if (rois != null) ordered.AddRange(rois);
+            return ordered.Select(ConvertToBonsaiVisionCircle).ToArray();
+        }
+
+        private static Bonsai.Vision.Circle ConvertToBonsaiVisionCircle(AindPhysiologyFip.Circle circle)
+        {
+            return new Bonsai.Vision.Circle
+            {
+                Center = new OpenCV.Net.Point2f((float)circle.Center.X, (float)circle.Center.Y),
+                Radius = (float)circle.Radius
+            };
         }
 
         static Func<IplImage, IplImage, Scalar> ActivationFunction(ReduceOperation operation)

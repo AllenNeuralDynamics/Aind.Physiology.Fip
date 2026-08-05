@@ -80,7 +80,7 @@ See [wiki](https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/wiki) for 
 ### Installation Steps
 
 1. Clone this repository
-2. Create the environments for Bonsai, run `./bonsai/setup.cmd` (can be by double-clickin it too). This is required to run experiments using the Bonsai script in an experimental PC.
+2. Create the environments for Bonsai, run `./.bonsai/setup.cmd` (can be by double-clickin it too). This is required to run experiments using the Bonsai script in an experimental PC.
 3. [Optional] Create the environments for Python, run `uv venv` if using uv, or create a virtual environment using your preferred method. This is only used to run the Python script generating configuration files. (rig PCs can inherit those files from somewhere else)
  * Alternatively, if you are using uv, run `./scripts/deploy.ps1` to bootstrap a Python and Bonsai environment at the same time for the project automatically.
 
@@ -108,7 +108,7 @@ for model in [this_session, this_rig]:
 
 Acquisition is done through Bonsai via a single entry-point workflow. As any Bonsai workflow, one can run the acquisition workflow via the editor:
 
-* Open Bonsai from the bootstrapped environment in `./bonsai/bonsai.exe`
+* Open Bonsai from the bootstrapped environment in `./.bonsai/bonsai.exe`
 * Open the workflow file `./src/main.bonsai`
 * Manually set the two highest level properties `RigPath` and `SessionPath` to the paths of the configuration files generated in the [previous step](#generating-input-configurations).
 * Launch the workflow by clicking the "Run" button in the Bonsai editor.
@@ -123,7 +123,7 @@ The workflow can be launched via the Bonsai Command Line Interface (CLI). Additi
 To run the acquisition workflow using the CLI, use the following command:
 
 ```bash
-"./bonsai/bonsai.exe" "./src/main.bonsai" -p RigPath="../path/to/rig.json" -p SessionPath="../path/to/session.json"
+"./.bonsai/bonsai.exe" "./src/main.bonsai" -p RigPath="../path/to/rig.json" -p SessionPath="../path/to/session.json"
 ```
 
 > [!Note]

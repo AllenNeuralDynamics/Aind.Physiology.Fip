@@ -39,6 +39,7 @@ class BonsaiTests(unittest.TestCase):
             is_editor_mode=False,
             layout=None,
             additional_properties=workflow_props,
+            bonsai_exe=Path("./.bonsai/Bonsai.exe").resolve(),
         )
         stdout = completed_proc.stdout.decode().split("\n")
         stdout = [line for line in stdout if (line or line != "")]

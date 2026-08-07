@@ -21,7 +21,7 @@ from aind_physiology_fip.rig import (
 def mock_session() -> Session:
     """Generates a mock Session model"""
     return Session(
-        date=datetime.datetime(year=2025, month=1, day=1, hour=12, minute=0, second=0, tzinfo=datetime.timezone.utc),
+        date=datetime.datetime(year=2025, month=1, day=1, hour=12, minute=0, second=0, tzinfo=datetime.UTC),
         experiment="AindPhysioFip",
         subject="test",
         notes="test session",

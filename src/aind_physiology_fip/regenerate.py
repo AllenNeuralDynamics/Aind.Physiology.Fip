@@ -18,7 +18,7 @@ def main():
         Session,
     ]
 
-    model = pydantic.RootModel[t.Union[tuple(models)]]
+    model = pydantic.RootModel[t.Union[tuple(models)]]  # noqa: UP007
     convert_pydantic_to_bonsai(
         model,
         model_name="aind_physiology_fip",

@@ -3,7 +3,6 @@ import secrets
 import typing as t
 from pathlib import Path
 
-import contraqctor.contract as contract
 import contraqctor.qc
 import cv2
 import matplotlib
@@ -12,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pydantic
 import pydantic_settings
+from contraqctor import contract
 from contraqctor.qc import ContextExportableObj, Runner, Suite
 from contraqctor.qc.contract import ContractTestSuite
 from contraqctor.qc.csv import CsvTestSuite
@@ -25,7 +25,7 @@ from aind_physiology_fip.rig import Circle
 class FipChannelMetadataTestSuite(Suite):
     """Tests if each color channel's metadata is valid"""
 
-    _expected_columns = {"ReferenceTime", "CameraFrameNumber", "CameraFrameTime"}
+    _expected_columns: t.ClassVar[set[str]] = {"ReferenceTime", "CameraFrameNumber", "CameraFrameTime"}
 
     def __init__(
         self,
@@ -33,7 +33,7 @@ class FipChannelMetadataTestSuite(Suite):
         frame_stride: int,
         *,
         clock_jitter_s: float = 1e-4,
-        expected_fps: t.Optional[float] = None,
+        expected_fps: float | None = None,
     ) -> None:
         self.channel_data = channel_data
         self.frame_stride = frame_stride
@@ -88,7 +88,7 @@ class FipChannelSignalTestSuite(Suite):
         self,
         color_channel: contract.csv.Csv,
         *,
-        channel_name: t.Optional[t.Literal["green", "iso", "red"]] = None,
+        channel_name: t.Literal["green", "iso", "red"] | None = None,
         sudden_change_limit: int = 2000,
         cmos_floor_limit: int = 265,
     ) -> None:
@@ -190,7 +190,7 @@ class FipRawImageTestSuite(Suite):
         binary_raw_data: FipRawFrame,
         color_channel: contract.csv.Csv,
         background_region: Circle,
-        regions: t.List[Circle],
+        regions: list[Circle],
         *,
         cv_threshold: float = 0.05,
     ) -> None:
@@ -215,7 +215,7 @@ class FipRawImageTestSuite(Suite):
             )
 
     @staticmethod
-    def _get_pixels_in_circle(array: np.ndarray, circle: Circle) -> t.Tuple[np.ndarray, np.ndarray]:
+    def _get_pixels_in_circle(array: np.ndarray, circle: Circle) -> tuple[np.ndarray, np.ndarray]:
         h, w = array.shape[:2]
         y, x = np.ogrid[:h, :w]
         mask = (x - circle.center.x) ** 2 + (y - circle.center.y) ** 2 <= circle.radius**2
@@ -224,7 +224,7 @@ class FipRawImageTestSuite(Suite):
 
     @staticmethod
     def _render_roi(
-        image: np.ndarray, circle: Circle, text: str, color: t.Tuple[int, int, int] = (255, 0, 0), thickness: int = 1
+        image: np.ndarray, circle: Circle, text: str, color: tuple[int, int, int] = (255, 0, 0), thickness: int = 1
     ) -> np.ndarray:
         """Render a circle on the image."""
         image = cv2.circle(image, (int(circle.center.x), int(circle.center.y)), int(circle.radius), color, thickness)
@@ -271,7 +271,7 @@ class FipRawImageTestSuite(Suite):
         ax.set_title(f"ROI Selection for {self.color_name} Channel")
         ax.axis("off")
 
-        context: t.Dict[str, t.Any] = ContextExportableObj.as_context(fig)
+        context: dict[str, t.Any] = ContextExportableObj.as_context(fig)
         context["metrics"] = metrics
 
         if any(cv > self.cv_threshold for cv in metrics.values()):
@@ -288,7 +288,7 @@ class FipRawImageTestSuite(Suite):
             )
 
 
-def _run_tests(dataset: contract.Dataset) -> t.Dict[str | None, t.List[contraqctor.qc.Result]]:
+def _run_tests(dataset: contract.Dataset) -> dict[str | None, list[contraqctor.qc.Result]]:
     runner = Runner()
 
     runner.add_suite(ContractTestSuite(dataset.load_all().collect_errors()), "Contract tests")
@@ -324,11 +324,11 @@ def _run_tests(dataset: contract.Dataset) -> t.Dict[str | None, t.List[contraqct
     return results
 
 
-def _save_assets(results: t.Dict[str | None, t.List[contraqctor.qc.Result]], asset_path: t.Optional[Path]) -> None:
+def _save_assets(results: dict[str | None, list[contraqctor.qc.Result]], asset_path: Path | None) -> None:
     if asset_path is None:
-        return None
+        return
     asset_path.mkdir(parents=True, exist_ok=True)
-    for _, group_results in results.items():
+    for group_results in results.values():
         for result in group_results:
             if isinstance(result.context, dict):
                 asset = result.context.get("asset", None)
@@ -342,7 +342,7 @@ class DataQcCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
     data_path: pydantic_settings.CliPositionalArg[Path] = pydantic.Field(
         description="Path to the session data directory."
     )
-    asset_path: t.Optional[Path] = pydantic.Field(
+    asset_path: Path | None = pydantic.Field(
         default=Path("."),
         description="Path to the asset root directory. If not provided, the current working directory will be used. Set None to disable saving assets.",
     )

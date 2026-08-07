@@ -9,6 +9,8 @@ namespace FipExtensions
     [Description("Configures and initializes a Spinnaker camera for fiber photometry acquisition.")]
     public class FipSpinnakerCapture : SpinnakerCapture
     {
+        private const int binningFactor = 4;
+
         public FipSpinnakerCapture()
         {
             Gain = 0;
@@ -32,8 +34,8 @@ namespace FipExtensions
             camera.BinningSelector.Value = BinningSelectorEnums.All.ToString();
             camera.BinningHorizontalMode.Value = BinningHorizontalModeEnums.Sum.ToString();
             camera.BinningVerticalMode.Value = BinningVerticalModeEnums.Sum.ToString();
-            camera.BinningHorizontal.Value = 4;
-            camera.BinningVertical.Value = 4;
+            camera.BinningHorizontal.Value = binningFactor;
+            camera.BinningVertical.Value = binningFactor;
             camera.DecimationHorizontalMode.Value = DecimationHorizontalModeEnums.Discard.ToString();
             camera.DecimationVerticalMode.Value = DecimationVerticalModeEnums.Discard.ToString();
             camera.DecimationHorizontal.Value = 1;
@@ -65,6 +67,16 @@ namespace FipExtensions
             base.Configure(camera);
         }
 
+        /// <summary>
+        /// Rounds <paramref name="value"/> to the nearest multiple of <paramref name="step"/>.
+        /// Spinnaker requires OffsetX/OffsetY to be multiples of the active binning factor (4),
+        /// because the sensor applies 4× binning before evaluating ROI coordinates.
+        /// </summary>
+        private static long SnapToGrid(int value, int step)
+        {
+            return (long)Math.Round((double)value / step) * step;
+        }
+
         private static void SetRegionOfInterest(IManagedCamera camera, Rect crop)
         {
             if ((crop.Height == 0) || (crop.Width == 0))
@@ -82,8 +94,10 @@ namespace FipExtensions
             {
                 camera.Width.Value = crop.Width;
                 camera.Height.Value = crop.Height;
-                camera.OffsetX.Value = crop.X;
-                camera.OffsetY.Value = crop.Y;
+                // Spinnaker rejects OffsetX/Y that are not multiples of the binning factor (4).
+                // Snap to nearest valid value so the API call never fails on a rounding artefact.
+                camera.OffsetX.Value = SnapToGrid(crop.X, binningFactor);
+                camera.OffsetY.Value = SnapToGrid(crop.Y, binningFactor);
             }
         }
     }

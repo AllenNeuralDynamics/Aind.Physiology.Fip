@@ -98,8 +98,8 @@ this_rig = AindPhysioFipRig(...)
 this_session = Session(...)
 
 for model in [this_session, this_rig]:
- with open(model.__class__.__name__ + ".json", "w", encoding="utf-8") as f:
-  f.write(model.model_dump_json(indent=2))
+    with open(model.__class__.__name__ + ".json", "w", encoding="utf-8") as f:
+        f.write(model.model_dump_json(indent=2))
 ```
 
 ### Running the acquisition

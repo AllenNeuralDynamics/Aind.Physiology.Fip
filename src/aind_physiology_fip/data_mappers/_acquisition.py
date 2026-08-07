@@ -32,7 +32,7 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
 import pydantic
 from aind_behavior_services.session import Session
@@ -220,7 +220,7 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
                             end_time=end_utc,
                         )
                     )
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 # Log warning but continue processing other epochs
                 logger.warning(f"Failed to load FIP dataset at {epoch}: {e}")
                 continue
@@ -275,8 +275,8 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
             ValueError: If no valid session_input or rig_input is found
                 in any of the provided epochs.
         """
-        session: Optional[Session] = None
-        rig: Optional[AindPhysioFipRig] = None
+        session: Session | None = None
+        rig: AindPhysioFipRig | None = None
         for epoch in epochs:
             # Skip non-directory entries
             if not epoch.is_dir():
@@ -288,14 +288,14 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
             if session is None:
                 try:
                     session = _dataset["session_input"].read()
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     logger.debug(f"No session_input found in dataset at {epoch}: {e}")
 
             # Try to extract rig configuration if not already found
             if rig is None:
                 try:
                     rig = _dataset["rig_input"].read()
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     logger.debug(f"No rig_input found in dataset at {epoch}: {e}")
                     continue
 

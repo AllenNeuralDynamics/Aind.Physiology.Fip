@@ -31,7 +31,7 @@ class FipFrameReader:
     def __post_init__(self):
         self.frame_size_bytes = self.params.width * self.params.height * np.dtype(self.params.bit_depth).itemsize
 
-    def get_frames(self, frame_indices: t.List[int]) -> t.List[np.ndarray]:
+    def get_frames(self, frame_indices: list[int]) -> list[np.ndarray]:
         file_path = Path(self.params.path)
         if not file_path.exists():
             raise FileNotFoundError(f"File {file_path} does not exist.")
@@ -60,7 +60,7 @@ class FipFrameReader:
 
 @dataclasses.dataclass
 class FipRawFrameParams(FilePathBaseParam):
-    metadata_file: t.Optional[Path] = None
+    metadata_file: Path | None = None
 
 
 class FipRawFrame(DataStream[FipFrameReader, FipRawFrameParams]):

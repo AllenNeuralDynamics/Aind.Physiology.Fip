@@ -1,5 +1,5 @@
 from enum import IntFlag
-from typing import Annotated, Dict, List, Literal, Optional, Self
+from typing import Annotated, Literal, Self
 
 from aind_behavior_services import rig
 from aind_behavior_services.common import Circle, Point2f
@@ -27,7 +27,7 @@ class FipCamera(rig.Device):
     offset: Point2f = Field(default=Point2f(x=0, y=0), description="Offset (px)", validate_default=True)
 
 
-def _make_default_rois() -> List[Circle]:
+def _make_default_rois() -> list[Circle]:
     return [Circle(center=Point2f(x=x, y=y), radius=20) for x in (50, 150) for y in (50, 150)]
 
 
@@ -42,10 +42,10 @@ class RoiSettings(BaseModel):
         default=Circle(center=Point2f(x=10, y=10), radius=10),
         description="ROI to compute the background for the red camera channel",
     )
-    camera_green_iso_roi: List[Circle] = Field(
+    camera_green_iso_roi: list[Circle] = Field(
         default_factory=_make_default_rois, description="ROI for the green/iso camera channel", validate_default=True
     )
-    camera_red_roi: List[Circle] = Field(
+    camera_red_roi: list[Circle] = Field(
         default_factory=_make_default_rois, description="ROI for the red camera channel", validate_default=True
     )
 
@@ -68,7 +68,7 @@ DutyCycle = Annotated[float, Field(ge=0, le=1, description="Duty cycle (0-100%)"
 class LightSourceCalibration(BaseModel):
     """Calibration model for converting light source duty cycle to power output."""
 
-    power_lut: Dict[DutyCycle, LightSourcePower] = Field(
+    power_lut: dict[DutyCycle, LightSourcePower] = Field(
         description="Look-up table for LightSource power vs. duty cycle"
     )
 
@@ -112,7 +112,7 @@ class LightSource(rig.Device):
 
     device_type: Literal["LightSource"] = "LightSource"
     power: float = Field(default=0, ge=0, description="Power (mW)")
-    calibration: Optional[LightSourceCalibration] = Field(
+    calibration: LightSourceCalibration | None = Field(
         default=None,
         title="Calibration",
         description="Calibration for the LightSource. If left empty, 'power' will be used as duty-cycle (0-100).",
@@ -121,9 +121,8 @@ class LightSource(rig.Device):
 
     @model_validator(mode="after")
     def _validate_power(self) -> Self:
-        if self.calibration is None:
-            if self.power < 0 or self.power > 1:
-                raise ValueError("Power must be between 0 and 1 when no calibration is provided.")
+        if self.calibration is None and (self.power < 0 or self.power > 1):
+            raise ValueError("Power must be between 0 and 1 when no calibration is provided.")
         return self
 
 
@@ -136,7 +135,7 @@ class AindPhysioFipRig(rig.Rig):
     light_source_uv: LightSource = Field(title="UV light source", description="UV (415nm) light source")
     light_source_blue: LightSource = Field(title="Blue light source", description="Blue (470nm) light source")
     light_source_lime: LightSource = Field(title="Lime light source", description="Lime (560nm) light source")
-    roi_settings: Optional[RoiSettings] = Field(
+    roi_settings: RoiSettings | None = Field(
         default=None,
         title="Region of interest settings",
         description="Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program.",

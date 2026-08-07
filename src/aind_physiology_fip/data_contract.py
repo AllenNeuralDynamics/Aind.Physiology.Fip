@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 from aind_behavior_services.session import Session
-from contraqctor.contract import DataStream, DataStreamCollection, Dataset, FilePathBaseParam, csv
+from contraqctor.contract import Dataset, DataStream, DataStreamCollection, FilePathBaseParam, csv
 from contraqctor.contract.json import PydanticModel, SoftwareEvents
 
 from aind_physiology_fip import __semver__

@@ -1,9 +1,8 @@
 """Utility constants and factories for rigs and device configurations."""
 
 import enum
-from typing import Dict
 
-import aind_data_schema.components.devices as devices
+from aind_data_schema.components import devices
 from aind_data_schema_models import units
 
 from aind_physiology_fip.rig import LightSource
@@ -13,7 +12,7 @@ from aind_physiology_fip.rig import LightSource
 # -------------------------------
 
 
-class TrackedDevicesInfo(enum.Enum):
+class TrackedDevicesInfo:
     # Computer
     COMPUTER = "computer"
 
@@ -64,7 +63,7 @@ class FilterId(enum.Enum):
     DICHROIC_500_LONGPASS = enum.auto()
 
 
-FILTERS: Dict[FilterId, devices.Filter] = {
+FILTERS: dict[FilterId, devices.Filter] = {
     FilterId.GREEN_EMISSION: devices.Filter(
         name="Green emission filter",
         manufacturer=devices.Organization.SEMROCK,
@@ -148,7 +147,7 @@ class LedId(enum.Enum):
     LIME = enum.auto()
 
 
-LED_SPECS: Dict[LedId, Dict[str, str]] = {
+LED_SPECS: dict[LedId, dict[str, str]] = {
     LedId.UV: {"manufacturer": devices.Organization.THORLABS, "model": "M470F3"},
     LedId.BLUE: {"manufacturer": devices.Organization.THORLABS, "model": "M415F3"},
     LedId.LIME: {"manufacturer": devices.Organization.THORLABS, "model": "M565F3"},

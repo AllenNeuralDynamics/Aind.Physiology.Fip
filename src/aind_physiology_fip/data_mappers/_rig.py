@@ -3,15 +3,13 @@
 import logging
 import os
 import platform
-from datetime import date
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import List, Optional
 
-import aind_data_schema.components.devices as devices
-import aind_data_schema.core.instrument as instrument
 from aind_behavior_services.utils import model_from_json_file
-from aind_data_schema.components import coordinates
+from aind_data_schema.components import coordinates, devices
 from aind_data_schema.components.connections import Connection
+from aind_data_schema.core import instrument
 from aind_data_schema_models.modalities import Modality
 
 from aind_physiology_fip.data_mappers._utils import FilterId, LedId, TrackedDevicesInfo, make_filter, make_led
@@ -25,7 +23,7 @@ class AindInstrumentDataMapper:
 
     def __init__(self, data_path: os.PathLike):
         self._data_path = Path(data_path)
-        self._mapped: Optional[instrument.Instrument] = None
+        self._mapped: instrument.Instrument | None = None
 
     @property
     def mapped(self) -> instrument.Instrument:
@@ -102,7 +100,7 @@ class AindInstrumentDataMapper:
         return instrument.Instrument(
             instrument_id=rig.rig_name,
             modalities=[Modality.FIB],
-            modification_date=date.today(),
+            modification_date=datetime.now(tz=UTC).date(),
             components=all_components,
             coordinate_system=coordinate_system,
             connections=connections,
@@ -115,8 +113,8 @@ class AindInstrumentDataMapper:
             name="Objective",
             serial_number=TrackedDevicesInfo.OBJECTIVE_SERIAL_NUMBER,
             manufacturer=devices.Organization.NIKON,
-            numerical_aperture=TrackedDevicesInfo.OBJECTIVE_NUMERICAL_APERTURE.value,
-            magnification=TrackedDevicesInfo.OBJECTIVE_MAGNIFICATION.value,
+            numerical_aperture=TrackedDevicesInfo.OBJECTIVE_NUMERICAL_APERTURE,
+            magnification=TrackedDevicesInfo.OBJECTIVE_MAGNIFICATION,
             immersion=devices.ImmersionMedium.AIR,
         )
 
@@ -131,7 +129,7 @@ class AindInstrumentDataMapper:
         )
 
     @staticmethod
-    def _get_fiber_patch_cords() -> List[devices.FiberPatchCord]:
+    def _get_fiber_patch_cords() -> list[devices.FiberPatchCord]:
         """Return the four patch cords used in the FIP rig."""
         note = (
             "All four patch cords are a single device at the camera end "
@@ -142,15 +140,15 @@ class AindInstrumentDataMapper:
                 name=f"Patch Cord {i}",
                 manufacturer=devices.Organization.DORIC,
                 model=TrackedDevicesInfo.PATCH_CORD_MODEL,
-                core_diameter=TrackedDevicesInfo.PATCH_CORD_DIAMETER.value,
-                numerical_aperture=TrackedDevicesInfo.PATCH_CORD_NUMERICAL_APERTURE.value,
+                core_diameter=TrackedDevicesInfo.PATCH_CORD_DIAMETER,
+                numerical_aperture=TrackedDevicesInfo.PATCH_CORD_NUMERICAL_APERTURE,
                 notes=note,
             )
             for i in range(4)
         ]
 
     @staticmethod
-    def _get_light_sources(rig: AindPhysioFipRig) -> List[devices.LightEmittingDiode]:
+    def _get_light_sources(rig: AindPhysioFipRig) -> list[devices.LightEmittingDiode]:
         """Return all LEDs used in the rig."""
         mapping = [
             (LedId.UV, rig.light_source_uv),
@@ -160,7 +158,7 @@ class AindInstrumentDataMapper:
         return [make_led(color, src) for color, src in mapping]
 
     @staticmethod
-    def _get_detectors(rig: AindPhysioFipRig) -> List[devices.Detector]:
+    def _get_detectors(rig: AindPhysioFipRig) -> list[devices.Detector]:
         def _get_detector(cam: FipCamera) -> devices.Detector:
             """Returns the detector"""
             return devices.Detector(
@@ -172,16 +170,16 @@ class AindInstrumentDataMapper:
                 data_interface=devices.DataInterface.USB,
                 cooling=devices.Cooling.AIR,
                 immersion=devices.ImmersionMedium.AIR,
-                bin_width=TrackedDevicesInfo.DETECTOR_BIN_WIDTH.value,
-                bin_height=TrackedDevicesInfo.DETECTOR_BIN_HEIGHT.value,
+                bin_width=TrackedDevicesInfo.DETECTOR_BIN_WIDTH,
+                bin_height=TrackedDevicesInfo.DETECTOR_BIN_HEIGHT,
                 bin_mode=devices.BinMode.ADDITIVE,
                 crop_offset_x=cam.offset.x,
                 crop_offset_y=cam.offset.y,
-                crop_width=TrackedDevicesInfo.DETECTOR_CROP_WIDTH.value,
-                crop_height=TrackedDevicesInfo.DETECTOR_CROP_HEIGHT.value,
+                crop_width=TrackedDevicesInfo.DETECTOR_CROP_WIDTH,
+                crop_height=TrackedDevicesInfo.DETECTOR_CROP_HEIGHT,
                 gain=cam.gain,
                 chroma=devices.CameraChroma.BW,
-                bit_depth=TrackedDevicesInfo.DETECTOR_BIT_DEPTH.value,
+                bit_depth=TrackedDevicesInfo.DETECTOR_BIT_DEPTH,
             )
 
         """Return list of cameras / detectors in the rig."""
@@ -224,7 +222,7 @@ class AindInstrumentDataMapper:
         )
 
     @staticmethod
-    def _get_filters() -> List[devices.Filter]:
+    def _get_filters() -> list[devices.Filter]:
         """Return optical filters used in the rig."""
         return [
             make_filter(fid)

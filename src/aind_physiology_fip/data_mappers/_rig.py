@@ -10,6 +10,7 @@ from typing import List, Optional
 import aind_data_schema.components.devices as devices
 import aind_data_schema.core.instrument as instrument
 from aind_behavior_services.utils import model_from_json_file
+from aind_data_schema.components import coordinates
 from aind_data_schema.components.connections import Connection
 from aind_data_schema_models.modalities import Modality
 
@@ -56,14 +57,14 @@ class AindInstrumentDataMapper:
         connections = [
             Connection(
                 source_device=cuttlefish_device.name,
-                source_port=TrackedDevicesInfo.PORT_COM,
+                source_port=rig.cuttlefish_fip.port_name,
                 target_device=computer.name,
             ),
             Connection(
                 source_device=white_rabbit.name,
                 source_port=TrackedDevicesInfo.PORT_CLOCK,
                 target_device=cuttlefish_device.name,
-                target_port=TrackedDevicesInfo.PORT_COM,
+                target_port=rig.cuttlefish_fip.port_name,
                 send_and_receive=False,
             ),
         ]
@@ -87,17 +88,16 @@ class AindInstrumentDataMapper:
                 all_components.append(item)  # keep single items
 
         # Coordinate system matching behavior (bregma with X/Y/Z axes, not BREGMA_ARI)
-        coordinate_system = {
-            "object_type": "Coordinate system",
-            "name": "origin",
-            "origin": "Bregma",
-            "axes": [
-                {"object_type": "Axis", "name": "X", "direction": "Left_to_right"},
-                {"object_type": "Axis", "name": "Y", "direction": "Anterior_to_posterior"},
-                {"object_type": "Axis", "name": "Z", "direction": "Inferior_to_superior"},
+        coordinate_system = coordinates.CoordinateSystem(
+            name="origin",
+            origin=coordinates.Origin.BREGMA,
+            axis_unit=coordinates.SizeUnit.MM,
+            axes=[
+                coordinates.Axis(name=coordinates.AxisName.X, direction=coordinates.Direction.LR),
+                coordinates.Axis(name=coordinates.AxisName.Y, direction=coordinates.Direction.AP),
+                coordinates.Axis(name=coordinates.AxisName.Z, direction=coordinates.Direction.IS),
             ],
-            "axis_unit": "millimeter",
-        }
+        )
 
         return instrument.Instrument(
             instrument_id=rig.rig_name,

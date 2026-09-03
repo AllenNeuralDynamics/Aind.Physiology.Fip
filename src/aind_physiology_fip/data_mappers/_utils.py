@@ -33,7 +33,6 @@ class TrackedDevicesInfo(enum.Enum):
     DETECTOR_BIT_DEPTH = 16
 
     # Ports
-    PORT_COM = "COM14"
     PORT_CLOCK = "ClkOut"
 
     # Patch cord

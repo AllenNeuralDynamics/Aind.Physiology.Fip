@@ -13,7 +13,7 @@ Bonsai.exe.WebView2
 *.bonsai.layout
 local
 *.snl
-bonsai/settings/
+.bonsai/Settings/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -91,3 +91,6 @@ ipython_config.py
 
 # venv files 
 .venv
+
+# C# solution files
+*.sln

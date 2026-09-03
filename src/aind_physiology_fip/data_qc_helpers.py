@@ -1,5 +1,3 @@
-import typing as t
-
 import matplotlib
 import matplotlib.figure
 import matplotlib.pyplot as plt
@@ -9,9 +7,7 @@ import pandas as pd
 channel_colors = {"green": "green", "iso": "purple", "red": "red"}
 
 
-def plot_sensor_floor(
-    background_ch: t.Union[pd.Series, np.ndarray], channel: str
-) -> t.Tuple[matplotlib.figure.Figure, float]:
+def plot_sensor_floor(background_ch: pd.Series | np.ndarray, channel: str) -> tuple[matplotlib.figure.Figure, float]:
     """
     Plot histograms for sensor floor values of three channels.
     """

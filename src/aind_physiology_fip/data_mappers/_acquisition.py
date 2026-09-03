@@ -28,14 +28,15 @@ Example:
     >>> print(acquisition.model_dump_json(indent=4))
 """
 
+import json
 import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
 import pydantic
-from aind_behavior_services.session import AindBehaviorSessionModel
+from aind_behavior_services.session import Session
 from pandas import DataFrame
 
 from aind_physiology_fip.data_contract import dataset
@@ -62,7 +63,7 @@ class ProtoAcquisitionDataSchema(pydantic.BaseModel):
         data_stream_metadata (list[_FipDataStreamMetadata]): List of
             metadata objects for each data stream in the acquisition,
             including timing information. Must contain at least one entry.
-        session (AindBehaviorSessionModel): The behavior session metadata
+        session (Session): The behavior session metadata
             that instantiated this acquisition.
         rig (AindPhysioFipRig): The FIP rig configuration metadata that
             was used for this acquisition.
@@ -72,9 +73,7 @@ class ProtoAcquisitionDataSchema(pydantic.BaseModel):
         min_length=1,
         description="Metadata for each data stream in the acquisition.",
     )
-    session: AindBehaviorSessionModel = pydantic.Field(
-        description="The session information that instantiated the acquisition."
-    )
+    session: Session = pydantic.Field(description="The session information that instantiated the acquisition.")
     rig: AindPhysioFipRig = pydantic.Field(description="The rig configuration that instantiated the acquisition.")
 
 
@@ -177,10 +176,11 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
         """
         Extract timing metadata from all FIP acquisition epochs.
 
-        Processes each epoch directory to extract start and end timestamps
-        from candidate data streams. This method attempts to read timing
-        information from camera metadata streams and creates a metadata
-        object for each successfully processed stream.
+        For each epoch, attempts to read start/end times from the
+        ``SoftwareEvents/StartSessionTime.json`` and
+        ``SoftwareEvents/EndSessionTime.json`` JSON-lines files (primary).
+        Falls back to inferring times from camera CSV metadata streams if
+        the software-event files are unavailable (legacy backup).
 
         Args:
             epochs (list[Path]): List of Path objects pointing to FIP
@@ -188,64 +188,137 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
 
         Returns:
             list[_FipDataStreamMetadata]: List of metadata objects
-                containing timing information for each processed data
-                stream.
+                containing timing information for each processed epoch.
 
         Note:
             Failed epochs are logged as warnings and skipped, allowing
             partial processing of multi-epoch acquisitions.
         """
         data_streams = []
-        # List of camera metadata streams to check for timing information
-        _candidate_streams = [
-            "camera_green_iso_metadata",
-            "camera_red_metadata",
-        ]
         for epoch in epochs:
             # Skip non-directory entries
             if not epoch.is_dir():
                 continue
+
+            # Primary: read from SoftwareEvents JSON-lines files
             try:
-                # Load the dataset for this epoch
+                start_utc, end_utc = ProtoAcquisitionMapper._extract_times_from_software_events(epoch)
+                data_streams.append(
+                    _FipDataStreamMetadata(
+                        id=epoch.name,
+                        start_time=start_utc,
+                        end_time=end_utc,
+                    )
+                )
+                continue
+            except Exception as e:  # noqa: BLE001
+                logger.warning(f"SoftwareEvents timing unavailable at {epoch}, falling back to CSV: {e}")
+
+            # Fallback: infer times from camera metadata CSV streams
+            _candidate_streams = [
+                "camera_green_iso_metadata",
+                "camera_red_metadata",
+            ]
+            try:
                 this_epoch = dataset(root=epoch)
                 for stream in _candidate_streams:
-                    logger.debug(f"Checking for timing in stream: {stream}")
-                    # Extract start/end times from the stream DataFrame
-                    start_utc, end_utc = ProtoAcquisitionMapper._extract_from_df(
-                        cast(DataFrame, this_epoch[stream].read())
-                    )
-                    # Create metadata object for this data stream
-                    data_streams.append(
-                        _FipDataStreamMetadata(
-                            id=epoch.name,
-                            start_time=start_utc,
-                            end_time=end_utc,
+                    try:
+                        logger.debug(f"Checking for timing in stream: {stream}")
+                        start_utc, end_utc = ProtoAcquisitionMapper._extract_from_df(
+                            cast(DataFrame, this_epoch[stream].read())
                         )
-                    )
-            except Exception as e:
-                # Log warning but continue processing other epochs
+                        data_streams.append(
+                            _FipDataStreamMetadata(
+                                id=epoch.name,
+                                start_time=start_utc,
+                                end_time=end_utc,
+                            )
+                        )
+                        break  # One stream is enough to establish epoch timing
+                    except Exception as e:  # noqa: BLE001
+                        logger.debug(f"Stream '{stream}' unavailable at {epoch}: {e}")
+            except Exception as e:  # noqa: BLE001
                 logger.warning(f"Failed to load FIP dataset at {epoch}: {e}")
-                continue
+
         return data_streams
+
+    @staticmethod
+    def _extract_times_from_software_events(epoch: Path) -> tuple[datetime, datetime]:
+        """
+        Extract start and end times from the SoftwareEvents JSON-lines files.
+
+        Reads the last entry of ``SoftwareEvents/StartSessionTime.json`` and
+        ``SoftwareEvents/EndSessionTime.json`` within the epoch directory and
+        parses the ``data`` field as an ISO 8601 datetime.
+
+        Args:
+            epoch (Path): Path to the FIP epoch directory.
+
+        Returns:
+            tuple[datetime, datetime]: A tuple of (start_time, end_time).
+
+        Raises:
+            FileNotFoundError: If either JSON-lines file does not exist.
+            ValueError: If a file is empty or the ``data`` field is missing.
+        """
+        start_path = epoch / "SoftwareEvents" / "StartSessionTime.json"
+        end_path = epoch / "SoftwareEvents" / "EndSessionTime.json"
+        start_time = ProtoAcquisitionMapper._read_last_software_event_datetime(start_path)
+        end_time = ProtoAcquisitionMapper._read_last_software_event_datetime(end_path)
+        return start_time, end_time
+
+    @staticmethod
+    def _read_last_software_event_datetime(path: Path) -> datetime:
+        """
+        Parse the datetime from the last entry of a software-events JSON-lines file.
+
+        Each line in the file is a JSON object; the ``data`` field of the last
+        non-empty line is interpreted as an ISO 8601 datetime string.
+
+        Args:
+            path (Path): Path to the JSON-lines file.
+
+        Returns:
+            datetime: Parsed datetime from the ``data`` field of the last entry.
+
+        Raises:
+            FileNotFoundError: If the file does not exist.
+            ValueError: If the file contains no valid entries or the ``data``
+                field is absent.
+        """
+        if not path.exists():
+            raise FileNotFoundError(f"Software events file not found: {path}")
+        last_line: str | None = None
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                stripped = line.strip()
+                if stripped:
+                    last_line = stripped
+        if last_line is None:
+            raise ValueError(f"No entries found in {path}")
+        event = json.loads(last_line)
+        if "data" not in event:
+            raise ValueError(f"Missing 'data' field in last entry of {path}")
+        return datetime.fromisoformat(event["data"])
 
     @staticmethod
     def _extract_from_df(df: DataFrame) -> tuple[datetime, datetime]:
         """
-        Extract start and end timestamps from a DataFrame.
+        Extract start and end timestamps from a camera-metadata DataFrame.
 
-        Retrieves the first and last CpuTime entries from a metadata
-        DataFrame to determine the temporal boundaries of data collection.
+        Retrieves the first and last ``CpuTime`` entries to determine the
+        temporal boundaries of data collection.
 
         Args:
-            df (DataFrame): Pandas DataFrame containing a 'CpuTime' column
-                with ISO format datetime strings.
+            df (DataFrame): Pandas DataFrame containing a ``CpuTime`` column
+                with ISO 8601 datetime strings.
 
         Returns:
             tuple[datetime, datetime]: A tuple containing the start time
                 (first entry) and end time (last entry).
 
         Raises:
-            ValueError: If the DataFrame is None or empty.
+            ValueError: If the DataFrame is ``None`` or empty.
         """
         if df is None or df.empty:
             raise ValueError("DataFrame is None or empty.")
@@ -257,7 +330,7 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
     @staticmethod
     def _extract_session_and_rig(
         epochs: list[Path],
-    ) -> tuple[AindBehaviorSessionModel, AindPhysioFipRig]:
+    ) -> tuple[Session, AindPhysioFipRig]:
         """
         Extract session and rig configuration from acquisition epochs.
 
@@ -270,15 +343,15 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
                 epoch directories to search.
 
         Returns:
-            tuple[AindBehaviorSessionModel, AindPhysioFipRig]: A tuple
+            tuple[Session, AindPhysioFipRig]: A tuple
                 containing the session model and rig configuration.
 
         Raises:
             ValueError: If no valid session_input or rig_input is found
                 in any of the provided epochs.
         """
-        session: Optional[AindBehaviorSessionModel] = None
-        rig: Optional[AindPhysioFipRig] = None
+        session: Session | None = None
+        rig: AindPhysioFipRig | None = None
         for epoch in epochs:
             # Skip non-directory entries
             if not epoch.is_dir():
@@ -290,14 +363,14 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
             if session is None:
                 try:
                     session = _dataset["session_input"].read()
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     logger.debug(f"No session_input found in dataset at {epoch}: {e}")
 
             # Try to extract rig configuration if not already found
             if rig is None:
                 try:
                     rig = _dataset["rig_input"].read()
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     logger.debug(f"No rig_input found in dataset at {epoch}: {e}")
                     continue
 

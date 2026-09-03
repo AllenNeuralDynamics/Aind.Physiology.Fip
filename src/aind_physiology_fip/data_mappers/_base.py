@@ -1,5 +1,5 @@
 import abc
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 TMapTo = TypeVar("TMapTo")
 
@@ -12,7 +12,7 @@ class DataMapper(abc.ABC, Generic[TMapTo]):
     target formats or schemas.
     """
 
-    _mapped: Optional[TMapTo]
+    _mapped: TMapTo | None
 
     @abc.abstractmethod
     def map(self) -> TMapTo:
@@ -22,7 +22,6 @@ class DataMapper(abc.ABC, Generic[TMapTo]):
         Returns:
             The mapped data object
         """
-        pass
 
     def is_mapped(self) -> bool:
         """

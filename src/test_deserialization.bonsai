@@ -12,7 +12,7 @@
       </Expression>
       <Expression xsi:type="IncludeWorkflow" Path="Extensions\ReadSchemas.bonsai">
         <RigPath>..\local\AindPhysioFipRig.json</RigPath>
-        <SessionPath>..\local\AindBehaviorSessionModel.json</SessionPath>
+        <SessionPath>..\local\Session.json</SessionPath>
       </Expression>
       <Expression xsi:type="SubscribeSubject">
         <Name>RawRigSchema</Name>
@@ -30,7 +30,7 @@
         <Name>RawSessionSchema</Name>
       </Expression>
       <Expression xsi:type="p1:DeserializeFromJson">
-        <p1:Type xsi:type="TypeMapping" TypeArguments="p1:AindBehaviorSessionModel" />
+        <p1:Type xsi:type="TypeMapping" TypeArguments="p1:Session" />
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="p1:SerializeToJson" />

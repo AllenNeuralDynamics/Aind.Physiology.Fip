@@ -16,8 +16,7 @@ The FIP (Frame-projected Independent Photometry) system is a low-cost, scalable 
 
 For more information, see the [AIND Fiber Photometry Platform Page](https://www.allenneuraldynamics.org/platforms/fiber-photometry) and the following protocols:  
 
-* Protocol for system assembly: <https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2>
-* Protocol for system triggering setup: <https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2>
+* [Protocol for system assembly](https://www.protocols.io/view/modified-frame-projected-independent-fiber-photome-261ge39edl47/v2)
 
 ## Wavelength Information
 
@@ -81,7 +80,7 @@ See [wiki](https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/wiki) for 
 ### Installation Steps
 
 1. Clone this repository
-2. Create the environments for Bonsai, run `./bonsai/setup.cmd` (can be by double-clickin it too). This is required to run experiments using the Bonsai script in an experimental PC.
+2. Create the environments for Bonsai, run `./.bonsai/setup.cmd` (can be by double-clickin it too). This is required to run experiments using the Bonsai script in an experimental PC.
 3. [Optional] Create the environments for Python, run `uv venv` if using uv, or create a virtual environment using your preferred method. This is only used to run the Python script generating configuration files. (rig PCs can inherit those files from somewhere else)
  * Alternatively, if you are using uv, run `./scripts/deploy.ps1` to bootstrap a Python and Bonsai environment at the same time for the project automatically.
 
@@ -92,15 +91,15 @@ The current pipeline relies on two input configuration files. These configure th
 Briefly:
 
 ```python
-from aind_behavior_services.session import AindBehaviorSessionModel
+from aind_behavior_services.session import Session
 from aind_physiology_fip.rig import AindPhysioFipRig
 
 this_rig = AindPhysioFipRig(...)
-this_session = AindBehaviorSessionModel(...)
+this_session = Session(...)
 
 for model in [this_session, this_rig]:
- with open(model.__class__.__name__ + ".json", "w", encoding="utf-8") as f:
-  f.write(model.model_dump_json(indent=2))
+    with open(model.__class__.__name__ + ".json", "w", encoding="utf-8") as f:
+        f.write(model.model_dump_json(indent=2))
 ```
 
 ### Running the acquisition
@@ -109,14 +108,14 @@ for model in [this_session, this_rig]:
 
 Acquisition is done through Bonsai via a single entry-point workflow. As any Bonsai workflow, one can run the acquisition workflow via the editor:
 
-* Open Bonsai from the bootstrapped environment in `./bonsai/bonsai.exe`
+* Open Bonsai from the bootstrapped environment in `./.bonsai/bonsai.exe`
 * Open the workflow file `./src/main.bonsai`
 * Manually set the two highest level properties `RigPath` and `SessionPath` to the paths of the configuration files generated in the [previous step](#generating-input-configurations).
 * Launch the workflow by clicking the "Run" button in the Bonsai editor.
 * Settings in FipRig.json such as `camera_green_iso` `serial_number` and `cuttlefish_fip` `port_name` needs to be modified per PC for Bonsai to detect those hardware.
 
 > [!Important]
-> `AindBehaviorSessionModel.allow_dirty` property will be checked at the start of the workflow. If set to `False` the workflow will immediately throw an error and stop execution if the repository has uncommitted changes. If the user intends to run the workflow with a dirty repository, they should set this property to `True` in the session configuration file.
+> `Session.allow_dirty` property will be checked at the start of the workflow. If set to `False` the workflow will immediately throw an error and stop execution if the repository has uncommitted changes. If the user intends to run the workflow with a dirty repository, they should set this property to `True` in the session configuration file.
 
 #### Running via CLI
 
@@ -124,7 +123,7 @@ The workflow can be launched via the Bonsai Command Line Interface (CLI). Additi
 To run the acquisition workflow using the CLI, use the following command:
 
 ```bash
-"./bonsai/bonsai.exe" "./src/main.bonsai" -p RigPath="../path/to/rig.json" -p SessionPath="../path/to/session.json"
+"./.bonsai/bonsai.exe" "./src/main.bonsai" -p RigPath="../path/to/rig.json" -p SessionPath="../path/to/session.json"
 ```
 
 > [!Note]

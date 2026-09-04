@@ -1,27 +1,39 @@
 """Utility constants and factories for rigs and device configurations."""
 
 import enum
+from typing import NamedTuple
 
 from aind_data_schema.components import devices
 from aind_data_schema_models import units
-
-from aind_physiology_fip.rig import LightSource
 
 # -------------------------------
 # Device constants
 # -------------------------------
 
 
-class TrackedDevicesInfo:
-    # Computer
+class TrackedDeviceName(enum.StrEnum):
+    """Names of the devices that the rig schema does not track.
+
+    ``aind_behavior_services.rig.Device`` carries no ``name`` field, so the instrument
+    metadata has to name these devices manually. The values must match the reference FIP
+    instrument, since they are the identifiers that ``Connection`` objects refer to.
+    """
+
     COMPUTER = "computer"
+    CLOCK_GENERATOR = "harp_clock_generator"
+    CUTTLEFISH = "cuTTLefishFip"
+    CAMERA_GREEN_ISO = "Green CMOS"
+    CAMERA_RED = "Red CMOS"
+    LED_UV = "415nm LED"
+    LED_BLUE = "470nm LED"
+    LED_LIME = "565nm LED"
+    LENS = "Image focusing lens"
+    OBJECTIVE = "Objective"
 
+
+class TrackedDevicesInfo:
     # Lens
-    LENS_NAME = "Image focusing lens"
     LENS_MODEL = "AC254-080-A-ML"
-
-    # Clock
-    WHITE_RABBIT_DEVICE_NAME = "harp_clock_generator"
 
     # Detector
     DETECTOR_BIN_WIDTH = 4
@@ -147,20 +159,32 @@ class LedId(enum.Enum):
     LIME = enum.auto()
 
 
-LED_SPECS: dict[LedId, dict[str, str]] = {
-    LedId.UV: {"manufacturer": devices.Organization.THORLABS, "model": "M470F3"},
-    LedId.BLUE: {"manufacturer": devices.Organization.THORLABS, "model": "M415F3"},
-    LedId.LIME: {"manufacturer": devices.Organization.THORLABS, "model": "M565F3"},
+class LedSpec(NamedTuple):
+    """Fixed properties of one of the rig's LEDs.
+
+    The Thorlabs part numbers encode the emission wavelength, so ``model`` and
+    ``wavelength`` always agree (e.g. ``M415F3`` emits at 415 nm).
+    """
+
+    name: TrackedDeviceName
+    model: str
+    wavelength: int
+
+
+LED_SPECS: dict[LedId, LedSpec] = {
+    LedId.UV: LedSpec(TrackedDeviceName.LED_UV, "M415F3", 415),
+    LedId.BLUE: LedSpec(TrackedDeviceName.LED_BLUE, "M470F3", 470),
+    LedId.LIME: LedSpec(TrackedDeviceName.LED_LIME, "M565F3", 565),
 }
 
 
-def make_led(color: LedId, src: LightSource) -> devices.LightEmittingDiode:
-    """Construct a LightEmittingDiode from a color enum and a rig light source."""
+def make_led(color: LedId) -> devices.LightEmittingDiode:
+    """Construct a LightEmittingDiode from a color enum."""
     spec = LED_SPECS[color]
     return devices.LightEmittingDiode(
-        name=src.name,
-        manufacturer=spec["manufacturer"],
-        model=spec["model"],
-        wavelength=int(src.power),
+        name=spec.name,
+        manufacturer=devices.Organization.THORLABS,
+        model=spec.model,
+        wavelength=spec.wavelength,
         wavelength_unit=units.SizeUnit.NM,
     )

@@ -12,7 +12,14 @@ from aind_data_schema.components.connections import Connection
 from aind_data_schema.core import instrument
 from aind_data_schema_models.modalities import Modality
 
-from aind_physiology_fip.data_mappers._utils import FilterId, LedId, TrackedDevicesInfo, make_filter, make_led
+from aind_physiology_fip.data_mappers._utils import (
+    FilterId,
+    LedId,
+    TrackedDeviceName,
+    TrackedDevicesInfo,
+    make_filter,
+    make_led,
+)
 from aind_physiology_fip.rig import AindPhysioFipRig, FipCamera
 
 logger = logging.getLogger(__name__)
@@ -44,11 +51,11 @@ class AindInstrumentDataMapper:
 
         computer = cls._get_computer(rig)
         patch_coords = cls._get_fiber_patch_cords()
-        light_sources = cls._get_light_sources(rig)
+        light_sources = cls._get_light_sources()
         detectors = cls._get_detectors(rig)
         filters = cls._get_filters()
         lens = cls._get_lens()
-        cuttlefish_device = cls._get_cuttlefish_device(rig)
+        cuttlefish_device = cls._get_cuttlefish_device()
         white_rabbit = cls._get_white_rabbit_device()
         objective = cls._get_objective()
 
@@ -110,7 +117,7 @@ class AindInstrumentDataMapper:
     def _get_objective() -> devices.Objective:
         return devices.Objective(
             model=TrackedDevicesInfo.OBJECTIVE_MODEL,
-            name="Objective",
+            name=TrackedDeviceName.OBJECTIVE,
             serial_number=TrackedDevicesInfo.OBJECTIVE_SERIAL_NUMBER,
             manufacturer=devices.Organization.NIKON,
             numerical_aperture=TrackedDevicesInfo.OBJECTIVE_NUMERICAL_APERTURE,
@@ -122,7 +129,7 @@ class AindInstrumentDataMapper:
     def _get_computer(rig: AindPhysioFipRig) -> devices.Computer:
         """Gets the computer metadata"""
         return devices.Computer(
-            name=TrackedDevicesInfo.COMPUTER,
+            name=TrackedDeviceName.COMPUTER,
             manufacturer=devices.Organization.AIND,
             operating_system=platform.platform(),
             serial_number=rig.computer_name,
@@ -148,21 +155,18 @@ class AindInstrumentDataMapper:
         ]
 
     @staticmethod
-    def _get_light_sources(rig: AindPhysioFipRig) -> list[devices.LightEmittingDiode]:
+    def _get_light_sources() -> list[devices.LightEmittingDiode]:
         """Return all LEDs used in the rig."""
-        mapping = [
-            (LedId.UV, rig.light_source_uv),
-            (LedId.BLUE, rig.light_source_blue),
-            (LedId.LIME, rig.light_source_lime),
-        ]
-        return [make_led(color, src) for color, src in mapping]
+        return [make_led(color) for color in LedId]
 
     @staticmethod
     def _get_detectors(rig: AindPhysioFipRig) -> list[devices.Detector]:
-        def _get_detector(cam: FipCamera) -> devices.Detector:
+        """Return list of cameras / detectors in the rig."""
+
+        def _get_detector(name: TrackedDeviceName, cam: FipCamera) -> devices.Detector:
             """Returns the detector"""
             return devices.Detector(
-                name=cam.name,
+                name=name,
                 serial_number=cam.serial_number,
                 manufacturer=devices.Organization.FLIR,
                 model=TrackedDevicesInfo.DETECTOR_MODEL,
@@ -182,18 +186,16 @@ class AindInstrumentDataMapper:
                 bit_depth=TrackedDevicesInfo.DETECTOR_BIT_DEPTH,
             )
 
-        """Return list of cameras / detectors in the rig."""
-        detectors = []
-        for cam_attr in ["camera_red", "camera_green_iso"]:
-            cam: FipCamera = getattr(rig, cam_attr)
-            detectors.append(_get_detector(cam))
-        return detectors
+        return [
+            _get_detector(TrackedDeviceName.CAMERA_RED, rig.camera_red),
+            _get_detector(TrackedDeviceName.CAMERA_GREEN_ISO, rig.camera_green_iso),
+        ]
 
     @staticmethod
     def _get_white_rabbit_device() -> devices.HarpDevice:
         """Gets the white rabbit device"""
         return devices.HarpDevice(
-            name=TrackedDevicesInfo.WHITE_RABBIT_DEVICE_NAME,
+            name=TrackedDeviceName.CLOCK_GENERATOR,
             harp_device_type=devices.HarpDeviceType.WHITERABBIT,
             manufacturer=devices.Organization.AIND,
             is_clock_generator=True,
@@ -203,11 +205,12 @@ class AindInstrumentDataMapper:
         )
 
     @staticmethod
-    def _get_cuttlefish_device(rig: AindPhysioFipRig) -> devices.HarpDevice:
+    def _get_cuttlefish_device() -> devices.HarpDevice:
         """Gets the cuttlefish device"""
         return devices.HarpDevice(
-            name=rig.cuttlefish_fip.name,
+            name=TrackedDeviceName.CUTTLEFISH,
             harp_device_type=devices.HarpDeviceType.CUTTLEFISHFIP,
+            manufacturer=devices.Organization.OEPS,
             is_clock_generator=False,
             data_interface=devices.DataInterface.USB,
         )
@@ -218,7 +221,7 @@ class AindInstrumentDataMapper:
         return devices.Lens(
             manufacturer=devices.Organization.THORLABS,
             model=TrackedDevicesInfo.LENS_MODEL,
-            name=TrackedDevicesInfo.LENS_NAME,
+            name=TrackedDeviceName.LENS,
         )
 
     @staticmethod

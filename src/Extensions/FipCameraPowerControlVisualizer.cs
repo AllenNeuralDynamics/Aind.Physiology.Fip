@@ -134,13 +134,13 @@ public class FipCameraPowerControlVisualizer
                             }
 
                             // Uncalibrated DutyCycleToPower is just the unity LUT, so show that
-                            // case as a percentage rather than fake mW.
+                            // case as a percentage rather than fake microwatts.
                             if (lightSource != null)
                             {
                                 var realPower = lightSource.DutyCycleToPower.Interpolate(row.Power);
                                 var isCalibrated = lightSource.LightSource != null && lightSource.LightSource.Calibration != null;
                                 var readout = isCalibrated
-                                    ? realPower.ToString("F3") + " mW"
+                                    ? (realPower * 1000).ToString("F1") + " \u00B5W"
                                     : (realPower * 100).ToString("F1") + "%";
                                 ImGui.TextUnformatted(readout);
                             }

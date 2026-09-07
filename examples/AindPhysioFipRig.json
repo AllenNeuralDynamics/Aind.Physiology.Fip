@@ -1,9 +1,9 @@
 {
-  "aind_behavior_services_pkg_version": "0.13.0",
-  "version": "0.3.1-rc1",
+  "aind_behavior_services_pkg_version": "0.13.8",
+  "version": "0.3.1-rc2",
   "computer_name": "test_computer",
   "rig_name": "test_rig",
-  "data_directory": "C:\\data",
+  "data_directory": "C:/data",
   "camera_green_iso": {
     "device_type": "FipCamera",
     "calibration": null,

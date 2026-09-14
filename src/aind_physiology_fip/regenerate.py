@@ -7,7 +7,7 @@ from aind_behavior_services.session import Session
 
 from aind_physiology_fip import rig
 
-SCHEMA_ROOT = Path("./src/DataSchemas/")
+SCHEMA_ROOT = Path("./schema/")
 EXTENSIONS_ROOT = Path("./src/Extensions/")
 NAMESPACE_PREFIX = "AindPhysiologyFip"
 

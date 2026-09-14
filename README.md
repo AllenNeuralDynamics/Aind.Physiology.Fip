@@ -75,7 +75,7 @@ See [wiki](https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/wiki) for 
 * [Visual C++ Redistributable for Visual Studio 2012](https://www.microsoft.com/en-us/download/details.aspx?id=30679) (native dependency for OpenCV)
 * [Spinnaker SDK 1.29.0.5](https://www.teledynevisionsolutions.com/support/support-center/software-firmware-downloads/iis/spinnaker-sdk-download/spinnaker-sdk--download-files/#anchor6) (device drivers for FLIR cameras)
  * On FLIR website: `Download > archive > 1.29.0.5 > SpinnakerSDK_FULL_1.29.0.5_x64.exe`
-* [Optional] [UV Python environment manager](https://docs.astral.sh/uv/getting-started/installation/) (highly recommended for managing the Python environment for this project. All examples will assume usage of `uv`. Alternatively, you can use other environment managers such as `venv` or `conda` to create a Python environment and install the required dependencies listed in the package metadata: `pyproject.toml`)
+* (Optional) [UV Python environment manager](https://docs.astral.sh/uv/getting-started/installation/) (highly recommended for managing the Python environment for this project. All examples will assume usage of `uv`. Alternatively, you can use other environment managers such as `venv` or `conda` to create a Python environment and install the required dependencies listed in the package metadata: `pyproject.toml`)
 
 ### Installation Steps
 
@@ -110,7 +110,7 @@ Acquisition is done through Bonsai via a single entry-point workflow. As any Bon
 
 * Open Bonsai from the bootstrapped environment in `./.bonsai/bonsai.exe`
 * Open the workflow file `./src/main.bonsai`
-* Manually set the two highest level properties `RigPath` and `SessionPath` to the paths of the configuration files generated in the [previous step](#generating-input-configurations).
+* Manually set the two highest level properties `RigPath` and `SessionPath` to the paths of the configuration files generated in the [previous step](#generating-input-configurations-optional).
 * Launch the workflow by clicking the "Run" button in the Bonsai editor.
 * Settings in FipRig.json such as `camera_green_iso` `serial_number` and `cuttlefish_fip` `port_name` needs to be modified per PC for Bonsai to detect those hardware.
 

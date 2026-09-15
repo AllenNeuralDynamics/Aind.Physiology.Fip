@@ -1,6 +1,8 @@
 """Utility constants and factories for rigs and device configurations."""
 
 import enum
+import json
+from pathlib import Path
 from typing import NamedTuple
 
 from aind_data_schema.components import devices
@@ -19,7 +21,6 @@ class TrackedDeviceName(enum.StrEnum):
     instrument, since they are the identifiers that ``Connection`` objects refer to.
     """
 
-    COMPUTER = "computer"
     CLOCK_GENERATOR = "harp_clock_generator"
     CUTTLEFISH = "cuTTLefishFip"
     CAMERA_GREEN_ISO = "Green CMOS"
@@ -35,13 +36,11 @@ class TrackedDevicesInfo:
     # Lens
     LENS_MODEL = "AC254-080-A-ML"
 
-    # Detector
+    # Detector. Crop size and bit depth are not tracked here: they are read per epoch from the
+    # <channel>_metadata.json files that FipWriter.cs records for the frames actually acquired.
     DETECTOR_BIN_WIDTH = 4
     DETECTOR_BIN_HEIGHT = 4
     DETECTOR_MODEL = "BFS-U3-20S40M"
-    DETECTOR_CROP_WIDTH = 200
-    DETECTOR_CROP_HEIGHT = 200
-    DETECTOR_BIT_DEPTH = 16
 
     # Ports
     PORT_CLOCK = "ClkOut"
@@ -188,3 +187,66 @@ def make_led(color: LedId) -> devices.LightEmittingDiode:
         wavelength=spec.wavelength,
         wavelength_unit=units.SizeUnit.NM,
     )
+
+
+# -------------------------------
+# Detector frame metadata
+# -------------------------------
+
+
+def snap_to_grid(value: float, step: int) -> int:
+    """Round a requested crop offset onto the binning grid actually applied by the camera.
+
+    ``FipSpinnakerCapture.SnapToGrid`` does ``Math.Round(value / step) * step`` because
+    Spinnaker rejects offsets that are not multiples of the binning factor. The rig records
+    the *requested* offset, so mirror that arithmetic to record what the sensor really used.
+    """
+    return round(value / step) * step
+
+
+# Channels written by ``FipWriter.cs``, grouped by the camera that acquired them.
+CAMERA_CHANNELS: dict[TrackedDeviceName, tuple[str, ...]] = {
+    TrackedDeviceName.CAMERA_GREEN_ISO: ("green", "iso"),
+    TrackedDeviceName.CAMERA_RED: ("red",),
+}
+
+DEPTH_TO_BIT_DEPTH = {"U8": 8, "U16": 16}
+
+
+class FrameMetadata(NamedTuple):
+    """Crop geometry and bit depth as actually written out for a channel."""
+
+    crop_width: int
+    crop_height: int
+    bit_depth: int
+
+
+def read_frame_metadata(epoch: Path, channel: str) -> FrameMetadata:
+    """Read the crop geometry and bit depth ``FipWriter.cs`` recorded for one channel."""
+    path = epoch / f"{channel}_metadata.json"
+    if not path.is_file():
+        raise FileNotFoundError(f"No frame metadata at {path}; cannot determine the detector crop and bit depth.")
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    missing = [key for key in ("Width", "Height", "Depth") if key not in raw]
+    if missing:
+        raise ValueError(f"{path} is missing required field(s): {', '.join(missing)}")
+    depth = raw["Depth"]
+    if depth not in DEPTH_TO_BIT_DEPTH:
+        raise ValueError(f"{path} has unsupported Depth {depth!r}, expected one of {sorted(DEPTH_TO_BIT_DEPTH)}")
+    return FrameMetadata(raw["Width"], raw["Height"], DEPTH_TO_BIT_DEPTH[depth])
+
+
+def camera_frame_metadata(epoch: Path, camera: TrackedDeviceName) -> FrameMetadata:
+    """Frame metadata for one camera, which may have written a file per channel.
+
+    The green/iso camera writes both ``green_metadata.json`` and ``iso_metadata.json``. They
+    describe a single detector, so every channel must be present and they must agree; there is
+    no value the mapper would be entitled to pick if they did not.
+    """
+    found = {channel: read_frame_metadata(epoch, channel) for channel in CAMERA_CHANNELS[camera]}
+    if len(set(found.values())) > 1:
+        detail = "; ".join(
+            f"{channel}={m.crop_width}x{m.crop_height}@{m.bit_depth}-bit" for channel, m in sorted(found.items())
+        )
+        raise ValueError(f"Frame metadata for {camera} disagrees between channels in {epoch}: {detail}")
+    return next(iter(found.values()))

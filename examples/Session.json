@@ -1,6 +1,6 @@
 {
-  "aind_behavior_services_pkg_version": "0.13.0",
-  "version": "0.13.0",
+  "aind_behavior_services_pkg_version": "0.13.8",
+  "version": "0.13.8",
   "experiment": "AindPhysioFip",
   "experimenter": [
     "Foo",

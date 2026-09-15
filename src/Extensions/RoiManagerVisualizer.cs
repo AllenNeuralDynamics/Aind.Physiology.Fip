@@ -317,6 +317,22 @@ public class RoiManagerVisualizer
             ResetToDefault(red);
             changed = true;
         }
+
+        // Non-interactive warning badge: appears when the two cameras have different ROI counts.
+        var greenRoiCount = greenIso.Rois.Count;
+        var redRoiCount = red.Rois.Count;
+        if (greenRoiCount != redRoiCount)
+        {
+            ImGui.SameLine();
+            var warningColor = new Vector4(0.80f, 0.08f, 0.08f, 1f);
+            ImGui.PushStyleColor(ImGuiCol.Button, warningColor);
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, warningColor);
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, warningColor);
+            ImGui.Button(
+                "⚠ ROI mismatch: Green/Iso has " + greenRoiCount + ", Red has " + redRoiCount + "##RoiMismatch",
+                new Vector2(0f, buttonSize.Y));
+            ImGui.PopStyleColor(3);
+        }
     }
 
     static bool ConfirmPopup(string id, string message)

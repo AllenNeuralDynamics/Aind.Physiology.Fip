@@ -11,7 +11,7 @@ authors = [
 ]
 license = { text = "MIT" }
 requires-python = ">=3.11"
-version = "0.3.1rc1"
+version = "0.3.2"
 readme = { file = "README.md", content-type = "text/markdown" }
 classifiers = [
     "Programming Language :: Python :: 3.11",
@@ -43,13 +43,14 @@ dev = [
 ]
 
 docs = [
-    'Sphinx',
-    'furo',
-    'sphinx-jinja',
-    'autodoc_pydantic[erdantic]',
-    'sphinx-jsonschema',
-    'sphinx-copybutton',
-    "sphinx_mdinclude",
+    'mkdocs',
+    'mkdocs-material',
+    'mkdocstrings[python]',
+    'griffe-pydantic',
+    'mkdocs-autorefs>=1.4.4',
+    'griffe-typingdoc>=0.3.1',
+    'pymdown-extensions',
+    "aind-physiology-fip[data]",
 ]
 
 [project.scripts]
@@ -66,7 +67,7 @@ mccabe = { max-complexity = 14 }
 pydocstyle = { convention = 'google' }
 
 [tool.codespell]
-skip = '.git,*.pdf,*.svg,./.bonsai,*.bonsai,./docs/_build,uv.lock'
+skip = '.git,*.pdf,*.svg,./.bonsai,*.bonsai,./site,uv.lock'
 ignore-words-list = 'nd'
 
 [tool.uv]

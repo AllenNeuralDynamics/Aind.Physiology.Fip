@@ -128,7 +128,8 @@ class AindInstrumentDataMapper:
         for epoch in epochs:
             try:
                 return epoch, dataset(root=epoch)["rig_input"].read()
-            except Exception as e:  
+            except (OSError, ValueError, KeyError) as e:
+                # Missing file, malformed JSON or a rig that fails validation: try the next epoch.
                 logger.debug("No readable rig_input in %s: %s", epoch, e)
         raise ValueError(f"No readable rig_input.json in any FIP epoch under {root_path}.")
 

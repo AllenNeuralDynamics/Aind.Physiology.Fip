@@ -228,11 +228,6 @@ def dataset(root: os.PathLike) -> Dataset:
                         description="An event emitted whenever a hardware QA check warning is emitted during the session.",
                         reader_params=SoftwareEvents.make_params(path=root / "SoftwareEvents/HardwareQA.json"),
                     ),
-                    SoftwareEvents(
-                        name="Annotations",
-                        description="An event emitted whenever an annotation is made during the session.",
-                        reader_params=SoftwareEvents.make_params(path=root / "SoftwareEvents/Annotations.json"),
-                    ),
                 ],
             ),
         ],

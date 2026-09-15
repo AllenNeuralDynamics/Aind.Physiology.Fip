@@ -7,8 +7,11 @@ import pydantic_settings
 
 from ._acquisition import ProtoAcquisitionDataSchema as ProtoAcquisitionDataSchema
 from ._acquisition import ProtoAcquisitionMapper
+from ._instrument import AindInstrumentDataMapper as AindInstrumentDataMapper
 
 logger = logging.getLogger(__name__)
+
+INSTRUMENT_FILE_NAME = "instrument_fib.json"
 
 
 class DataMapperCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
@@ -23,6 +26,11 @@ class DataMapperCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
         # According to @dbirman, the name of this file MUST match the extractor, so we hardcode it here.
         with open(Path(self.data_path) / "fip.json", "w", encoding="utf-8") as f:
             f.write(acquisition_mapped.model_dump_json(indent=2))
+
+        instrument_mapped = AindInstrumentDataMapper(self.data_path).map()
+        logger.info("Writing %s to %s", INSTRUMENT_FILE_NAME, self.data_path)
+        with open(Path(self.data_path) / INSTRUMENT_FILE_NAME, "w", encoding="utf-8") as f:
+            f.write(instrument_mapped.model_dump_json(indent=2))
         logger.info("Mapping completed!")
 
 

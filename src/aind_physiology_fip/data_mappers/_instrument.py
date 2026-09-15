@@ -3,22 +3,24 @@
 import logging
 import os
 import platform
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 
-from aind_behavior_services.utils import model_from_json_file
 from aind_data_schema.components import coordinates, devices
 from aind_data_schema.components.connections import Connection
 from aind_data_schema.core import instrument
 from aind_data_schema_models.modalities import Modality
 
+from aind_physiology_fip.data_contract import dataset
 from aind_physiology_fip.data_mappers._utils import (
     FilterId,
     LedId,
     TrackedDeviceName,
     TrackedDevicesInfo,
+    camera_frame_metadata,
     make_filter,
     make_led,
+    snap_to_grid,
 )
 from aind_physiology_fip.rig import AindPhysioFipRig, FipCamera
 
@@ -47,15 +49,15 @@ class AindInstrumentDataMapper:
     @classmethod
     def _map(cls, root_path: os.PathLike) -> instrument.Instrument:
         """Helper to map to instrument schema"""
-        rig = model_from_json_file(Path(root_path) / "rig_input.json", AindPhysioFipRig)
+        epoch, rig = cls._find_epoch(Path(root_path))
 
         computer = cls._get_computer(rig)
         patch_coords = cls._get_fiber_patch_cords()
         light_sources = cls._get_light_sources()
-        detectors = cls._get_detectors(rig)
+        detectors = cls._get_detectors(rig, epoch)
         filters = cls._get_filters()
         lens = cls._get_lens()
-        cuttlefish_device = cls._get_cuttlefish_device()
+        cuttlefish_device = cls._get_cuttlefish_device(rig)
         white_rabbit = cls._get_white_rabbit_device()
         objective = cls._get_objective()
 
@@ -107,11 +109,28 @@ class AindInstrumentDataMapper:
         return instrument.Instrument(
             instrument_id=rig.rig_name,
             modalities=[Modality.FIB],
-            modification_date=datetime.now(tz=UTC).date(),
+            modification_date=datetime.now().astimezone().date(),
             components=all_components,
             coordinate_system=coordinate_system,
             connections=connections,
         )
+
+    @staticmethod
+    def _find_epoch(root_path: Path) -> tuple[Path, AindPhysioFipRig]:
+        """Find the FIP epoch holding the rig configuration, and read it.
+
+        Mirrors ``ProtoAcquisitionMapper``: epochs live at ``<root>/fib/fip_*`` and their
+        contents are addressed through the data contract rather than by hand-built paths.
+        """
+        epochs = sorted(path for path in (root_path / "fib").glob("fip_*") if path.is_dir())
+        if not epochs:
+            raise ValueError(f"No FIP epochs (fib/fip_*) found in {root_path}.")
+        for epoch in epochs:
+            try:
+                return epoch, dataset(root=epoch)["rig_input"].read()
+            except Exception as e:  
+                logger.debug("No readable rig_input in %s: %s", epoch, e)
+        raise ValueError(f"No readable rig_input.json in any FIP epoch under {root_path}.")
 
     @staticmethod
     def _get_objective() -> devices.Objective:
@@ -129,10 +148,9 @@ class AindInstrumentDataMapper:
     def _get_computer(rig: AindPhysioFipRig) -> devices.Computer:
         """Gets the computer metadata"""
         return devices.Computer(
-            name=TrackedDeviceName.COMPUTER,
+            name=rig.computer_name,
             manufacturer=devices.Organization.AIND,
             operating_system=platform.platform(),
-            serial_number=rig.computer_name,
         )
 
     @staticmethod
@@ -160,10 +178,11 @@ class AindInstrumentDataMapper:
         return [make_led(color) for color in LedId]
 
     @staticmethod
-    def _get_detectors(rig: AindPhysioFipRig) -> list[devices.Detector]:
+    def _get_detectors(rig: AindPhysioFipRig, epoch: Path) -> list[devices.Detector]:
         """Return list of cameras / detectors in the rig."""
 
         def _get_detector(name: TrackedDeviceName, cam: FipCamera) -> devices.Detector:
+            metadata = camera_frame_metadata(epoch, name)
             """Returns the detector"""
             return devices.Detector(
                 name=name,
@@ -177,18 +196,18 @@ class AindInstrumentDataMapper:
                 bin_width=TrackedDevicesInfo.DETECTOR_BIN_WIDTH,
                 bin_height=TrackedDevicesInfo.DETECTOR_BIN_HEIGHT,
                 bin_mode=devices.BinMode.ADDITIVE,
-                crop_offset_x=cam.offset.x,
-                crop_offset_y=cam.offset.y,
-                crop_width=TrackedDevicesInfo.DETECTOR_CROP_WIDTH,
-                crop_height=TrackedDevicesInfo.DETECTOR_CROP_HEIGHT,
+                crop_offset_x=snap_to_grid(cam.offset.x, TrackedDevicesInfo.DETECTOR_BIN_WIDTH),
+                crop_offset_y=snap_to_grid(cam.offset.y, TrackedDevicesInfo.DETECTOR_BIN_HEIGHT),
+                crop_width=metadata.crop_width,
+                crop_height=metadata.crop_height,
                 gain=cam.gain,
                 chroma=devices.CameraChroma.BW,
-                bit_depth=TrackedDevicesInfo.DETECTOR_BIT_DEPTH,
+                bit_depth=metadata.bit_depth,
             )
 
         return [
-            _get_detector(TrackedDeviceName.CAMERA_RED, rig.camera_red),
             _get_detector(TrackedDeviceName.CAMERA_GREEN_ISO, rig.camera_green_iso),
+            _get_detector(TrackedDeviceName.CAMERA_RED, rig.camera_red),
         ]
 
     @staticmethod
@@ -205,10 +224,11 @@ class AindInstrumentDataMapper:
         )
 
     @staticmethod
-    def _get_cuttlefish_device() -> devices.HarpDevice:
+    def _get_cuttlefish_device(rig: AindPhysioFipRig) -> devices.HarpDevice:
         """Gets the cuttlefish device"""
         return devices.HarpDevice(
             name=TrackedDeviceName.CUTTLEFISH,
+            serial_number=rig.cuttlefish_fip.serial_number,
             harp_device_type=devices.HarpDeviceType.CUTTLEFISHFIP,
             manufacturer=devices.Organization.OEPS,
             is_clock_generator=False,

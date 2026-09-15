@@ -1,12 +1,15 @@
 """Utility constants and factories for rigs and device configurations."""
 
 import enum
-import json
 from pathlib import Path
 from typing import NamedTuple
 
+import numpy as np
 from aind_data_schema.components import devices
 from aind_data_schema_models import units
+from contraqctor.contract import Dataset
+
+from aind_physiology_fip.data_contract import dataset
 
 # -------------------------------
 # Device constants
@@ -36,8 +39,8 @@ class TrackedDevicesInfo:
     # Lens
     LENS_MODEL = "AC254-080-A-ML"
 
-    # Detector. Crop size and bit depth are not tracked here: they are read per epoch from the
-    # <channel>_metadata.json files that FipWriter.cs records for the frames actually acquired.
+    # Detector. Crop size and bit depth are not tracked here: they come per epoch from the raw
+    # frame streams in the data contract, which describe the frames actually acquired.
     DETECTOR_BIN_WIDTH = 4
     DETECTOR_BIN_HEIGHT = 4
     DETECTOR_MODEL = "BFS-U3-20S40M"
@@ -204,13 +207,11 @@ def snap_to_grid(value: float, step: int) -> int:
     return round(value / step) * step
 
 
-# Channels written by ``FipWriter.cs``, grouped by the camera that acquired them.
-CAMERA_CHANNELS: dict[TrackedDeviceName, tuple[str, ...]] = {
-    TrackedDeviceName.CAMERA_GREEN_ISO: ("green", "iso"),
-    TrackedDeviceName.CAMERA_RED: ("red",),
+# Raw frame streams written per channel, grouped by the camera that acquired them.
+CAMERA_FRAME_STREAMS: dict[TrackedDeviceName, tuple[str, ...]] = {
+    TrackedDeviceName.CAMERA_GREEN_ISO: ("raw_green", "raw_iso"),
+    TrackedDeviceName.CAMERA_RED: ("raw_red",),
 }
-
-DEPTH_TO_BIT_DEPTH = {"U8": 8, "U16": 16}
 
 
 class FrameMetadata(NamedTuple):
@@ -221,32 +222,28 @@ class FrameMetadata(NamedTuple):
     bit_depth: int
 
 
-def read_frame_metadata(epoch: Path, channel: str) -> FrameMetadata:
-    """Read the crop geometry and bit depth ``FipWriter.cs`` recorded for one channel."""
-    path = epoch / f"{channel}_metadata.json"
-    if not path.is_file():
-        raise FileNotFoundError(f"No frame metadata at {path}; cannot determine the detector crop and bit depth.")
-    raw = json.loads(path.read_text(encoding="utf-8"))
-    missing = [key for key in ("Width", "Height", "Depth") if key not in raw]
-    if missing:
-        raise ValueError(f"{path} is missing required field(s): {', '.join(missing)}")
-    depth = raw["Depth"]
-    if depth not in DEPTH_TO_BIT_DEPTH:
-        raise ValueError(f"{path} has unsupported Depth {depth!r}, expected one of {sorted(DEPTH_TO_BIT_DEPTH)}")
-    return FrameMetadata(raw["Width"], raw["Height"], DEPTH_TO_BIT_DEPTH[depth])
+def read_frame_metadata(epoch_dataset: Dataset, stream: str) -> FrameMetadata:
+    """Crop geometry and bit depth recorded for one raw frame stream.
+
+    Goes through the data contract rather than reading ``<channel>_metadata.json`` directly, so
+    that the file name, the parsing and the validation stay defined in one place.
+    """
+    params = epoch_dataset[stream].read().params
+    return FrameMetadata(params.width, params.height, np.dtype(params.bit_depth).itemsize * 8)
 
 
 def camera_frame_metadata(epoch: Path, camera: TrackedDeviceName) -> FrameMetadata:
-    """Frame metadata for one camera, which may have written a file per channel.
+    """Frame metadata for one camera, which may have written a stream per channel.
 
     The green/iso camera writes both ``green_metadata.json`` and ``iso_metadata.json``. They
     describe a single detector, so every channel must be present and they must agree; there is
     no value the mapper would be entitled to pick if they did not.
     """
-    found = {channel: read_frame_metadata(epoch, channel) for channel in CAMERA_CHANNELS[camera]}
+    epoch_dataset = dataset(root=epoch)
+    found = {stream: read_frame_metadata(epoch_dataset, stream) for stream in CAMERA_FRAME_STREAMS[camera]}
     if len(set(found.values())) > 1:
         detail = "; ".join(
-            f"{channel}={m.crop_width}x{m.crop_height}@{m.bit_depth}-bit" for channel, m in sorted(found.items())
+            f"{stream}={m.crop_width}x{m.crop_height}@{m.bit_depth}-bit" for stream, m in sorted(found.items())
         )
         raise ValueError(f"Frame metadata for {camera} disagrees between channels in {epoch}: {detail}")
     return next(iter(found.values()))

@@ -136,6 +136,53 @@ class TestAindInstrumentMapper(unittest.TestCase):
         mapped = instrument.Instrument.model_validate_json(written.read_text(encoding="utf-8"))
         self.assertEqual(mapped.instrument_id, mock_rig().rig_name)
 
+    def test_trigger_connections(self):
+        """The cuttlefish board is wired out to each LED and camera it triggers"""
+        mapped = self.rig_mapper.map()
+        triggers = {
+            (c.source_port, c.target_device)
+            for c in mapped.connections
+            if c.source_device == "cuTTLefishFip" and c.source_port.startswith("IO")
+        }
+        self.assertEqual(
+            triggers,
+            {
+                ("IO3", "415nm LED"),
+                ("IO2", "470nm LED"),
+                ("IO4", "565nm LED"),
+                ("IO0", "Green CMOS"),
+                ("IO1", "Red CMOS"),
+            },
+        )
+
+    def test_shared_camera_port_is_not_duplicated(self):
+        """The uv and blue tasks name the same camera line, which is one connection not two"""
+        mapped = self.rig_mapper.map()
+        green = [c for c in mapped.connections if c.target_device == "Green CMOS"]
+        self.assertEqual(len(green), 1)
+
+    def test_calibrations(self):
+        """Light sources carrying a power look-up table become PowerCalibrations"""
+        mapped = self.rig_mapper.map()
+        by_device = {c.device_name: c for c in mapped.calibrations}
+
+        # The mock rig calibrates blue and lime, but leaves uv uncalibrated.
+        self.assertEqual(set(by_device), {"470nm LED", "565nm LED"})
+
+        blue = by_device["470nm LED"]
+        self.assertEqual(blue.output, [0.0, 10.0, 20.0])
+        self.assertEqual(blue.output_unit, "milliwatt")
+        # Duty cycle is stored as a fraction but recorded as a percentage strength.
+        self.assertEqual(blue.input, [0.0, 10.0, 20.0])
+        self.assertEqual(blue.input_unit, "percent")
+
+    def test_calibration_date_matches_modification_date(self):
+        """Calibrations are stamped with the same moment the instrument is mapped"""
+        mapped = self.rig_mapper.map()
+        for calibration in mapped.calibrations:
+            self.assertEqual(calibration.calibration_date.date(), mapped.modification_date)
+            self.assertIsNotNone(calibration.calibration_date.tzinfo)
+
     def test_partial_frame_metadata_raises(self):
         """One half of the green/iso pair is not enough to check the two agree"""
         (self.epoch / "iso_metadata.json").unlink()

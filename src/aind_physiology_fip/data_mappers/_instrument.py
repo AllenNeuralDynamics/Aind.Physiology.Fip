@@ -6,13 +6,15 @@ import platform
 from datetime import datetime
 from pathlib import Path
 
-from aind_data_schema.components import coordinates, devices
+from aind_data_schema.components import coordinates, devices, measurements
 from aind_data_schema.components.connections import Connection
 from aind_data_schema.core import instrument
 from aind_data_schema_models.modalities import Modality
+from aind_data_schema_models.units import PowerUnit
 
 from aind_physiology_fip.data_contract import dataset
 from aind_physiology_fip.data_mappers._utils import (
+    LED_SPECS,
     FilterId,
     LedId,
     TrackedDeviceName,
@@ -20,9 +22,10 @@ from aind_physiology_fip.data_mappers._utils import (
     camera_frame_metadata,
     make_filter,
     make_led,
+    port_names,
     snap_to_grid,
 )
-from aind_physiology_fip.rig import AindPhysioFipRig, FipCamera
+from aind_physiology_fip.rig import AindPhysioFipRig, FipCamera, LightSource
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +77,7 @@ class AindInstrumentDataMapper:
                 target_port=rig.cuttlefish_fip.port_name,
                 send_and_receive=False,
             ),
+            *cls._get_trigger_connections(rig, cuttlefish_device.name),
         ]
 
         # Put everything in a list and unwrap lists
@@ -106,10 +110,13 @@ class AindInstrumentDataMapper:
             ],
         )
 
+        mapped_at = datetime.now().astimezone()
+
         return instrument.Instrument(
             instrument_id=rig.rig_name,
             modalities=[Modality.FIB],
-            modification_date=datetime.now().astimezone().date(),
+            modification_date=mapped_at.date(),
+            calibrations=cls._get_calibrations(rig, mapped_at),
             components=all_components,
             coordinate_system=coordinate_system,
             connections=connections,
@@ -132,6 +139,64 @@ class AindInstrumentDataMapper:
                 # Missing file, malformed JSON or a rig that fails validation: try the next epoch.
                 logger.debug("No readable rig_input in %s: %s", epoch, e)
         raise ValueError(f"No readable rig_input.json in any FIP epoch under {root_path}.")
+
+    @staticmethod
+    def _light_sources(rig: AindPhysioFipRig) -> list[tuple[LedId, LightSource, TrackedDeviceName]]:
+        """Each light source with its LED identity and the camera triggered alongside it."""
+        return [
+            (LedId.UV, rig.light_source_uv, TrackedDeviceName.CAMERA_GREEN_ISO),
+            (LedId.BLUE, rig.light_source_blue, TrackedDeviceName.CAMERA_GREEN_ISO),
+            (LedId.LIME, rig.light_source_lime, TrackedDeviceName.CAMERA_RED),
+        ]
+
+    @classmethod
+    def _get_calibrations(cls, rig: AindPhysioFipRig, calibrated_at: datetime) -> list[measurements.PowerCalibration]:
+        """Power-against-duty-cycle calibrations for the light sources that carry one.
+
+        The rig stores duty cycle as a fraction (``le=1``) while the only non-absolute input
+        unit aind-data-schema offers is ``percent``, whose inputs are percentage strengths, so
+        the look-up table inputs are scaled to 0-100.
+        """
+        calibrations = []
+        for led, light_source, _ in cls._light_sources(rig):
+            if light_source.calibration is None:
+                continue
+            lut = sorted(light_source.calibration.power_lut.items())
+            calibrations.append(
+                measurements.PowerCalibration(
+                    device_name=LED_SPECS[led].name,
+                    calibration_date=calibrated_at,
+                    input=[duty_cycle * 100 for duty_cycle, _ in lut],
+                    input_unit=PowerUnit.PERCENT,
+                    output=[power for _, power in lut],
+                    output_unit=PowerUnit.MW,
+                )
+            )
+        return calibrations
+
+    @classmethod
+    def _get_trigger_connections(cls, rig: AindPhysioFipRig, source_device: str) -> list[Connection]:
+        """Connections from the cuttlefish board out to the light sources and cameras it triggers.
+
+        Each light source's task names the board line that fires the LED and the line that fires
+        the camera recording it. The green/iso camera is driven by two light sources over one
+        line, so camera connections are de-duplicated.
+        """
+        connections: list[Connection] = []
+        camera_lines: dict[tuple[str, TrackedDeviceName], None] = {}
+        for led, light_source, camera in cls._light_sources(rig):
+            for port in port_names(light_source.task.light_source_port):
+                connections.append(
+                    Connection(source_device=source_device, source_port=port, target_device=LED_SPECS[led].name)
+                )
+            for port in port_names(light_source.task.camera_port):
+                camera_lines[(port, camera)] = None
+
+        connections.extend(
+            Connection(source_device=source_device, source_port=port, target_device=camera)
+            for port, camera in camera_lines
+        )
+        return connections
 
     @staticmethod
     def _get_objective() -> devices.Objective:

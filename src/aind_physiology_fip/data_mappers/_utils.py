@@ -10,6 +10,7 @@ from aind_data_schema_models import units
 from contraqctor.contract import Dataset
 
 from aind_physiology_fip.data_contract import dataset
+from aind_physiology_fip.rig import Ports
 
 # -------------------------------
 # Device constants
@@ -247,3 +248,17 @@ def camera_frame_metadata(epoch: Path, camera: TrackedDeviceName) -> FrameMetada
         )
         raise ValueError(f"Frame metadata for {camera} disagrees between channels in {epoch}: {detail}")
     return next(iter(found.values()))
+
+
+# -------------------------------
+# Cuttlefish board ports
+# -------------------------------
+
+
+def port_names(ports: Ports) -> list[str]:
+    """Names of the individual board lines set in a ``Ports`` flag.
+
+    ``Ports`` is an ``IntFlag``, so one field can name several lines at once; each becomes its
+    own connection. ``Ports.NONE`` yields nothing.
+    """
+    return [line.name for line in Ports if line.value and line in ports]

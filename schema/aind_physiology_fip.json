@@ -319,7 +319,7 @@
         },
         "power": {
           "default": 0,
-          "description": "Power (mW)",
+          "description": "Power (uW)",
           "minimum": 0,
           "title": "Power",
           "type": "number"
@@ -341,7 +341,7 @@
       "properties": {
         "power_lut": {
           "additionalProperties": {
-            "description": "Power (mW)",
+            "description": "Power (uW)",
             "minimum": 0,
             "type": "number"
           },

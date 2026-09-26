@@ -1089,10 +1089,10 @@ namespace AindPhysiologyFip
         }
     
         /// <summary>
-        /// Power (mW)
+        /// Power (uW)
         /// </summary>
         [Newtonsoft.Json.JsonPropertyAttribute("power")]
-        [System.ComponentModel.DescriptionAttribute("Power (mW)")]
+        [System.ComponentModel.DescriptionAttribute("Power (uW)")]
         public double Power
         {
             get

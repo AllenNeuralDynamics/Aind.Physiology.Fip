@@ -10,8 +10,8 @@
           "type": "string"
         },
         "version": {
-          "const": "0.3.2",
-          "default": "0.3.2",
+          "const": "0.3.3",
+          "default": "0.3.3",
           "title": "Version",
           "type": "string"
         },

@@ -878,8 +878,8 @@
         <ui:Visible>true</ui:Visible>
         <ui:Location xsi:nil="true" />
         <ui:Size>
-          <ui:Width>1600</ui:Width>
-          <ui:Height>800</ui:Height>
+          <ui:Width>700</ui:Width>
+          <ui:Height>1024</ui:Height>
         </ui:Size>
         <ui:WindowState>Normal</ui:WindowState>
       </Expression>

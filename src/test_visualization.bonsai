@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.9.0"
+<WorkflowBuilder Version="2.9.1"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:scr="clr-namespace:Bonsai.Scripting.Expressions;assembly=Bonsai.Scripting.Expressions"
@@ -239,7 +239,7 @@
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="dsp:MatrixReader">
-                      <dsp:Path>C:\Users\bruno.cruz\Downloads\788731_2025-12-17_23-20-28\fib\fip_2025-12-17T152441\iso.bin</dsp:Path>
+                      <dsp:Path>C:\Users\bruno.cruz\Downloads\845023_2026-07-20_19-50-53\fib\fip_2025-12-17T152441\iso.bin</dsp:Path>
                       <dsp:Offset>0</dsp:Offset>
                       <dsp:SampleRate>0</dsp:SampleRate>
                       <dsp:ChannelCount>1</dsp:ChannelCount>
@@ -303,7 +303,7 @@
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="dsp:MatrixReader">
-                      <dsp:Path>C:\Users\bruno.cruz\Downloads\788731_2025-12-17_23-20-28\fib\fip_2025-12-17T152441\green.bin</dsp:Path>
+                      <dsp:Path>C:\Users\bruno.cruz\Downloads\845023_2026-07-20_19-50-53\fib\fip_2025-12-17T152441\green.bin</dsp:Path>
                       <dsp:Offset>0</dsp:Offset>
                       <dsp:SampleRate>0</dsp:SampleRate>
                       <dsp:ChannelCount>1</dsp:ChannelCount>
@@ -373,7 +373,7 @@
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="dsp:MatrixReader">
-                      <dsp:Path>C:\Users\bruno.cruz\Downloads\788731_2025-12-17_23-20-28\fib\fip_2025-12-17T152441\red.bin</dsp:Path>
+                      <dsp:Path>C:\Users\bruno.cruz\Downloads\845023_2026-07-20_19-50-53\fib\fip_2025-12-17T152441\red.bin</dsp:Path>
                       <dsp:Offset>0</dsp:Offset>
                       <dsp:SampleRate>0</dsp:SampleRate>
                       <dsp:ChannelCount>1</dsp:ChannelCount>
@@ -1162,7 +1162,7 @@
                                       <Combinator xsi:type="p6:ConfigureTask">
                                         <p6:MessageType>Write</p6:MessageType>
                                         <p6:PwmPort>IO2</p6:PwmPort>
-                                        <p6:DutyCycle>0.461</p6:DutyCycle>
+                                        <p6:DutyCycle>0.314</p6:DutyCycle>
                                         <p6:Frequency>10000</p6:Frequency>
                                         <p6:TriggerPorts>None</p6:TriggerPorts>
                                         <p6:EventsEnabled>false</p6:EventsEnabled>
@@ -1500,8 +1500,8 @@
         <ui:Visible>true</ui:Visible>
         <ui:Location xsi:nil="true" />
         <ui:Size>
-          <ui:Width>600</ui:Width>
-          <ui:Height>800</ui:Height>
+          <ui:Width>700</ui:Width>
+          <ui:Height>1024</ui:Height>
         </ui:Size>
         <ui:WindowState>Normal</ui:WindowState>
       </Expression>

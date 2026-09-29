@@ -31,12 +31,15 @@ Changelog = "https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/releases
 
 data = ["contraqctor < 0.6", "pydantic_settings", "opencv-python"]
 
+mappers = ["aind-data-schema>=2.9"]
+
 [dependency-groups]
 
 dev = [
     "ruff",
     "codespell",
     "aind-physiology-fip[data]",
+    "aind-physiology-fip[mappers]",
 ]
 
 docs = [

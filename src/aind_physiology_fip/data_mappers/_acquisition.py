@@ -40,7 +40,7 @@ from aind_behavior_services.session import Session
 from pandas import DataFrame
 
 from aind_physiology_fip.data_contract import dataset
-from aind_physiology_fip.rig import AindPhysioFipRig
+from aind_physiology_fip.rig import AindPhysioFipRig, RoiSettings
 
 from ._base import DataMapper
 
@@ -76,7 +76,6 @@ class ProtoAcquisitionDataSchema(pydantic.BaseModel):
     session: Session = pydantic.Field(description="The session information that instantiated the acquisition.")
     rig: AindPhysioFipRig = pydantic.Field(description="The rig configuration that instantiated the acquisition.")
 
-
 class _FipDataStreamMetadata(pydantic.BaseModel):
     """
     Internal metadata model for individual FIP data streams.
@@ -92,11 +91,13 @@ class _FipDataStreamMetadata(pydantic.BaseModel):
             marking the beginning of data collection for this stream.
         end_time (pydantic.AwareDatetime): Timezone-aware timestamp
             marking the end of data collection for this stream.
+        regions (RoiSettings): The region of interest settings associated with this data stream.
     """
 
     id: str
     start_time: pydantic.AwareDatetime
     end_time: pydantic.AwareDatetime
+    regions: RoiSettings
 
 
 class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
@@ -176,7 +177,8 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
         """
         Extract timing metadata from all FIP acquisition epochs.
 
-        For each epoch, attempts to read start/end times from the
+        For each epoch, reads the ROI settings from ``regions.json`` (epochs
+        without it are skipped) and attempts to read start/end times from the
         ``SoftwareEvents/StartSessionTime.json`` and
         ``SoftwareEvents/EndSessionTime.json`` JSON-lines files (primary).
         Falls back to inferring times from camera CSV metadata streams if
@@ -200,6 +202,13 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
             if not epoch.is_dir():
                 continue
 
+            # Extract the ROI settings from regions.json
+            try:
+                regions = cast(RoiSettings, dataset(root=epoch)["regions"].read())
+            except Exception as e:  # noqa: BLE001
+                logger.warning(f"Failed to read regions.json at {epoch}, skipping epoch: {e}")
+                continue
+
             # Primary: read from SoftwareEvents JSON-lines files
             try:
                 start_utc, end_utc = ProtoAcquisitionMapper._extract_times_from_software_events(epoch)
@@ -208,6 +217,7 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
                         id=epoch.name,
                         start_time=start_utc,
                         end_time=end_utc,
+                        regions=regions,
                     )
                 )
                 continue
@@ -232,6 +242,7 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
                                 id=epoch.name,
                                 start_time=start_utc,
                                 end_time=end_utc,
+                                regions=regions,
                             )
                         )
                         break  # One stream is enough to establish epoch timing

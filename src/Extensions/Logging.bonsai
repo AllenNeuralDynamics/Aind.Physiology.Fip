@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.9.0"
+<WorkflowBuilder Version="2.9.1"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:scr="clr-namespace:Bonsai.Scripting.Expressions;assembly=Bonsai.Scripting.Expressions"
@@ -468,7 +468,7 @@ Item4 as CpuTime)</scr:Expression>
                     <Combinator xsi:type="rx:Merge" />
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>CurrentCombinedRoi</Name>
+                    <Name>CurrentRoiSettings</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Take">
@@ -551,7 +551,7 @@ Item4 as CpuTime)</scr:Expression>
                                 <Name>SoftwareEvent</Name>
                               </Expression>
                               <Expression xsi:type="SubscribeSubject">
-                                <Name>CurrentCombinedRoi</Name>
+                                <Name>CurrentRoiSettings</Name>
                               </Expression>
                               <Expression xsi:type="Combinator">
                                 <Combinator xsi:type="p1:CreateSoftwareEvent">

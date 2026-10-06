@@ -76,6 +76,7 @@ class ProtoAcquisitionDataSchema(pydantic.BaseModel):
     session: Session = pydantic.Field(description="The session information that instantiated the acquisition.")
     rig: AindPhysioFipRig = pydantic.Field(description="The rig configuration that instantiated the acquisition.")
 
+
 class _FipDataStreamMetadata(pydantic.BaseModel):
     """
     Internal metadata model for individual FIP data streams.

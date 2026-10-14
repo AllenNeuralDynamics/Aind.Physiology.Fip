@@ -18,6 +18,14 @@ class DataMapperCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
     """CLI for generating AIND metadata from raw FIP data."""
 
     data_path: os.PathLike = pydantic.Field(description="Path to the session data directory.")
+    objective_serial_number: str | None = pydantic.Field(
+        default=None,
+        description=(
+            "Serial number of the objective, which differs between instruments. Settable as "
+            "OBJECTIVE_SERIAL_NUMBER in the environment so each acquisition computer can be "
+            "configured once, rather than passed on every run."
+        ),
+    )
 
     def cli_cmd(self):
         logger.info("Mapping metadata directly from dataset.")
@@ -27,7 +35,7 @@ class DataMapperCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
         with open(Path(self.data_path) / "fip.json", "w", encoding="utf-8") as f:
             f.write(acquisition_mapped.model_dump_json(indent=2))
 
-        instrument_mapped = AindInstrumentDataMapper(self.data_path).map()
+        instrument_mapped = AindInstrumentDataMapper(self.data_path, self.objective_serial_number).map()
         logger.info("Writing %s to %s", INSTRUMENT_FILE_NAME, self.data_path)
         with open(Path(self.data_path) / INSTRUMENT_FILE_NAME, "w", encoding="utf-8") as f:
             f.write(instrument_mapped.model_dump_json(indent=2))

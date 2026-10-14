@@ -57,7 +57,6 @@ class TrackedDevicesInfo:
     # Objective
     OBJECTIVE_MODEL = "CFI Plan Apochromat Lambda D 10x"
     OBJECTIVE_NUMERICAL_APERTURE = 0.45
-    OBJECTIVE_SERIAL_NUMBER = "12812388"
     OBJECTIVE_MAGNIFICATION = 10
 
 

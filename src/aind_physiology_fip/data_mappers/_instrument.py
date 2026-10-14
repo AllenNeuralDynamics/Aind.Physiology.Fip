@@ -33,8 +33,21 @@ logger = logging.getLogger(__name__)
 class AindInstrumentDataMapper:
     """Mapper for AIND FIP photometry rigs into aind-data-schema Instrument objects."""
 
-    def __init__(self, data_path: os.PathLike):
+    def __init__(self, data_path: os.PathLike, objective_serial_number: str | None = None):
+        """Create a mapper for one session directory.
+
+        Args:
+            data_path (os.PathLike): Session directory holding the ``fib/fip_*`` acquisition
+                epochs.
+            objective_serial_number (str | None): Serial number of the objective, which differs
+                between instruments. It is not part of the rig configuration because the workflow
+                does not use it and nothing can validate it against the hardware, so it is
+                supplied per instrument instead. Through the CLI it may be set once per
+                acquisition computer as the ``OBJECTIVE_SERIAL_NUMBER`` environment variable.
+                Left unset, the objective is recorded without a serial.
+        """
         self._data_path = Path(data_path)
+        self._objective_serial_number = objective_serial_number
         self._mapped: instrument.Instrument | None = None
 
     @property
@@ -46,11 +59,11 @@ class AindInstrumentDataMapper:
     def map(self) -> instrument.Instrument:
         """Map the rig JSON input into an AIND instrument."""
         logger.info("Mapping FIP photometry rig to AIND schema.")
-        self._mapped = self._map(self._data_path)
+        self._mapped = self._map(self._data_path, self._objective_serial_number)
         return self.mapped
 
     @classmethod
-    def _map(cls, root_path: os.PathLike) -> instrument.Instrument:
+    def _map(cls, root_path: os.PathLike, objective_serial_number: str | None = None) -> instrument.Instrument:
         """Helper to map to instrument schema"""
         epoch, rig = cls._find_epoch(Path(root_path))
 
@@ -62,7 +75,7 @@ class AindInstrumentDataMapper:
         lens = cls._get_lens()
         cuttlefish_device = cls._get_cuttlefish_device(rig)
         white_rabbit = cls._get_white_rabbit_device()
-        objective = cls._get_objective()
+        objective = cls._get_objective(objective_serial_number)
 
         connections = [
             Connection(
@@ -199,11 +212,16 @@ class AindInstrumentDataMapper:
         return connections
 
     @staticmethod
-    def _get_objective() -> devices.Objective:
+    def _get_objective(serial_number: str | None) -> devices.Objective:
+        """Gets the objective, whose serial number is supplied per instrument."""
+        if serial_number is None:
+            logger.warning("No objective serial number supplied; recording the objective without one.")
+        else:
+            logger.info("Using objective serial number %s.", serial_number)
         return devices.Objective(
             model=TrackedDevicesInfo.OBJECTIVE_MODEL,
             name=TrackedDeviceName.OBJECTIVE,
-            serial_number=TrackedDevicesInfo.OBJECTIVE_SERIAL_NUMBER,
+            serial_number=serial_number,
             manufacturer=devices.Organization.NIKON,
             numerical_aperture=TrackedDevicesInfo.OBJECTIVE_NUMERICAL_APERTURE,
             magnification=TrackedDevicesInfo.OBJECTIVE_MAGNIFICATION,

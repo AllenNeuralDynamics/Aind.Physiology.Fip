@@ -183,6 +183,17 @@ class TestAindInstrumentMapper(unittest.TestCase):
             self.assertEqual(calibration.calibration_date.date(), mapped.modification_date)
             self.assertIsNotNone(calibration.calibration_date.tzinfo)
 
+    def test_objective_serial_number(self):
+        """The objective serial is supplied per instrument rather than hardcoded"""
+        mapper = AindInstrumentDataMapper(data_path=self.data_path, objective_serial_number="12812388")
+        objective = next(c for c in mapper.map().components if c.object_type == "Objective")
+        self.assertEqual(objective.serial_number, "12812388")
+
+    def test_objective_serial_number_unset(self):
+        """An instrument that was never configured records no serial rather than a wrong one"""
+        objective = next(c for c in self.rig_mapper.map().components if c.object_type == "Objective")
+        self.assertIsNone(objective.serial_number)
+
     def test_partial_frame_metadata_raises(self):
         """One half of the green/iso pair is not enough to check the two agree"""
         (self.epoch / "iso_metadata.json").unlink()

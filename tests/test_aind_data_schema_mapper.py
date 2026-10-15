@@ -8,11 +8,11 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from aind_behavior_services.common import Circle, Point2f
+from aind_behavior_services.common import Point2f
 from contraqctor.contract import DataStream
 
 from aind_physiology_fip.data_mappers import ProtoAcquisitionMapper
-from aind_physiology_fip.rig import RoiSettings
+from aind_physiology_fip.extra_types import FipCircle, RoiSettings
 
 sys.path.append(".")
 
@@ -47,6 +47,19 @@ class TestAcquisitionMapper(unittest.TestCase):
         self.assertEqual(end_utc, datetime.fromisoformat("2025-07-18T19:03:21+00:00"))
 
 
+def _make_regions(**overrides: Any) -> RoiSettings:
+    background = FipCircle(center=Point2f(x=10, y=10), radius=10)
+    rois = [FipCircle(center=Point2f(x=50, y=50), radius=20, roi_number=0, fiber_number=0)]
+    fields: dict[str, Any] = {
+        "camera_green_iso_background": background,
+        "camera_red_background": background,
+        "camera_green_iso_roi": rois,
+        "camera_red_roi": rois,
+    }
+    fields.update(overrides)
+    return RoiSettings(**fields)
+
+
 class TestExtractStartEndTimes(unittest.TestCase):
     @staticmethod
     def _make_epoch(root: Path, name: str, regions: RoiSettings | None) -> Path:
@@ -62,7 +75,11 @@ class TestExtractStartEndTimes(unittest.TestCase):
         return epoch
 
     def test_regions_are_extracted_from_regions_json(self):
-        regions = RoiSettings(camera_green_iso_roi=[Circle(center=Point2f(x=10, y=20), radius=5)])
+        regions = _make_regions(
+            camera_green_iso_roi=[
+                FipCircle(center=Point2f(x=10, y=20), radius=5, roi_number=0, fiber_number=1, name="NAc")
+            ]
+        )
         with tempfile.TemporaryDirectory() as tmp:
             epoch = self._make_epoch(Path(tmp), "fip_epoch", regions)
             streams = ProtoAcquisitionMapper._extract_start_end_times([epoch])
@@ -75,7 +92,7 @@ class TestExtractStartEndTimes(unittest.TestCase):
 
     def test_epoch_without_regions_is_skipped(self):
         with tempfile.TemporaryDirectory() as tmp:
-            good = self._make_epoch(Path(tmp), "fip_good", RoiSettings())
+            good = self._make_epoch(Path(tmp), "fip_good", _make_regions())
             bad = self._make_epoch(Path(tmp), "fip_bad", None)
             # tests/__init__.py disables logging globally; re-enable it to assert on the warning
             logging.disable(logging.NOTSET)

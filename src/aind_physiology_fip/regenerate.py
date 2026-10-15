@@ -6,6 +6,7 @@ from aind_behavior_services.schema import BonsaiSgenSerializers, convert_pydanti
 from aind_behavior_services.session import Session
 
 from aind_physiology_fip import rig
+from aind_physiology_fip.extra_types import FipCircle, RoiSettings
 
 SCHEMA_ROOT = Path("./schema/")
 EXTENSIONS_ROOT = Path("./src/Extensions/")
@@ -15,6 +16,8 @@ NAMESPACE_PREFIX = "AindPhysiologyFip"
 def main():
     models = [
         rig.AindPhysioFipRig,
+        FipCircle,
+        RoiSettings,
         Session,
     ]
 

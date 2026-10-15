@@ -6,14 +6,16 @@ namespace FipExtensions
 {
     public class CircleActivity
     {
-        public Circle Circle { get; set; }
+        // The ROI definition (Background or Roi) this activity was computed from, including its
+        // RoiNumber, FiberNumber, Name and Enabled metadata.
+        public AindPhysiologyFip.FipCircle FipCircle { get; set; }
         public Scalar Activity { get; set; }
 
         public CircleActivity() { }
 
         public override string ToString()
         {
-            return string.Format("Circle: {0}, Activity: {1}", Circle, Activity);
+            return string.Format("FipCircle: {0}, Activity: {1}", FipCircle, Activity);
         }
 
 
@@ -28,8 +30,8 @@ namespace FipExtensions
             for (int i = 0; i < nSegments; i++)
             {
                 var angle = 2 * Math.PI * i / nSegments;
-                var x = Circle.Center.X + Circle.Radius * Math.Cos(angle);
-                var y = Circle.Center.Y + Circle.Radius * Math.Sin(angle);
+                var x = FipCircle.Center.X + FipCircle.Radius * Math.Cos(angle);
+                var y = FipCircle.Center.Y + FipCircle.Radius * Math.Sin(angle);
                 polygon[i] = new Point((int)x, (int)y);
             }
             return polygon;

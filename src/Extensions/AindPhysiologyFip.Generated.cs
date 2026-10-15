@@ -39,8 +39,6 @@ namespace AindPhysiologyFip
     
         private LightSource _lightSourceLime;
     
-        private RoiSettings _roiSettings;
-    
         private HarpCuttlefishfip _cuttlefishFip;
     
         private Networking _networking;
@@ -70,7 +68,6 @@ namespace AindPhysiologyFip
             _lightSourceUv = other._lightSourceUv;
             _lightSourceBlue = other._lightSourceBlue;
             _lightSourceLime = other._lightSourceLime;
-            _roiSettings = other._roiSettings;
             _cuttlefishFip = other._cuttlefishFip;
             _networking = other._networking;
         }
@@ -243,25 +240,6 @@ namespace AindPhysiologyFip
         }
     
         /// <summary>
-        /// Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program.
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("roi_settings")]
-        [System.ComponentModel.DescriptionAttribute("Region of interest settings. Leave empty to attempt to load from local file or ma" +
-            "nually define it in the program.")]
-        public RoiSettings RoiSettings
-        {
-            get
-            {
-                return _roiSettings;
-            }
-            set
-            {
-                _roiSettings = value;
-            }
-        }
-    
-        /// <summary>
         /// CuttlefishFip board for controlling the trigger of cameras and light-sources
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
@@ -319,7 +297,6 @@ namespace AindPhysiologyFip
             stringBuilder.Append("LightSourceUv = " + _lightSourceUv + ", ");
             stringBuilder.Append("LightSourceBlue = " + _lightSourceBlue + ", ");
             stringBuilder.Append("LightSourceLime = " + _lightSourceLime + ", ");
-            stringBuilder.Append("RoiSettings = " + _roiSettings + ", ");
             stringBuilder.Append("CuttlefishFip = " + _cuttlefishFip + ", ");
             stringBuilder.Append("Networking = " + _networking);
             return true;
@@ -367,99 +344,6 @@ namespace AindPhysiologyFip
         protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
         {
             return false;
-        }
-    
-        public override string ToString()
-        {
-            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
-            stringBuilder.Append(GetType().Name);
-            stringBuilder.Append(" { ");
-            if (PrintMembers(stringBuilder))
-            {
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-            return stringBuilder.ToString();
-        }
-    }
-
-
-    /// <summary>
-    /// Represents a circle defined by its center point and radius.
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.9.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [System.ComponentModel.DescriptionAttribute("Represents a circle defined by its center point and radius.")]
-    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
-    [Bonsai.CombinatorAttribute(MethodName="Generate")]
-    public partial class Circle
-    {
-    
-        private Point2f _center;
-    
-        private double _radius;
-    
-        public Circle()
-        {
-            _center = new Point2f();
-            _radius = 1D;
-        }
-    
-        protected Circle(Circle other)
-        {
-            _center = other._center;
-            _radius = other._radius;
-        }
-    
-        /// <summary>
-        /// Center of the circle (px)
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("center")]
-        [System.ComponentModel.DescriptionAttribute("Center of the circle (px)")]
-        public Point2f Center
-        {
-            get
-            {
-                return _center;
-            }
-            set
-            {
-                _center = value;
-            }
-        }
-    
-        /// <summary>
-        /// Radius of the circle (px)
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("radius")]
-        [System.ComponentModel.DescriptionAttribute("Radius of the circle (px)")]
-        public double Radius
-        {
-            get
-            {
-                return _radius;
-            }
-            set
-            {
-                _radius = value;
-            }
-        }
-    
-        public System.IObservable<Circle> Generate()
-        {
-            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new Circle(this)));
-        }
-    
-        public System.IObservable<Circle> Generate<TSource>(System.IObservable<TSource> source)
-        {
-            return System.Reactive.Linq.Observable.Select(source, _ => new Circle(this));
-        }
-    
-        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("Center = " + _center + ", ");
-            stringBuilder.Append("Radius = " + _radius);
-            return true;
         }
     
         public override string ToString()
@@ -613,6 +497,185 @@ namespace AindPhysiologyFip
             stringBuilder.Append("SerialNumber = " + _serialNumber + ", ");
             stringBuilder.Append("Gain = " + _gain + ", ");
             stringBuilder.Append("Offset = " + _offset);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    /// <summary>
+    /// Describes a circle in the FIP system with associated ROI, fiber, and optional name.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.9.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Describes a circle in the FIP system with associated ROI, fiber, and optional nam" +
+        "e.")]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    [Bonsai.CombinatorAttribute(MethodName="Generate")]
+    public partial class FipCircle
+    {
+    
+        private Point2f _center;
+    
+        private double _radius;
+    
+        private int? _roiNumber;
+    
+        private int? _fiberNumber;
+    
+        private string _name;
+    
+        private bool _enabled;
+    
+        public FipCircle()
+        {
+            _center = new Point2f();
+            _radius = 1D;
+            _enabled = true;
+        }
+    
+        protected FipCircle(FipCircle other)
+        {
+            _center = other._center;
+            _radius = other._radius;
+            _roiNumber = other._roiNumber;
+            _fiberNumber = other._fiberNumber;
+            _name = other._name;
+            _enabled = other._enabled;
+        }
+    
+        /// <summary>
+        /// Center of the circle (px)
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("center")]
+        [System.ComponentModel.DescriptionAttribute("Center of the circle (px)")]
+        public Point2f Center
+        {
+            get
+            {
+                return _center;
+            }
+            set
+            {
+                _center = value;
+            }
+        }
+    
+        /// <summary>
+        /// Radius of the circle (px)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("radius")]
+        [System.ComponentModel.DescriptionAttribute("Radius of the circle (px)")]
+        public double Radius
+        {
+            get
+            {
+                return _radius;
+            }
+            set
+            {
+                _radius = value;
+            }
+        }
+    
+        /// <summary>
+        /// ROI number associated with the circle
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("roi_number")]
+        [System.ComponentModel.DescriptionAttribute("ROI number associated with the circle")]
+        public int? RoiNumber
+        {
+            get
+            {
+                return _roiNumber;
+            }
+            set
+            {
+                _roiNumber = value;
+            }
+        }
+    
+        /// <summary>
+        /// Fiber number associated with the circle
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("fiber_number")]
+        [System.ComponentModel.DescriptionAttribute("Fiber number associated with the circle")]
+        public int? FiberNumber
+        {
+            get
+            {
+                return _fiberNumber;
+            }
+            set
+            {
+                _fiberNumber = value;
+            }
+        }
+    
+        /// <summary>
+        /// Name associated with the circle
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("name")]
+        [System.ComponentModel.DescriptionAttribute("Name associated with the circle")]
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                _name = value;
+            }
+        }
+    
+        /// <summary>
+        /// Indicates whether the circle is enabled
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("enabled")]
+        [System.ComponentModel.DescriptionAttribute("Indicates whether the circle is enabled")]
+        public bool Enabled
+        {
+            get
+            {
+                return _enabled;
+            }
+            set
+            {
+                _enabled = value;
+            }
+        }
+    
+        public System.IObservable<FipCircle> Generate()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new FipCircle(this)));
+        }
+    
+        public System.IObservable<FipCircle> Generate<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new FipCircle(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("Center = " + _center + ", ");
+            stringBuilder.Append("Radius = " + _radius + ", ");
+            stringBuilder.Append("RoiNumber = " + _roiNumber + ", ");
+            stringBuilder.Append("FiberNumber = " + _fiberNumber + ", ");
+            stringBuilder.Append("Name = " + _name + ", ");
+            stringBuilder.Append("Enabled = " + _enabled);
             return true;
         }
     
@@ -1448,20 +1511,20 @@ namespace AindPhysiologyFip
     public partial class RoiSettings
     {
     
-        private Circle _cameraGreenIsoBackground;
+        private FipCircle _cameraGreenIsoBackground;
     
-        private Circle _cameraRedBackground;
+        private FipCircle _cameraRedBackground;
     
-        private System.Collections.Generic.List<Circle> _cameraGreenIsoRoi;
+        private System.Collections.Generic.List<FipCircle> _cameraGreenIsoRoi;
     
-        private System.Collections.Generic.List<Circle> _cameraRedRoi;
+        private System.Collections.Generic.List<FipCircle> _cameraRedRoi;
     
         public RoiSettings()
         {
-            _cameraGreenIsoBackground = new Circle();
-            _cameraRedBackground = new Circle();
-            _cameraGreenIsoRoi = new System.Collections.Generic.List<Circle>();
-            _cameraRedRoi = new System.Collections.Generic.List<Circle>();
+            _cameraGreenIsoBackground = new FipCircle();
+            _cameraRedBackground = new FipCircle();
+            _cameraGreenIsoRoi = new System.Collections.Generic.List<FipCircle>();
+            _cameraRedRoi = new System.Collections.Generic.List<FipCircle>();
         }
     
         protected RoiSettings(RoiSettings other)
@@ -1476,9 +1539,9 @@ namespace AindPhysiologyFip
         /// ROI to compute the background for the green/iso camera channel
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("camera_green_iso_background")]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_green_iso_background", Required=Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DescriptionAttribute("ROI to compute the background for the green/iso camera channel")]
-        public Circle CameraGreenIsoBackground
+        public FipCircle CameraGreenIsoBackground
         {
             get
             {
@@ -1494,9 +1557,9 @@ namespace AindPhysiologyFip
         /// ROI to compute the background for the red camera channel
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("camera_red_background")]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_red_background", Required=Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DescriptionAttribute("ROI to compute the background for the red camera channel")]
-        public Circle CameraRedBackground
+        public FipCircle CameraRedBackground
         {
             get
             {
@@ -1512,9 +1575,9 @@ namespace AindPhysiologyFip
         /// ROI for the green/iso camera channel
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("camera_green_iso_roi")]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_green_iso_roi", Required=Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DescriptionAttribute("ROI for the green/iso camera channel")]
-        public System.Collections.Generic.List<Circle> CameraGreenIsoRoi
+        public System.Collections.Generic.List<FipCircle> CameraGreenIsoRoi
         {
             get
             {
@@ -1530,9 +1593,9 @@ namespace AindPhysiologyFip
         /// ROI for the red camera channel
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("camera_red_roi")]
+        [Newtonsoft.Json.JsonPropertyAttribute("camera_red_roi", Required=Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DescriptionAttribute("ROI for the red camera channel")]
-        public System.Collections.Generic.List<Circle> CameraRedRoi
+        public System.Collections.Generic.List<FipCircle> CameraRedRoi
         {
             get
             {
@@ -1985,14 +2048,14 @@ namespace AindPhysiologyFip
             return Process<BaseModel>(source);
         }
 
-        public System.IObservable<string> Process(System.IObservable<Circle> source)
-        {
-            return Process<Circle>(source);
-        }
-
         public System.IObservable<string> Process(System.IObservable<FipCamera> source)
         {
             return Process<FipCamera>(source);
+        }
+
+        public System.IObservable<string> Process(System.IObservable<FipCircle> source)
+        {
+            return Process<FipCircle>(source);
         }
 
         public System.IObservable<string> Process(System.IObservable<FipTask> source)
@@ -2051,8 +2114,8 @@ namespace AindPhysiologyFip
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Transform)]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<AindPhysioFipRig>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<BaseModel>))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Circle>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipCamera>))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipCircle>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipTask>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<HarpCuttlefishfip>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSource>))]

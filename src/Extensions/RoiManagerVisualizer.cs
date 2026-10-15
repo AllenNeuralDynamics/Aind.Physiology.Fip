@@ -34,8 +34,9 @@ using OpenTK.Graphics.OpenGL4;
 /// row removes it from every camera. Emits the current <see cref="AindPhysiologyFip.RoiSettings"/>
 /// whenever anything changes. "Save Roi"/"Load Roi"/"Reset Roi" each require confirming an
 /// inline popup; Save/Load only persist circle positions (not fiber/name/enabled), to/from
-/// <see cref="LocalRoiDefaultPath"/>. <see cref="RoiSettings"/> (the property) is only consulted
-/// once, to seed the initial ROIs (positions and metadata) if set.
+/// <see cref="LocalRoiDefaultPath"/>. At startup the ROI positions are loaded from
+/// <see cref="LocalRoiDefaultPath"/> if it is set; if that fails, a warning is shown and the
+/// Reset Roi defaults are used.
 /// </remarks>
 [Combinator]
 [WorkflowElementCategory(ElementCategory.Combinator)]
@@ -55,25 +56,18 @@ public class RoiManagerVisualizer
     public float FontSize { get { return fontSize; } set { fontSize = value; } }
 
     private string localRoiDefaultPath = "../local/default.json";
-    [Description("The path used by Save Roi/Load Roi to persist the ROI circle positions.")]
+    [Description("The path used by Save Roi/Load Roi to persist the ROI circle positions. If set, the ROI positions are also loaded from it at startup (falling back to the defaults, with a warning, if that fails).")]
     [FileNameFilter("JSON|*.json|All Files|*.*")]
     [Editor("Bonsai.Design.OpenFileNameEditor, Bonsai.Design", DesignTypes.UITypeEditor)]
     public string LocalRoiDefaultPath { get { return localRoiDefaultPath; } set { localRoiDefaultPath = value; } }
-
-    /// <summary>
-    /// Gets or sets the ROI settings used to seed the initial selection, if set. Consulted only
-    /// once, when this operator first starts rendering; not serialized, assign via PropertyMapping
-    /// (e.g. from a rig schema) rather than the property grid.
-    /// </summary>
-    [XmlIgnore]
-    public RoiSettings RoiSettings { get; set; }
 
     static readonly FipCameraSource[] cameraOrder = { FipCameraSource.Iso, FipCameraSource.Green, FipCameraSource.Red };
 
     const float minRadius = 2f;
     const float radiusStep = 2f;
-    const float circleFillAlpha = 0.18f;
-    const float circleStrokeThickness = 2f;
+    const float circleFillAlpha = 0.35f;
+    const float circleStrokeThickness = 4f;
+    const float swatchBorderThickness = 3f;
     static readonly Vector4 activeCircleColor = new Vector4(0.15f, 0.85f, 0.15f, 1f);
     static readonly Vector4 labelColor = new Vector4(1f, 1f, 1f, 1f);
 
@@ -82,6 +76,7 @@ public class RoiManagerVisualizer
     const int defaultRoiCount = 4;
     const float defaultRadius = 20f;
     const float controlButtonWidth = 140f;
+    const float cameraBorderThickness = 4f;
 
     // Geometry of one circle, in that camera's image-pixel space.
     class PickerCircle
@@ -239,38 +234,6 @@ public class RoiManagerVisualizer
         return count;
     }
 
-    // Seeding (from the RoiSettings property) takes geometry AND metadata. Metadata is read from
-    // the Green/Iso list, falling back to Red; missing or duplicate fiber numbers are replaced
-    // with the next free one.
-    static void ApplySeed(RoiState state, RoiSettings seed)
-    {
-        var count = ApplyGeometry(state, seed);
-        state.Meta.Clear();
-        var used = new HashSet<int>();
-        var needsFiber = new List<RoiMeta>();
-        for (int i = 0; i < count; i++)
-        {
-            var source = ElementAtOrNull(seed.CameraGreenIsoRoi, i) ?? ElementAtOrNull(seed.CameraRedRoi, i);
-            var meta = new RoiMeta();
-            if (source != null)
-            {
-                meta.Name = source.Name;
-                meta.Enabled = source.Enabled;
-            }
-            if (source != null && source.FiberNumber.HasValue && source.FiberNumber.Value >= 0 && used.Add(source.FiberNumber.Value))
-            {
-                meta.FiberNumber = source.FiberNumber.Value;
-            }
-            else
-            {
-                meta.FiberNumber = -1;
-                needsFiber.Add(meta);
-            }
-            state.Meta.Add(meta);
-        }
-        foreach (var meta in needsFiber) meta.FiberNumber = NextFreeFiber(state.Meta);
-    }
-
     static FipCircle ToGeometryCircle(PickerCircle c)
     {
         return new FipCircle { Center = new AindPhysiologyFip.Point2f { X = c.X, Y = c.Y }, Radius = c.Radius };
@@ -398,49 +361,73 @@ public class RoiManagerVisualizer
                     var changed = false;
                     if (!seeded)
                     {
-                        var seed = RoiSettings;
-                        if (seed != null) ApplySeed(state, seed);
+                        // Startup: load the saved ROI positions, falling back to the Reset Roi
+                        // defaults if that fails.
+                        string error;
+                        if (!string.IsNullOrEmpty(LocalRoiDefaultPath) && !TryLoadFromDisk(state, out error))
+                        {
+                            ResetToDefault(state);
+                            warningMessage = "Could not load the saved ROIs at startup:\n" + error + "\n\nUsing the default ROIs instead.";
+                        }
                         seeded = true;
                         changed = true;
                     }
 
                     foreach (var slot in slots) UpdateTexture(slot, imageLock);
 
-                    ImGui.PushFont(ImGui.GetFont(), FontSize);
-
-                    // Fixed-size child + AlwaysVerticalScrollbar keep our size and scrollbar
-                    // gutter stable across frames - otherwise small content-height changes
-                    // (image scaling, Roi table row count) flip a scrollbar on/off, which
-                    // itself changes the available width, causing visible jitter.
-                    ImGui.BeginChild("##RoiManagerCanvas", Vector2.Zero, ImGuiChildFlags.None, ImGuiWindowFlags.AlwaysVerticalScrollbar);
-
-                    var currentActiveKeys = new HashSet<string>();
-                    changed |= RenderCameras(slots, state.Meta, previousActiveKeys, currentActiveKeys, selectedKeys, Enabled);
-                    previousActiveKeys = currentActiveKeys;
-
-                    ImGui.TextDisabled("Drag a circle to move it  -  Scroll while hovering it to resize");
-
-                    // Buttons stacked in a fixed-width column to the left of the Roi table.
-                    if (ImGui.BeginTable("##RoiManagerBottom", 2, ImGuiTableFlags.None))
+                    // If anything below throws mid-frame, the managed exception would otherwise
+                    // leave ImGui's window/table/popup stacks unbalanced, and the next native
+                    // ImGui call aborts the whole Bonsai process (0xc0000409). Snapshot ImGui's
+                    // state first so it can be unwound, then surface the exception as a normal
+                    // workflow error instead.
+                    var recoveryState = new ImGuiErrorRecoveryState();
+                    ImGuiP.ErrorRecoveryStoreState(ref recoveryState);
+                    try
                     {
-                        ImGui.TableSetupColumn("##RoiManagerControls", ImGuiTableColumnFlags.WidthFixed, controlButtonWidth);
-                        ImGui.TableSetupColumn("##RoiManagerTable", ImGuiTableColumnFlags.WidthStretch);
-                        ImGui.TableNextRow();
+                        ImGui.PushFont(ImGui.GetFont(), FontSize);
 
-                        ImGui.TableNextColumn();
-                        ImGui.BeginDisabled(!Enabled);
-                        RenderControls(state, slots, selectedKeys, ref changed);
-                        ImGui.EndDisabled();
+                        // Fixed-size child + AlwaysVerticalScrollbar keep our size and scrollbar
+                        // gutter stable across frames - otherwise small content-height changes
+                        // (image scaling, Roi table row count) flip a scrollbar on/off, which
+                        // itself changes the available width, causing visible jitter.
+                        ImGui.BeginChild("##RoiManagerCanvas", Vector2.Zero, ImGuiChildFlags.None, ImGuiWindowFlags.AlwaysVerticalScrollbar);
 
-                        ImGui.TableNextColumn();
-                        changed |= RenderRoiTable(state, selectedKeys, Enabled);
+                        RenderWarningPopup();
 
-                        ImGui.EndTable();
+                        var currentActiveKeys = new HashSet<string>();
+                        changed |= RenderCameras(slots, state.Meta, previousActiveKeys, currentActiveKeys, selectedKeys, Enabled);
+                        previousActiveKeys = currentActiveKeys;
+
+                        ImGui.TextDisabled("Drag a circle to move it  -  Scroll while hovering it to resize");
+
+                        // Buttons stacked in a fixed-width column to the left of the Roi table.
+                        if (ImGui.BeginTable("##RoiManagerBottom", 2, ImGuiTableFlags.None))
+                        {
+                            ImGui.TableSetupColumn("##RoiManagerControls", ImGuiTableColumnFlags.WidthFixed, controlButtonWidth);
+                            ImGui.TableSetupColumn("##RoiManagerTable", ImGuiTableColumnFlags.WidthStretch);
+                            ImGui.TableNextRow();
+
+                            ImGui.TableNextColumn();
+                            ImGui.BeginDisabled(!Enabled);
+                            RenderControls(state, slots, selectedKeys, ref changed);
+                            ImGui.EndDisabled();
+
+                            ImGui.TableNextColumn();
+                            changed |= RenderRoiTable(state, selectedKeys, Enabled);
+
+                            ImGui.EndTable();
+                        }
+
+                        ImGui.EndChild();
+
+                        ImGui.PopFont();
                     }
-
-                    ImGui.EndChild();
-
-                    ImGui.PopFont();
+                    catch (Exception ex)
+                    {
+                        ImGuiP.ErrorRecoveryTryToRecoverState(ref recoveryState);
+                        observer.OnError(ex);
+                        return;
+                    }
 
                     if (changed) observer.OnNext(ToRoiSettings(state));
                 },
@@ -458,16 +445,25 @@ public class RoiManagerVisualizer
         if (ImGui.Button("Save Roi##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmSaveRoi##RoiManager");
         if (ConfirmPopup("ConfirmSaveRoi##RoiManager", "Overwrite the saved ROI positions on disk?"))
         {
-            SaveToDisk(state);
+            string error;
+            if (!TrySaveToDisk(state, out error))
+            {
+                warningMessage = "Could not save the ROIs:\n" + error;
+            }
         }
 
         if (ImGui.Button("Load Roi##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmLoadRoi##RoiManager");
         if (ConfirmPopup("ConfirmLoadRoi##RoiManager", "Load the saved ROI positions? This overwrites the current positions."))
         {
-            if (LoadFromDisk(state))
+            string error;
+            if (TryLoadFromDisk(state, out error))
             {
                 selectedKeys.Clear();
                 changed = true;
+            }
+            else
+            {
+                warningMessage = "Could not load the saved ROIs:\n" + error + "\n\nThe current ROIs were kept.";
             }
         }
 
@@ -507,28 +503,78 @@ public class RoiManagerVisualizer
         return confirmed;
     }
 
-    void SaveToDisk(RoiState state)
+    // Never throws: this runs mid-frame, and an exception escaping there leaves ImGui's
+    // Begin/End stacks unbalanced. On failure `error` says why.
+    bool TrySaveToDisk(RoiState state, out string error)
     {
-        var json = JsonConvert.SerializeObject(ToGeometrySettings(state));
-        var directory = Path.GetDirectoryName(LocalRoiDefaultPath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        try
         {
-            Directory.CreateDirectory(directory);
+            var json = JsonConvert.SerializeObject(ToGeometrySettings(state));
+            var directory = Path.GetDirectoryName(LocalRoiDefaultPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            File.WriteAllText(LocalRoiDefaultPath, json);
         }
-        File.WriteAllText(LocalRoiDefaultPath, json);
+        catch (Exception ex)
+        {
+            error = LocalRoiDefaultPath + ": " + ex.Message;
+            return false;
+        }
+        error = null;
+        return true;
     }
 
     // Loads circle positions only. Fiber/name/enabled stay as they are for the Rois that still
-    // exist; if the file has more Rois, the extra ones get default metadata.
-    bool LoadFromDisk(RoiState state)
+    // exist; if the file has more Rois, the extra ones get default metadata. On failure `state`
+    // is left untouched and `error` says why.
+    bool TryLoadFromDisk(RoiState state, out string error)
     {
-        if (!File.Exists(LocalRoiDefaultPath)) return false;
-        var json = File.ReadAllText(LocalRoiDefaultPath);
-        var settings = JsonConvert.DeserializeObject<RoiSettings>(json);
-        if (settings == null) return false;
+        RoiSettings settings;
+        try
+        {
+            if (!File.Exists(LocalRoiDefaultPath))
+            {
+                error = "File not found: " + Path.GetFullPath(LocalRoiDefaultPath);
+                return false;
+            }
+            settings = JsonConvert.DeserializeObject<RoiSettings>(File.ReadAllText(LocalRoiDefaultPath));
+        }
+        catch (Exception ex)
+        {
+            error = LocalRoiDefaultPath + ": " + ex.Message;
+            return false;
+        }
+        if (settings == null)
+        {
+            error = LocalRoiDefaultPath + ": the file is empty.";
+            return false;
+        }
+
         var count = ApplyGeometry(state, settings);
         ResizeMeta(state.Meta, count);
+        error = null;
         return true;
+    }
+
+    // Set when a load fails (at startup or from Load Roi); shown as a modal until dismissed.
+    string warningMessage;
+
+    void RenderWarningPopup()
+    {
+        const string popupId = "Warning##RoiManagerWarning";
+        if (warningMessage != null && !ImGui.IsPopupOpen(popupId)) ImGui.OpenPopup(popupId);
+        if (ImGui.BeginPopupModal(popupId, ImGuiWindowFlags.AlwaysAutoResize))
+        {
+            ImGui.TextUnformatted(warningMessage ?? string.Empty);
+            if (ImGui.Button("OK##RoiManagerWarning", new Vector2(120f, 0f)))
+            {
+                warningMessage = null;
+                ImGui.CloseCurrentPopup();
+            }
+            ImGui.EndPopup();
+        }
     }
 
     static bool RenderCameras(List<ImageSlot> slots, List<RoiMeta> meta, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled)
@@ -536,13 +582,6 @@ public class RoiManagerVisualizer
         var changed = false;
         if (ImGui.BeginTable("##RoiManagerCameras", slots.Count, ImGuiTableFlags.SizingStretchSame))
         {
-            ImGui.TableNextRow();
-            foreach (var slot in slots)
-            {
-                ImGui.TableNextColumn();
-                RenderCameraLabel(slot);
-            }
-
             ImGui.TableNextRow();
             foreach (var slot in slots)
             {
@@ -555,23 +594,11 @@ public class RoiManagerVisualizer
         return changed;
     }
 
-    static void RenderCameraLabel(ImageSlot slot)
-    {
-        var availWidth = ImGui.GetContentRegionAvail().X;
-        var textSize = ImGui.CalcTextSize(slot.Label);
-        var offset = Math.Max(0f, (availWidth - textSize.X) / 2f);
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
-
-        ImGui.PushStyleColor(ImGuiCol.Text, ColorExtensions.CameraColor(slot.Camera));
-        ImGui.TextUnformatted(slot.Label);
-        ImGui.PopStyleColor();
-    }
-
     static bool RenderCameraImage(ImageSlot slot, List<RoiMeta> meta, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled)
     {
         if (slot.TextureId == 0 || slot.TextureWidth <= 0 || slot.TextureHeight <= 0)
         {
-            ImGui.TextUnformatted("(no image)");
+            ImGui.TextColored(ColorExtensions.CameraColor(slot.Camera), slot.Label + " (no image)");
             return false;
         }
 
@@ -591,11 +618,28 @@ public class RoiManagerVisualizer
         var afterImage = ImGui.GetCursorScreenPos();
 
         var drawList = ImGui.GetWindowDrawList();
-        changed |= RenderCircleOverlay(slot.Circles.Background, "B", null, true, ColorExtensions.BackgroundColor, "bg", "bg_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
+        // Thick border in the camera's color identifies each channel (in place of a title). Drawn
+        // inset by half its thickness so it stays inside the image bounds.
+        var borderInset = new Vector2(cameraBorderThickness * 0.5f, cameraBorderThickness * 0.5f);
+        drawList.AddRect(
+            origin + borderInset, origin + displaySize - borderInset,
+            ImGui.ColorConvertFloat4ToU32(ColorExtensions.CameraColor(slot.Camera)),
+            0f, ImDrawFlags.None, cameraBorderThickness);
+
+        // Channel name in the bottom-left corner, just inside the border, on a dark backing so
+        // it stays readable over bright frames. Drawn before the circles so they stay on top.
+        var labelPadding = new Vector2(cameraBorderThickness + 4f, cameraBorderThickness + 2f);
+        var labelSize = ImGui.CalcTextSize(slot.Label);
+        var labelPos = new Vector2(origin.X + labelPadding.X, origin.Y + displaySize.Y - labelPadding.Y - labelSize.Y);
+        drawList.AddRectFilled(labelPos - new Vector2(3f, 1f), labelPos + labelSize + new Vector2(3f, 1f), ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.6f)));
+        drawList.AddText(labelPos, ImGui.ColorConvertFloat4ToU32(ColorExtensions.CameraColor(slot.Camera)), slot.Label);
+
+        changed |= RenderCircleOverlay(slot.Circles.Background, "B", null, true, ColorExtensions.BackgroundColor, ColorExtensions.BackgroundColor, "bg", "bg_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
         for (int i = 0; i < slot.Circles.Rois.Count; i++)
         {
             var key = "roi" + i;
-            changed |= RenderCircleOverlay(slot.Circles.Rois[i], i.ToString(), meta[i].Name, meta[i].Enabled, ColorExtensions.RoiColor(i), key, key + "_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
+            // Outline in the Roi number's color, fill in the fiber number's color.
+            changed |= RenderCircleOverlay(slot.Circles.Rois[i], i.ToString(), meta[i].Name, meta[i].Enabled, ColorExtensions.RoiColor(i), ColorExtensions.RoiColor(meta[i].FiberNumber), key, key + "_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
         }
 
         // A bare SetCursorScreenPos with no item submitted afterward can't grow the
@@ -611,21 +655,22 @@ public class RoiManagerVisualizer
     // so hovering/dragging it in any column highlights it everywhere; `widgetIdSuffix` stays
     // unique per column to avoid ImGui ID collisions.
     static unsafe bool RenderCircleOverlay(
-        PickerCircle circle, string label, string name, bool roiEnabled, Vector4 roiColor, string activeKey, string widgetIdSuffix,
+        PickerCircle circle, string label, string name, bool roiEnabled, Vector4 edgeColor, Vector4 fillColor, string activeKey, string widgetIdSuffix,
         Vector2 origin, float scale, float boundsWidth, float boundsHeight, ImDrawListPtr drawList,
         HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled)
     {
         var changed = ClampToBounds(circle, boundsWidth, boundsHeight);
 
         var isActive = previousActiveKeys.Contains(activeKey) || selectedKeys.Contains(activeKey);
-        // Each Roi has its own fixed color (see ColorExtensions.RoiColor); hover/drag or table
-        // selection turns it green. Disabled Rois are drawn grey (still draggable/selectable) so they read as "excluded".
-        var color = isActive ? activeCircleColor : roiEnabled ? roiColor : disabledCircleColor;
+        // Each Roi has a fixed outline color (its Roi number) and fill color (its fiber number), see
+        // ColorExtensions.RoiColor. Hover/drag or table selection turns the whole circle green;
+        // disabled Rois are drawn grey (still draggable/selectable) so they read as "excluded".
+        var color = isActive ? activeCircleColor : roiEnabled ? edgeColor : disabledCircleColor;
+        var fill = isActive ? activeCircleColor : roiEnabled ? fillColor : disabledCircleColor;
         var center = origin + new Vector2(circle.X, circle.Y) * scale;
         var radius = circle.Radius * scale;
 
-        var fillColor = new Vector4(color.X, color.Y, color.Z, circleFillAlpha);
-        drawList.AddCircleFilled(center, radius, ImGui.ColorConvertFloat4ToU32(fillColor));
+        drawList.AddCircleFilled(center, radius, ImGui.ColorConvertFloat4ToU32(new Vector4(fill.X, fill.Y, fill.Z, circleFillAlpha)));
         drawList.AddCircle(center, radius, ImGui.ColorConvertFloat4ToU32(color), 0, circleStrokeThickness);
         var textSize = ImGui.CalcTextSize(label);
         drawList.AddText(center - textSize * 0.5f, ImGui.ColorConvertFloat4ToU32(labelColor), label);
@@ -684,13 +729,15 @@ public class RoiManagerVisualizer
         var changed = false;
 
         // Columns mirror AindPhysiologyFip.FipCircle: RoiNumber (the row index), FiberNumber,
-        // Name, Enabled.
-        if (ImGui.BeginTable("##RoiTable", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+        // Name, Enabled - plus an unlabeled swatch, next to the Roi number, showing the Roi's
+        // circle color.
+        if (ImGui.BeginTable("##RoiTable", 6, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
         {
             var roiWidth = ImGui.CalcTextSize("ROI").X + ImGui.GetFrameHeight() * 0.5f;
             // Room for a 3-digit number plus the two arrow buttons.
             var fiberWidth = ImGui.CalcTextSize("000").X + ImGui.GetFrameHeight() * 2.5f;
             ImGui.TableSetupColumn("ROI", ImGuiTableColumnFlags.WidthFixed, roiWidth);
+            ImGui.TableSetupColumn("##Color", ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
             ImGui.TableSetupColumn("Fiber", ImGuiTableColumnFlags.WidthFixed, fiberWidth);
             ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn("Enabled", ImGuiTableColumnFlags.WidthFixed);
@@ -721,17 +768,10 @@ public class RoiManagerVisualizer
         return changed;
     }
 
-    static string DescribeCircle(string camera, PickerCircle circle)
-    {
-        return string.Format(CultureInfo.InvariantCulture,
-            "{0}: center ({1:F1}, {2:F1}) px, radius {3:F1} px", camera, circle.X, circle.Y, circle.Radius);
-    }
-
     // Row-wide selectable drawn first in the row, with an empty label so the cell's own widgets
     // render on top of it. AllowOverlap lets those widgets (inputs, checkbox, delete button)
-    // reliably take their clicks over the selectable's SpanAllColumns hit region. Hovering the
-    // row outside those widgets shows the circle's geometry in every camera as a tooltip.
-    static void RenderRowSelectable(string key, PickerCircle greenIso, PickerCircle red, HashSet<string> selectedKeys)
+    // reliably take their clicks over the selectable's SpanAllColumns hit region.
+    static void RenderRowSelectable(string key, HashSet<string> selectedKeys)
     {
         var selected = selectedKeys.Contains(key);
         if (ImGui.Selectable("##roiRow_" + key, selected, ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowOverlap, new Vector2(0f, ImGui.GetFrameHeight())))
@@ -748,12 +788,22 @@ public class RoiManagerVisualizer
                 selectedKeys.Add(key);
             }
         }
-        if (ImGui.IsItemHovered() && ImGui.BeginTooltip())
-        {
-            ImGui.TextUnformatted(DescribeCircle("Green/Iso", greenIso) + "\n" + DescribeCircle("Red", red));
-            ImGui.EndTooltip();
-        }
         ImGui.SameLine(0f, 0f);
+    }
+
+    // Draws a swatch filling the current table cell's width: `fill` inside, `edge` as its border,
+    // matching how that Roi's circle is drawn. A non-interactive Dummy reserves the space, so
+    // clicks still reach the row's selectable underneath.
+    static void RenderColorSwatch(Vector4 fill, Vector4 edge)
+    {
+        var size = new Vector2(Math.Max(1f, ImGui.GetContentRegionAvail().X), ImGui.GetFrameHeight());
+        var min = ImGui.GetCursorScreenPos();
+        var max = min + size;
+        var inset = new Vector2(swatchBorderThickness * 0.5f, swatchBorderThickness * 0.5f);
+        var drawList = ImGui.GetWindowDrawList();
+        drawList.AddRectFilled(min, max, ImGui.ColorConvertFloat4ToU32(fill));
+        drawList.AddRect(min + inset, max - inset, ImGui.ColorConvertFloat4ToU32(edge), 0f, ImDrawFlags.None, swatchBorderThickness);
+        ImGui.Dummy(size);
     }
 
     // Only the Background circles' geometry is used, so their row shows fixed placeholders
@@ -762,9 +812,12 @@ public class RoiManagerVisualizer
     {
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
-        RenderRowSelectable("bg", state.GreenIso.Background, state.Red.Background, selectedKeys);
+        RenderRowSelectable("bg", selectedKeys);
         ImGui.AlignTextToFramePadding();
-        ImGui.TextColored(ColorExtensions.BackgroundColor, "B");
+        ImGui.TextUnformatted("B");
+
+        ImGui.TableNextColumn();
+        RenderColorSwatch(ColorExtensions.BackgroundColor, ColorExtensions.BackgroundColor);
 
         ImGui.TableNextColumn();
         ImGui.AlignTextToFramePadding();
@@ -786,13 +839,19 @@ public class RoiManagerVisualizer
 
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
-        RenderRowSelectable(key, state.GreenIso.Rois[index], state.Red.Rois[index], selectedKeys);
+        RenderRowSelectable(key, selectedKeys);
 
-        // Disabled Rois render their text grey, matching their grey circle in the images; the
-        // Roi number is otherwise shown in that Roi's circle color.
+        // Disabled Rois render their text (and swatch) grey, matching their grey circle in the
+        // images.
         if (!meta.Enabled) ImGui.PushStyleColor(ImGuiCol.Text, disabledCircleColor);
         ImGui.AlignTextToFramePadding();
-        ImGui.TextColored(meta.Enabled ? ColorExtensions.RoiColor(index) : disabledCircleColor, index.ToString(CultureInfo.InvariantCulture));
+        ImGui.TextUnformatted(index.ToString(CultureInfo.InvariantCulture));
+
+        ImGui.TableNextColumn();
+        // Fiber color inside, Roi color as the border - same as the circle. Drawn before the fiber
+        // input, so a fiber change shows its new color from the next frame.
+        if (meta.Enabled) RenderColorSwatch(ColorExtensions.RoiColor(meta.FiberNumber), ColorExtensions.RoiColor(index));
+        else RenderColorSwatch(disabledCircleColor, disabledCircleColor);
 
         ImGui.BeginDisabled(!enabled);
         ImGui.TableNextColumn();

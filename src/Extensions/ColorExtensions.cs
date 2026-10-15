@@ -56,8 +56,8 @@ static class ColorExtensions
         { FipCameraSource.Red, "Red" },
     };
 
-    // Fixed per-Roi colors, by Roi index (0 = first Roi after the Background), shared by the Roi
-    // picker and the activity plots. Indices past the end cycle back to the start.
+    // Fixed per-Roi colors, indexed by Roi number (0 = first Roi after the Background), shared by
+    // the Roi picker and the activity plots. Roi numbers past the end cycle back to the start.
     private static readonly Vector4[] roiColors =
     {
         Rgb(0xFF, 0x32, 0x32), // ROI 0: red
@@ -73,10 +73,10 @@ static class ColorExtensions
         return new Vector4(r / 255f, g / 255f, b / 255f, 1f);
     }
 
-    public static Vector4 RoiColor(int roiIndex)
+    public static Vector4 RoiColor(int roiNumber)
     {
         var count = roiColors.Length;
-        return roiColors[((roiIndex % count) + count) % count];
+        return roiColors[((roiNumber % count) + count) % count];
     }
 
     public static Vector4 BackgroundColor

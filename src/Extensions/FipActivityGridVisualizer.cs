@@ -61,11 +61,12 @@ public class FipActivityGridVisualizer
         return name;
     }
 
-    // Same colors as the circles in RoiManagerVisualizer: the Background is white, and ROI n
-    // (region index n + 1) uses the color for Roi number n.
+    // Same colors as the circles in RoiManagerVisualizer, except the Background, which is plotted
+    // in black (its circle color, white, is invisible on the plot background). ROI n (region
+    // index n + 1) uses the color for Roi number n.
     static Vector4 RoiColor(int index)
     {
-        return index == 0 ? ColorExtensions.BackgroundColor : ColorExtensions.RoiColor(index - 1);
+        return index == 0 ? new Vector4(0f, 0f, 0f, 1f) : ColorExtensions.RoiColor(index - 1);
     }
 
     // The Roi definition behind a region index. Fiber numbers are shared by all cameras, so the

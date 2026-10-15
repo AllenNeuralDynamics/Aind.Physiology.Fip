@@ -10,7 +10,7 @@ using AindPhysiologyFip;
 [Combinator]
 [Description("Checks the ROI settings before starting: the green/iso and red channels must have the same number of ROIs, and within each channel every ROI must have a ROI number and a fiber number, with no duplicates.")]
 [WorkflowElementCategory(ElementCategory.Combinator)]
-public class CheckRoiCountMatches
+public class ValidateRoiSettings
 {
     public IObservable<bool> Process(IObservable<RoiSettings> source)
     {

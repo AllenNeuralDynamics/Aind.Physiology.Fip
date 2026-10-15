@@ -28,16 +28,18 @@ using OpenTK.Graphics.OpenGL4;
 /// Renders one plain-ImGui column per physical camera source (Iso, Green, Red) with its own raw
 /// image; Iso and Green share the same underlying ROI geometry (they're the same optics/sensor,
 /// just different exposures), so dragging or resizing a circle in either column moves it in both
-/// ("yoked"). Red has its own independent circles. Emits the current
-/// <see cref="AindPhysiologyFip.RoiSettings"/> whenever a circle is dragged/resized or a
-/// Load/Reset action completes. "Save Roi"/"Load Roi"/"Reset Roi" each require confirming an
-/// inline popup before acting. <see cref="RoiSettings"/> (the property) is only consulted once,
-/// to seed the initial selection if set (e.g. via PropertyMapping from a rig schema); "Load Roi"
-/// always re-reads from <see cref="LocalRoiDefaultPath"/> instead.
+/// ("yoked"). Red has its own circle positions, but the same set of ROIs: a single table below
+/// the images lists every ROI once (ROI number = row index) with its fiber number, name and
+/// enabled flag, which apply to all cameras. Add ROI adds a circle to every camera; deleting a
+/// row removes it from every camera. Emits the current <see cref="AindPhysiologyFip.RoiSettings"/>
+/// whenever anything changes. "Save Roi"/"Load Roi"/"Reset Roi" each require confirming an
+/// inline popup; Save/Load only persist circle positions (not fiber/name/enabled), to/from
+/// <see cref="LocalRoiDefaultPath"/>. <see cref="RoiSettings"/> (the property) is only consulted
+/// once, to seed the initial ROIs (positions and metadata) if set.
 /// </remarks>
 [Combinator]
 [WorkflowElementCategory(ElementCategory.Combinator)]
-[Description("Renders a live-image ROI picker with one column per camera (Iso, Green, Red; Iso/Green share yoked ROIs), plus Save Roi/Load Roi/Reset Roi buttons (each behind a confirm popup), emitting the current RoiSettings whenever it changes. Source1 = Frame subject; Source2 = the grouped Fip activity stream (e.g. ParsedFipStreams), used only for the live preview images.")]
+[Description("Renders a live-image ROI picker with one column per camera (Iso, Green, Red; Iso/Green share yoked ROIs) and a single ROI table shared by all cameras, plus Save Roi/Load Roi/Reset Roi (each behind a confirm popup) and Add ROI buttons, emitting the current RoiSettings whenever it changes. Source1 = Frame subject; Source2 = the grouped Fip activity stream (e.g. ParsedFipStreams), used only for the live preview images.")]
 public class RoiManagerVisualizer
 {
     private bool visible = true;
@@ -45,7 +47,7 @@ public class RoiManagerVisualizer
     public bool Visible { get { return visible; } set { visible = value; } }
 
     private bool enabled = true;
-    [Description("Specifies whether Save/Load/Reset and circle drag/resize are enabled. When false, everything is read-only, but circles still highlight green on hover.")]
+    [Description("Specifies whether Save/Load/Reset/Add, the ROI table and circle drag/resize are enabled. When false, everything is read-only, but circles still highlight green on hover.")]
     public bool Enabled { get { return enabled; } set { enabled = value; } }
 
     private float fontSize = 20f;
@@ -53,7 +55,7 @@ public class RoiManagerVisualizer
     public float FontSize { get { return fontSize; } set { fontSize = value; } }
 
     private string localRoiDefaultPath = "../local/default.json";
-    [Description("The path used by Save Roi/Load Roi to persist the ROI configuration.")]
+    [Description("The path used by Save Roi/Load Roi to persist the ROI circle positions.")]
     [FileNameFilter("JSON|*.json|All Files|*.*")]
     [Editor("Bonsai.Design.OpenFileNameEditor, Bonsai.Design", DesignTypes.UITypeEditor)]
     public string LocalRoiDefaultPath { get { return localRoiDefaultPath; } set { localRoiDefaultPath = value; } }
@@ -72,21 +74,29 @@ public class RoiManagerVisualizer
     const float radiusStep = 2f;
     const float circleFillAlpha = 0.18f;
     const float circleStrokeThickness = 2f;
-    static readonly Vector4 inactiveCircleColor = new Vector4(0.9f, 0.15f, 0.15f, 1f);
     static readonly Vector4 activeCircleColor = new Vector4(0.15f, 0.85f, 0.15f, 1f);
     static readonly Vector4 labelColor = new Vector4(1f, 1f, 1f, 1f);
 
     static readonly Vector4 disabledCircleColor = new Vector4(0.55f, 0.55f, 0.55f, 1f);
 
-    // Mirrors AindPhysiologyFip.FipCircle (geometry + Roi metadata). The Background circle uses
-    // the same class but only its geometry is persisted.
+    const int defaultRoiCount = 4;
+    const float defaultRadius = 20f;
+    const float controlButtonWidth = 140f;
+
+    // Geometry of one circle, in that camera's image-pixel space.
     class PickerCircle
     {
         public float X;
         public float Y;
         public float Radius;
-        public int? RoiNumber;
-        public int? FiberNumber;
+    }
+
+    // Per-Roi metadata shared by every camera: Roi i is the same fiber in Green/Iso and in Red,
+    // so its fiber number, name and enabled flag are edited once and written to both camera
+    // lists. The RoiNumber is always the row index.
+    class RoiMeta
+    {
+        public int FiberNumber;
         public string Name;
         public bool Enabled = true;
     }
@@ -95,6 +105,16 @@ public class RoiManagerVisualizer
     {
         public PickerCircle Background;
         public List<PickerCircle> Rois;
+    }
+
+    // Invariant: GreenIso.Rois, Red.Rois and Meta always have the same length (row i = Roi i in
+    // every camera). The objects themselves are never replaced, only mutated, so ImageSlots can
+    // keep references to them.
+    class RoiState
+    {
+        public RoiCircleSet GreenIso;
+        public RoiCircleSet Red;
+        public List<RoiMeta> Meta;
     }
 
     class ImageSlot
@@ -115,172 +135,204 @@ public class RoiManagerVisualizer
         return new PickerCircle { X = x, Y = y, Radius = radius };
     }
 
-    // Short label drawn on the circle itself in the image overlay: the Roi's RoiNumber, falling
-    // back to its (positional) list index when no RoiNumber is assigned.
-    static string RoiOverlayLabel(PickerCircle circle, int index)
+    static PickerCircle DefaultRoiCircle(int index)
     {
-        return circle.RoiNumber.HasValue ? circle.RoiNumber.Value.ToString() : index.ToString();
+        // 2x2 grid for the first four, then stacked at the last grid position.
+        var offsets = new float[] { 50, 150 };
+        var i = Math.Min(index, defaultRoiCount - 1);
+        return MakeCircle(offsets[i / 2], offsets[i % 2], defaultRadius);
     }
 
-    // RoiNumber and FiberNumber are each kept unique within one camera's Roi list (Green/Iso or
-    // Red); this selects which one a helper below reads/writes.
-    enum NumberField { Roi, Fiber }
-
-    static int? GetNumber(PickerCircle circle, NumberField field)
+    static PickerCircle DefaultBackground()
     {
-        return field == NumberField.Roi ? circle.RoiNumber : circle.FiberNumber;
+        return MakeCircle(0, 0, defaultRadius);
     }
 
-    static void SetNumber(PickerCircle circle, NumberField field, int? value)
+    static void ResetToDefault(RoiState state)
     {
-        if (field == NumberField.Roi) circle.RoiNumber = value;
-        else circle.FiberNumber = value;
-    }
-
-    // Smallest non-negative number not already used by any Roi in the list, so adding an Roi
-    // fills gaps left by deletions before growing the range.
-    static int NextFreeNumber(List<PickerCircle> rois, NumberField field)
-    {
-        var used = new HashSet<int>();
-        foreach (var roi in rois)
+        foreach (var set in new[] { state.GreenIso, state.Red })
         {
-            var number = GetNumber(roi, field);
-            if (number.HasValue) used.Add(number.Value);
+            set.Background = DefaultBackground();
+            set.Rois = Enumerable.Range(0, defaultRoiCount).Select(DefaultRoiCircle).ToList();
         }
+        state.Meta.Clear();
+        ResizeMeta(state.Meta, defaultRoiCount);
+    }
+
+    static RoiState MakeDefaultState()
+    {
+        var state = new RoiState
+        {
+            GreenIso = new RoiCircleSet(),
+            Red = new RoiCircleSet(),
+            Meta = new List<RoiMeta>(),
+        };
+        ResetToDefault(state);
+        return state;
+    }
+
+    // Smallest non-negative fiber number not already used, so adding an Roi fills gaps left by
+    // deletions before growing the range.
+    static int NextFreeFiber(List<RoiMeta> meta)
+    {
+        var used = new HashSet<int>(meta.Select(m => m.FiberNumber));
         var next = 0;
         while (used.Contains(next)) next++;
         return next;
     }
 
-    // Sets `target`'s number to `value`; if another Roi already holds `value`, it takes
-    // `target`'s previous number instead (a swap), so numbers stay unique and never go blank.
-    static bool AssignUniqueNumber(List<PickerCircle> rois, PickerCircle target, NumberField field, int value)
+    // Sets `target`'s fiber number to `value`; if another Roi already has `value`, it takes
+    // `target`'s previous number instead (a swap), so fiber numbers stay unique.
+    static bool AssignUniqueFiber(List<RoiMeta> meta, RoiMeta target, int value)
     {
-        var previous = GetNumber(target, field);
+        var previous = target.FiberNumber;
         if (previous == value) return false;
-        foreach (var roi in rois)
+        foreach (var other in meta)
         {
-            if (roi != target && GetNumber(roi, field) == value) SetNumber(roi, field, previous);
+            if (other != target && other.FiberNumber == value) other.FiberNumber = previous;
         }
-        SetNumber(target, field, value);
+        target.FiberNumber = value;
         return true;
     }
 
-    // Fills in missing numbers and resolves duplicates (e.g. from an older file without
-    // RoiNumber/FiberNumber, or one edited by hand) by reassigning the next free number.
-    static void NormalizeNumbers(List<PickerCircle> rois, NumberField field)
+    // Drops or appends Rois so there are exactly `count`; new ones get the next free fiber.
+    static void ResizeMeta(List<RoiMeta> meta, int count)
     {
-        var seen = new HashSet<int>();
-        var needsNumber = new List<PickerCircle>();
-        foreach (var roi in rois)
-        {
-            var number = GetNumber(roi, field);
-            if (number.HasValue && number.Value >= 0 && seen.Add(number.Value)) continue;
-            SetNumber(roi, field, null);
-            needsNumber.Add(roi);
-        }
-        foreach (var roi in needsNumber) SetNumber(roi, field, NextFreeNumber(rois, field));
+        while (meta.Count > count) meta.RemoveAt(meta.Count - 1);
+        while (meta.Count < count) meta.Add(new RoiMeta { FiberNumber = NextFreeFiber(meta) });
     }
 
-    static PickerCircle MakeRoi(float x, float y, float radius, int roiNumber, int fiberNumber)
+    static FipCircle ElementAtOrNull(List<FipCircle> list, int index)
     {
-        var circle = MakeCircle(x, y, radius);
-        circle.RoiNumber = roiNumber;
-        circle.FiberNumber = fiberNumber;
-        return circle;
+        return list != null && index < list.Count ? list[index] : null;
     }
 
-    static List<PickerCircle> DefaultRois()
+    static int RoiCount(RoiSettings settings)
     {
-        var offsets = new float[] { 50, 150 };
-        var rois = new List<PickerCircle>();
-        foreach (var x in offsets)
-        {
-            foreach (var y in offsets)
-            {
-                rois.Add(MakeRoi(x, y, 20, rois.Count, rois.Count));
-            }
-        }
-        return rois;
-    }
-
-    static RoiCircleSet MakeDefaultCircleSet()
-    {
-        return new RoiCircleSet { Background = MakeCircle(0, 0, 20), Rois = DefaultRois() };
-    }
-
-    static void ResetToDefault(RoiCircleSet set)
-    {
-        set.Background = MakeCircle(0, 0, 20);
-        set.Rois = DefaultRois();
-    }
-
-    // The Background is a FipCircle too, but only its geometry is meaningful.
-    static FipCircle ToBackgroundCircle(PickerCircle c)
-    {
-        return new FipCircle { Center = new AindPhysiologyFip.Point2f { X = c.X, Y = c.Y }, Radius = c.Radius };
-    }
-
-    static FipCircle ToFipCircle(PickerCircle c)
-    {
-        return new FipCircle
-        {
-            Center = new AindPhysiologyFip.Point2f { X = c.X, Y = c.Y },
-            Radius = c.Radius,
-            RoiNumber = c.RoiNumber,
-            FiberNumber = c.FiberNumber,
-            Name = c.Name,
-            Enabled = c.Enabled,
-        };
-    }
-
-    static PickerCircle FromBackgroundCircle(FipCircle c, float fallbackX, float fallbackY, float fallbackRadius)
-    {
-        if (c == null) return MakeCircle(fallbackX, fallbackY, fallbackRadius);
-        return MakeCircle((float)c.Center.X, (float)c.Center.Y, (float)c.Radius);
+        var greenIso = settings.CameraGreenIsoRoi == null ? 0 : settings.CameraGreenIsoRoi.Count;
+        var red = settings.CameraRedRoi == null ? 0 : settings.CameraRedRoi.Count;
+        return Math.Max(greenIso, red);
     }
 
     static PickerCircle FromFipCircle(FipCircle c, PickerCircle fallback)
     {
-        if (c == null) return fallback;
-        var circle = MakeCircle((float)c.Center.X, (float)c.Center.Y, (float)c.Radius);
-        circle.RoiNumber = c.RoiNumber;
-        circle.FiberNumber = c.FiberNumber;
-        circle.Name = c.Name;
-        circle.Enabled = c.Enabled;
+        if (c == null || c.Center == null) return fallback;
+        return MakeCircle((float)c.Center.X, (float)c.Center.Y, (float)c.Radius);
+    }
+
+    // Replaces both cameras' circle positions with the ones in `settings`. The Roi count becomes
+    // the larger of the two lists; a camera that's missing a circle gets a default one. Only
+    // geometry is read here - callers decide what happens to the metadata. Returns the count.
+    static int ApplyGeometry(RoiState state, RoiSettings settings)
+    {
+        var count = RoiCount(settings);
+        if (count == 0) count = defaultRoiCount;
+
+        state.GreenIso.Background = FromFipCircle(settings.CameraGreenIsoBackground, DefaultBackground());
+        state.Red.Background = FromFipCircle(settings.CameraRedBackground, DefaultBackground());
+        state.GreenIso.Rois = Enumerable.Range(0, count)
+            .Select(i => FromFipCircle(ElementAtOrNull(settings.CameraGreenIsoRoi, i), DefaultRoiCircle(i)))
+            .ToList();
+        state.Red.Rois = Enumerable.Range(0, count)
+            .Select(i => FromFipCircle(ElementAtOrNull(settings.CameraRedRoi, i), DefaultRoiCircle(i)))
+            .ToList();
+        return count;
+    }
+
+    // Seeding (from the RoiSettings property) takes geometry AND metadata. Metadata is read from
+    // the Green/Iso list, falling back to Red; missing or duplicate fiber numbers are replaced
+    // with the next free one.
+    static void ApplySeed(RoiState state, RoiSettings seed)
+    {
+        var count = ApplyGeometry(state, seed);
+        state.Meta.Clear();
+        var used = new HashSet<int>();
+        var needsFiber = new List<RoiMeta>();
+        for (int i = 0; i < count; i++)
+        {
+            var source = ElementAtOrNull(seed.CameraGreenIsoRoi, i) ?? ElementAtOrNull(seed.CameraRedRoi, i);
+            var meta = new RoiMeta();
+            if (source != null)
+            {
+                meta.Name = source.Name;
+                meta.Enabled = source.Enabled;
+            }
+            if (source != null && source.FiberNumber.HasValue && source.FiberNumber.Value >= 0 && used.Add(source.FiberNumber.Value))
+            {
+                meta.FiberNumber = source.FiberNumber.Value;
+            }
+            else
+            {
+                meta.FiberNumber = -1;
+                needsFiber.Add(meta);
+            }
+            state.Meta.Add(meta);
+        }
+        foreach (var meta in needsFiber) meta.FiberNumber = NextFreeFiber(state.Meta);
+    }
+
+    static FipCircle ToGeometryCircle(PickerCircle c)
+    {
+        return new FipCircle { Center = new AindPhysiologyFip.Point2f { X = c.X, Y = c.Y }, Radius = c.Radius };
+    }
+
+    static FipCircle ToRoiCircle(PickerCircle c, RoiMeta meta, int index)
+    {
+        var circle = ToGeometryCircle(c);
+        circle.RoiNumber = index;
+        circle.FiberNumber = meta.FiberNumber;
+        circle.Name = meta.Name;
+        circle.Enabled = meta.Enabled;
         return circle;
     }
 
-    static void ApplySettings(RoiCircleSet set, FipCircle background, List<FipCircle> rois)
+    static List<FipCircle> ToRoiCircles(RoiCircleSet set, List<RoiMeta> meta)
     {
-        set.Background = FromBackgroundCircle(background, 0, 0, 20);
-        var defaults = DefaultRois();
-        if (rois == null || rois.Count == 0)
-        {
-            set.Rois = defaults;
-            return;
-        }
-
-        var result = new List<PickerCircle>();
-        for (int i = 0; i < rois.Count; i++)
-        {
-            var fallback = i < defaults.Count ? defaults[i] : MakeRoi(defaults[defaults.Count - 1].X, defaults[defaults.Count - 1].Y, 20, i, i);
-            result.Add(FromFipCircle(rois[i], fallback));
-        }
-        NormalizeNumbers(result, NumberField.Roi);
-        NormalizeNumbers(result, NumberField.Fiber);
-        set.Rois = result;
+        return Enumerable.Range(0, meta.Count).Select(i => ToRoiCircle(set.Rois[i], meta[i], i)).ToList();
     }
 
-    static RoiSettings ToRoiSettings(RoiCircleSet greenIso, RoiCircleSet red)
+    static RoiSettings ToRoiSettings(RoiState state)
     {
         return new RoiSettings
         {
-            CameraGreenIsoBackground = ToBackgroundCircle(greenIso.Background),
-            CameraGreenIsoRoi = greenIso.Rois.Select(ToFipCircle).ToList(),
-            CameraRedBackground = ToBackgroundCircle(red.Background),
-            CameraRedRoi = red.Rois.Select(ToFipCircle).ToList(),
+            CameraGreenIsoBackground = ToGeometryCircle(state.GreenIso.Background),
+            CameraGreenIsoRoi = ToRoiCircles(state.GreenIso, state.Meta),
+            CameraRedBackground = ToGeometryCircle(state.Red.Background),
+            CameraRedRoi = ToRoiCircles(state.Red, state.Meta),
         };
+    }
+
+    // What Save Roi writes: circle positions only, no fiber/name/enabled assignments.
+    static RoiSettings ToGeometrySettings(RoiState state)
+    {
+        return new RoiSettings
+        {
+            CameraGreenIsoBackground = ToGeometryCircle(state.GreenIso.Background),
+            CameraGreenIsoRoi = state.GreenIso.Rois.Select(ToGeometryCircle).ToList(),
+            CameraRedBackground = ToGeometryCircle(state.Red.Background),
+            CameraRedRoi = state.Red.Rois.Select(ToGeometryCircle).ToList(),
+        };
+    }
+
+    static PickerCircle ImageCenterCircle(List<ImageSlot> slots, Func<ImageSlot, bool> predicate)
+    {
+        var slot = slots.FirstOrDefault(s => predicate(s) && s.TextureWidth > 0 && s.TextureHeight > 0);
+        if (slot == null) return MakeCircle(100f, 100f, defaultRadius);
+        return MakeCircle(slot.TextureWidth / 2f, slot.TextureHeight / 2f, defaultRadius);
+    }
+
+    static void AddRoi(RoiState state, List<ImageSlot> slots)
+    {
+        state.GreenIso.Rois.Add(ImageCenterCircle(slots, s => s.Camera != FipCameraSource.Red));
+        state.Red.Rois.Add(ImageCenterCircle(slots, s => s.Camera == FipCameraSource.Red));
+        state.Meta.Add(new RoiMeta { FiberNumber = NextFreeFiber(state.Meta) });
+    }
+
+    static void RemoveRoi(RoiState state, int index)
+    {
+        state.GreenIso.Rois.RemoveAt(index);
+        state.Red.Rois.RemoveAt(index);
+        state.Meta.RemoveAt(index);
     }
 
     public IObservable<RoiSettings> Process<TTickSource>(
@@ -289,8 +341,7 @@ public class RoiManagerVisualizer
     {
         return Observable.Create<RoiSettings>(observer =>
         {
-            var greenIso = MakeDefaultCircleSet();
-            var red = MakeDefaultCircleSet();
+            var state = MakeDefaultState();
             var slots = new List<ImageSlot>();
             for (int i = 0; i < cameraOrder.Length; i++)
             {
@@ -299,7 +350,7 @@ public class RoiManagerVisualizer
                 {
                     Camera = camera,
                     Label = ColorExtensions.CameraDisplayName(camera),
-                    Circles = camera == FipCameraSource.Red ? red : greenIso,
+                    Circles = camera == FipCameraSource.Red ? state.Red : state.GreenIso,
                 });
             }
 
@@ -348,11 +399,7 @@ public class RoiManagerVisualizer
                     if (!seeded)
                     {
                         var seed = RoiSettings;
-                        if (seed != null)
-                        {
-                            ApplySettings(greenIso, seed.CameraGreenIsoBackground, seed.CameraGreenIsoRoi);
-                            ApplySettings(red, seed.CameraRedBackground, seed.CameraRedRoi);
-                        }
+                        if (seed != null) ApplySeed(state, seed);
                         seeded = true;
                         changed = true;
                     }
@@ -367,21 +414,35 @@ public class RoiManagerVisualizer
                     // itself changes the available width, causing visible jitter.
                     ImGui.BeginChild("##RoiManagerCanvas", Vector2.Zero, ImGuiChildFlags.None, ImGuiWindowFlags.AlwaysVerticalScrollbar);
 
-                    ImGui.BeginDisabled(!Enabled);
-                    RenderControls(greenIso, red, ref changed);
-                    ImGui.EndDisabled();
-
                     var currentActiveKeys = new HashSet<string>();
-                    changed |= RenderCameras(slots, previousActiveKeys, currentActiveKeys, selectedKeys, Enabled);
+                    changed |= RenderCameras(slots, state.Meta, previousActiveKeys, currentActiveKeys, selectedKeys, Enabled);
                     previousActiveKeys = currentActiveKeys;
 
                     ImGui.TextDisabled("Drag a circle to move it  -  Scroll while hovering it to resize");
+
+                    // Buttons stacked in a fixed-width column to the left of the Roi table.
+                    if (ImGui.BeginTable("##RoiManagerBottom", 2, ImGuiTableFlags.None))
+                    {
+                        ImGui.TableSetupColumn("##RoiManagerControls", ImGuiTableColumnFlags.WidthFixed, controlButtonWidth);
+                        ImGui.TableSetupColumn("##RoiManagerTable", ImGuiTableColumnFlags.WidthStretch);
+                        ImGui.TableNextRow();
+
+                        ImGui.TableNextColumn();
+                        ImGui.BeginDisabled(!Enabled);
+                        RenderControls(state, slots, selectedKeys, ref changed);
+                        ImGui.EndDisabled();
+
+                        ImGui.TableNextColumn();
+                        changed |= RenderRoiTable(state, selectedKeys, Enabled);
+
+                        ImGui.EndTable();
+                    }
 
                     ImGui.EndChild();
 
                     ImGui.PopFont();
 
-                    if (changed) observer.OnNext(ToRoiSettings(greenIso, red));
+                    if (changed) observer.OnNext(ToRoiSettings(state));
                 },
                 observer.OnError,
                 observer.OnCompleted));
@@ -390,46 +451,38 @@ public class RoiManagerVisualizer
         });
     }
 
-    void RenderControls(RoiCircleSet greenIso, RoiCircleSet red, ref bool changed)
+    void RenderControls(RoiState state, List<ImageSlot> slots, HashSet<string> selectedKeys, ref bool changed)
     {
-        var buttonSize = new Vector2(140f, ImGui.GetFrameHeight() * 1.6f);
+        var buttonSize = new Vector2(controlButtonWidth, ImGui.GetFrameHeight() * 1.6f);
 
         if (ImGui.Button("Save Roi##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmSaveRoi##RoiManager");
-        if (ConfirmPopup("ConfirmSaveRoi##RoiManager", "Overwrite the saved ROI configuration on disk?"))
+        if (ConfirmPopup("ConfirmSaveRoi##RoiManager", "Overwrite the saved ROI positions on disk?"))
         {
-            SaveToDisk(greenIso, red);
+            SaveToDisk(state);
         }
 
-        ImGui.SameLine();
         if (ImGui.Button("Load Roi##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmLoadRoi##RoiManager");
-        if (ConfirmPopup("ConfirmLoadRoi##RoiManager", "Load the cached ROI configuration? This overwrites the current selection."))
+        if (ConfirmPopup("ConfirmLoadRoi##RoiManager", "Load the saved ROI positions? This overwrites the current positions."))
         {
-            if (LoadFromDisk(greenIso, red)) changed = true;
+            if (LoadFromDisk(state))
+            {
+                selectedKeys.Clear();
+                changed = true;
+            }
         }
 
-        ImGui.SameLine();
         if (ImGui.Button("Reset Roi##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmResetRoi##RoiManager");
         if (ConfirmPopup("ConfirmResetRoi##RoiManager", "Reset to the default ROI configuration?"))
         {
-            ResetToDefault(greenIso);
-            ResetToDefault(red);
+            ResetToDefault(state);
+            selectedKeys.Clear();
             changed = true;
         }
 
-        // Non-interactive warning badge: appears when the two cameras have different ROI counts.
-        var greenRoiCount = greenIso.Rois.Count;
-        var redRoiCount = red.Rois.Count;
-        if (greenRoiCount != redRoiCount)
+        if (ImGui.Button("Add ROI##RoiManager", buttonSize))
         {
-            ImGui.SameLine();
-            var warningColor = new Vector4(0.80f, 0.08f, 0.08f, 1f);
-            ImGui.PushStyleColor(ImGuiCol.Button, warningColor);
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, warningColor);
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, warningColor);
-            ImGui.Button(
-                "⚠ ROI mismatch: Green/Iso has " + greenRoiCount + ", Red has " + redRoiCount + "##RoiMismatch",
-                new Vector2(0f, buttonSize.Y));
-            ImGui.PopStyleColor(3);
+            AddRoi(state, slots);
+            changed = true;
         }
     }
 
@@ -454,10 +507,9 @@ public class RoiManagerVisualizer
         return confirmed;
     }
 
-    void SaveToDisk(RoiCircleSet greenIso, RoiCircleSet red)
+    void SaveToDisk(RoiState state)
     {
-        var settings = ToRoiSettings(greenIso, red);
-        var json = JsonConvert.SerializeObject(settings);
+        var json = JsonConvert.SerializeObject(ToGeometrySettings(state));
         var directory = Path.GetDirectoryName(LocalRoiDefaultPath);
         if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
         {
@@ -466,18 +518,20 @@ public class RoiManagerVisualizer
         File.WriteAllText(LocalRoiDefaultPath, json);
     }
 
-    bool LoadFromDisk(RoiCircleSet greenIso, RoiCircleSet red)
+    // Loads circle positions only. Fiber/name/enabled stay as they are for the Rois that still
+    // exist; if the file has more Rois, the extra ones get default metadata.
+    bool LoadFromDisk(RoiState state)
     {
         if (!File.Exists(LocalRoiDefaultPath)) return false;
         var json = File.ReadAllText(LocalRoiDefaultPath);
         var settings = JsonConvert.DeserializeObject<RoiSettings>(json);
         if (settings == null) return false;
-        ApplySettings(greenIso, settings.CameraGreenIsoBackground, settings.CameraGreenIsoRoi);
-        ApplySettings(red, settings.CameraRedBackground, settings.CameraRedRoi);
+        var count = ApplyGeometry(state, settings);
+        ResizeMeta(state.Meta, count);
         return true;
     }
 
-    static bool RenderCameras(List<ImageSlot> slots, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled)
+    static bool RenderCameras(List<ImageSlot> slots, List<RoiMeta> meta, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled)
     {
         var changed = false;
         if (ImGui.BeginTable("##RoiManagerCameras", slots.Count, ImGuiTableFlags.SizingStretchSame))
@@ -493,14 +547,7 @@ public class RoiManagerVisualizer
             foreach (var slot in slots)
             {
                 ImGui.TableNextColumn();
-                changed |= RenderCameraImage(slot, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
-            }
-
-            ImGui.TableNextRow();
-            foreach (var slot in slots)
-            {
-                ImGui.TableNextColumn();
-                changed |= RenderRoiTable(slot, selectedKeys, enabled);
+                changed |= RenderCameraImage(slot, meta, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
             }
 
             ImGui.EndTable();
@@ -520,7 +567,7 @@ public class RoiManagerVisualizer
         ImGui.PopStyleColor();
     }
 
-    static bool RenderCameraImage(ImageSlot slot, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled)
+    static bool RenderCameraImage(ImageSlot slot, List<RoiMeta> meta, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled)
     {
         if (slot.TextureId == 0 || slot.TextureWidth <= 0 || slot.TextureHeight <= 0)
         {
@@ -544,11 +591,11 @@ public class RoiManagerVisualizer
         var afterImage = ImGui.GetCursorScreenPos();
 
         var drawList = ImGui.GetWindowDrawList();
-        changed |= RenderCircleOverlay(slot.Circles.Background, "B", "bg", "bg_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
+        changed |= RenderCircleOverlay(slot.Circles.Background, "B", null, true, ColorExtensions.BackgroundColor, "bg", "bg_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
         for (int i = 0; i < slot.Circles.Rois.Count; i++)
         {
             var key = "roi" + i;
-            changed |= RenderCircleOverlay(slot.Circles.Rois[i], RoiOverlayLabel(slot.Circles.Rois[i], i), key, key + "_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
+            changed |= RenderCircleOverlay(slot.Circles.Rois[i], i.ToString(), meta[i].Name, meta[i].Enabled, ColorExtensions.RoiColor(i), key, key + "_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
         }
 
         // A bare SetCursorScreenPos with no item submitted afterward can't grow the
@@ -560,19 +607,20 @@ public class RoiManagerVisualizer
 
     // Circle center/radius are stored in image-pixel space; `scale` converts to/from the
     // on-screen display size. Drag moves the circle, mouse wheel while hovering resizes it.
-    // `activeKey` is shared across columns (e.g. "roi0" for both the Iso and Green renditions
-    // of the same yoked circle) so hovering/dragging it in any column highlights it everywhere;
-    // `widgetIdSuffix` stays unique per column to avoid ImGui ID collisions.
+    // `activeKey` is shared across columns (e.g. "roi0" for every camera's rendition of Roi 0)
+    // so hovering/dragging it in any column highlights it everywhere; `widgetIdSuffix` stays
+    // unique per column to avoid ImGui ID collisions.
     static unsafe bool RenderCircleOverlay(
-        PickerCircle circle, string label, string activeKey, string widgetIdSuffix,
+        PickerCircle circle, string label, string name, bool roiEnabled, Vector4 roiColor, string activeKey, string widgetIdSuffix,
         Vector2 origin, float scale, float boundsWidth, float boundsHeight, ImDrawListPtr drawList,
         HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled)
     {
         var changed = ClampToBounds(circle, boundsWidth, boundsHeight);
 
         var isActive = previousActiveKeys.Contains(activeKey) || selectedKeys.Contains(activeKey);
-        // Disabled Rois are drawn grey (still draggable/selectable) so they read as "excluded".
-        var color = isActive ? activeCircleColor : circle.Enabled ? inactiveCircleColor : disabledCircleColor;
+        // Each Roi has its own fixed color (see ColorExtensions.RoiColor); hover/drag or table
+        // selection turns it green. Disabled Rois are drawn grey (still draggable/selectable) so they read as "excluded".
+        var color = isActive ? activeCircleColor : roiEnabled ? roiColor : disabledCircleColor;
         var center = origin + new Vector2(circle.X, circle.Y) * scale;
         var radius = circle.Radius * scale;
 
@@ -581,10 +629,10 @@ public class RoiManagerVisualizer
         drawList.AddCircle(center, radius, ImGui.ColorConvertFloat4ToU32(color), 0, circleStrokeThickness);
         var textSize = ImGui.CalcTextSize(label);
         drawList.AddText(center - textSize * 0.5f, ImGui.ColorConvertFloat4ToU32(labelColor), label);
-        if (!string.IsNullOrEmpty(circle.Name))
+        if (!string.IsNullOrEmpty(name))
         {
-            var nameSize = ImGui.CalcTextSize(circle.Name);
-            drawList.AddText(center + new Vector2(-nameSize.X * 0.5f, radius + 2f), ImGui.ColorConvertFloat4ToU32(color), circle.Name);
+            var nameSize = ImGui.CalcTextSize(name);
+            drawList.AddText(center + new Vector2(-nameSize.X * 0.5f, radius + 2f), ImGui.ColorConvertFloat4ToU32(color), name);
         }
 
         ImGui.SetCursorScreenPos(center - new Vector2(radius, radius));
@@ -628,48 +676,38 @@ public class RoiManagerVisualizer
         return changed;
     }
 
-    // One row per Roi (plus Background) for this camera. Iso and Green render separate tables
-    // but both mutate the SAME shared RoiCircleSet.Rois list, so adding/deleting from either one
-    // is automatically reflected in the other; Red's list is independent. Selecting a row reuses
-    // the same activeKey highlighting as hover/drag, so it stays green in every column.
-    static bool RenderRoiTable(ImageSlot slot, HashSet<string> selectedKeys, bool enabled)
+    // One table for every camera: row i is Roi i in Green/Iso and in Red, so editing a row or
+    // deleting it applies to all cameras. Selecting a row reuses the same activeKey highlighting
+    // as hover/drag, so that Roi stays green in every column.
+    static bool RenderRoiTable(RoiState state, HashSet<string> selectedKeys, bool enabled)
     {
         var changed = false;
-        var rois = slot.Circles.Rois;
 
-        ImGui.BeginDisabled(!enabled);
-        if (ImGui.Button("Add ROI##" + slot.Camera, new Vector2(-1f, 0f)))
+        // Columns mirror AindPhysiologyFip.FipCircle: RoiNumber (the row index), FiberNumber,
+        // Name, Enabled.
+        if (ImGui.BeginTable("##RoiTable", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
         {
-            var x = slot.TextureWidth > 0 ? slot.TextureWidth / 2f : 100f;
-            var y = slot.TextureHeight > 0 ? slot.TextureHeight / 2f : 100f;
-            rois.Add(MakeRoi(x, y, 20, NextFreeNumber(rois, NumberField.Roi), NextFreeNumber(rois, NumberField.Fiber)));
-            changed = true;
-        }
-        ImGui.EndDisabled();
-
-        // Columns mirror AindPhysiologyFip.FipCircle: RoiNumber, FiberNumber, Name, Enabled.
-        if (ImGui.BeginTable("##RoiTable" + slot.Camera, 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
-        {
+            var roiWidth = ImGui.CalcTextSize("ROI").X + ImGui.GetFrameHeight() * 0.5f;
             // Room for a 3-digit number plus the two arrow buttons.
-            var numberWidth = ImGui.CalcTextSize("000").X + ImGui.GetFrameHeight() * 2.5f;
-            ImGui.TableSetupColumn("ROI", ImGuiTableColumnFlags.WidthFixed, numberWidth);
-            ImGui.TableSetupColumn("Fiber", ImGuiTableColumnFlags.WidthFixed, numberWidth);
+            var fiberWidth = ImGui.CalcTextSize("000").X + ImGui.GetFrameHeight() * 2.5f;
+            ImGui.TableSetupColumn("ROI", ImGuiTableColumnFlags.WidthFixed, roiWidth);
+            ImGui.TableSetupColumn("Fiber", ImGuiTableColumnFlags.WidthFixed, fiberWidth);
             ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn("Enabled", ImGuiTableColumnFlags.WidthFixed);
             ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
             ImGui.TableHeadersRow();
 
-            RenderBackgroundRow(slot, selectedKeys);
+            RenderBackgroundRow(state, selectedKeys);
 
             var deleteIndex = -1;
-            for (int i = 0; i < rois.Count; i++)
+            for (int i = 0; i < state.Meta.Count; i++)
             {
-                if (RenderRoiRow(slot, "roi" + i, rois, rois[i], selectedKeys, enabled, ref changed)) deleteIndex = i;
+                if (RenderRoiRow(state, i, selectedKeys, enabled, ref changed)) deleteIndex = i;
             }
 
             if (deleteIndex >= 0)
             {
-                rois.RemoveAt(deleteIndex);
+                RemoveRoi(state, deleteIndex);
                 // Keys are positional ("roi2" means "index 2 in Rois"); after a delete every
                 // later index shifts, so clear rather than risk a selection silently pointing
                 // at a different, renumbered Roi.
@@ -683,14 +721,20 @@ public class RoiManagerVisualizer
         return changed;
     }
 
+    static string DescribeCircle(string camera, PickerCircle circle)
+    {
+        return string.Format(CultureInfo.InvariantCulture,
+            "{0}: center ({1:F1}, {2:F1}) px, radius {3:F1} px", camera, circle.X, circle.Y, circle.Radius);
+    }
+
     // Row-wide selectable drawn first in the row, with an empty label so the cell's own widgets
     // render on top of it. AllowOverlap lets those widgets (inputs, checkbox, delete button)
     // reliably take their clicks over the selectable's SpanAllColumns hit region. Hovering the
-    // row outside those widgets shows the circle's geometry as a tooltip.
-    static void RenderRowSelectable(string key, string idSuffix, PickerCircle circle, HashSet<string> selectedKeys)
+    // row outside those widgets shows the circle's geometry in every camera as a tooltip.
+    static void RenderRowSelectable(string key, PickerCircle greenIso, PickerCircle red, HashSet<string> selectedKeys)
     {
         var selected = selectedKeys.Contains(key);
-        if (ImGui.Selectable("##roiRow_" + idSuffix, selected, ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowOverlap, new Vector2(0f, ImGui.GetFrameHeight())))
+        if (ImGui.Selectable("##roiRow_" + key, selected, ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowOverlap, new Vector2(0f, ImGui.GetFrameHeight())))
         {
             if (selected)
             {
@@ -706,22 +750,21 @@ public class RoiManagerVisualizer
         }
         if (ImGui.IsItemHovered() && ImGui.BeginTooltip())
         {
-            ImGui.TextUnformatted(string.Format(CultureInfo.InvariantCulture,
-                "Center: ({0:F1}, {1:F1}) px\nRadius: {2:F1} px", circle.X, circle.Y, circle.Radius));
+            ImGui.TextUnformatted(DescribeCircle("Green/Iso", greenIso) + "\n" + DescribeCircle("Red", red));
             ImGui.EndTooltip();
         }
         ImGui.SameLine(0f, 0f);
     }
 
-    // Only the Background circle's geometry is persisted, so its
-    // row shows fixed placeholders instead of editable Roi metadata.
-    static void RenderBackgroundRow(ImageSlot slot, HashSet<string> selectedKeys)
+    // Only the Background circles' geometry is used, so their row shows fixed placeholders
+    // instead of editable Roi metadata.
+    static void RenderBackgroundRow(RoiState state, HashSet<string> selectedKeys)
     {
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
-        RenderRowSelectable("bg", slot.Camera + "_bg", slot.Circles.Background, selectedKeys);
+        RenderRowSelectable("bg", state.GreenIso.Background, state.Red.Background, selectedKeys);
         ImGui.AlignTextToFramePadding();
-        ImGui.TextUnformatted("B");
+        ImGui.TextColored(ColorExtensions.BackgroundColor, "B");
 
         ImGui.TableNextColumn();
         ImGui.AlignTextToFramePadding();
@@ -735,38 +778,41 @@ public class RoiManagerVisualizer
         ImGui.TableNextColumn();
     }
 
-    static bool RenderRoiRow(ImageSlot slot, string key, List<PickerCircle> rois, PickerCircle roi, HashSet<string> selectedKeys, bool enabled, ref bool changed)
+    static bool RenderRoiRow(RoiState state, int index, HashSet<string> selectedKeys, bool enabled, ref bool changed)
     {
         var requestDelete = false;
-        var idSuffix = slot.Camera + "_" + key;
+        var key = "roi" + index;
+        var meta = state.Meta[index];
 
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
-        RenderRowSelectable(key, idSuffix, roi, selectedKeys);
+        RenderRowSelectable(key, state.GreenIso.Rois[index], state.Red.Rois[index], selectedKeys);
+
+        // Disabled Rois render their text grey, matching their grey circle in the images; the
+        // Roi number is otherwise shown in that Roi's circle color.
+        if (!meta.Enabled) ImGui.PushStyleColor(ImGuiCol.Text, disabledCircleColor);
+        ImGui.AlignTextToFramePadding();
+        ImGui.TextColored(meta.Enabled ? ColorExtensions.RoiColor(index) : disabledCircleColor, index.ToString(CultureInfo.InvariantCulture));
 
         ImGui.BeginDisabled(!enabled);
-        // Disabled Rois render their text grey, matching their grey circle in the images.
-        if (!roi.Enabled) ImGui.PushStyleColor(ImGuiCol.Text, disabledCircleColor);
-        changed |= UniqueNumberInput("##roiNumber_" + idSuffix, rois, roi, NumberField.Roi);
+        ImGui.TableNextColumn();
+        changed |= UniqueFiberInput("##fiberNumber_" + key, state.Meta, meta);
 
         ImGui.TableNextColumn();
-        changed |= UniqueNumberInput("##fiberNumber_" + idSuffix, rois, roi, NumberField.Fiber);
-
-        ImGui.TableNextColumn();
-        var name = roi.Name ?? string.Empty;
+        var name = meta.Name ?? string.Empty;
         ImGui.SetNextItemWidth(-1f);
-        if (ImGui.InputTextWithHint("##roiName_" + idSuffix, "(unnamed)", ref name, new UIntPtr(128u)))
+        if (ImGui.InputTextWithHint("##roiName_" + key, "(unnamed)", ref name, new UIntPtr(128u)))
         {
-            roi.Name = name.Length == 0 ? null : name;
+            meta.Name = name.Length == 0 ? null : name;
             changed = true;
         }
-        if (!roi.Enabled) ImGui.PopStyleColor();
+        if (!meta.Enabled) ImGui.PopStyleColor();
 
         ImGui.TableNextColumn();
-        if (ImGui.Checkbox("##roiEnabled_" + idSuffix, ref roi.Enabled)) changed = true;
+        if (ImGui.Checkbox("##roiEnabled_" + key, ref meta.Enabled)) changed = true;
 
         ImGui.TableNextColumn();
-        if (ImGui.Button("x##roiDelete_" + idSuffix)) requestDelete = true;
+        if (ImGui.Button("x##roiDelete_" + key)) requestDelete = true;
         ImGui.EndDisabled();
 
         return requestDelete;
@@ -774,18 +820,16 @@ public class RoiManagerVisualizer
 
     // The number field currently being typed into, and its uncommitted text. Typed numbers are
     // only applied once the field is left (Enter or click away; Escape cancels), so typing "12"
-    // doesn't swap through Roi 1 on the way.
+    // doesn't swap through fiber 1 on the way.
     static string pendingNumberId;
     static string pendingNumberText;
 
-    // Non-negative number field with up/down arrow buttons. Picking a number another Roi in the
-    // same list already uses swaps the two (see AssignUniqueNumber), so the arrows also work as
-    // a quick way to reorder Rois.
-    static bool UniqueNumberInput(string id, List<PickerCircle> rois, PickerCircle roi, NumberField field)
+    // Non-negative fiber number field with up/down arrow buttons. Picking a fiber number another
+    // Roi already uses swaps the two (see AssignUniqueFiber).
+    static bool UniqueFiberInput(string id, List<RoiMeta> allMeta, RoiMeta meta)
     {
         var changed = false;
-        var current = GetNumber(roi, field);
-        var value = current.HasValue ? current.Value : 0;
+        var value = meta.FiberNumber;
         var arrowWidth = ImGui.GetFrameHeight();
 
         var text = pendingNumberId == id ? pendingNumberText : value.ToString(CultureInfo.InvariantCulture);
@@ -801,17 +845,17 @@ public class RoiManagerVisualizer
             if (!ImGui.IsKeyPressed(ImGuiKey.Escape) &&
                 int.TryParse(pendingNumberText, NumberStyles.None, CultureInfo.InvariantCulture, out parsed))
             {
-                changed |= AssignUniqueNumber(rois, roi, field, parsed);
+                changed |= AssignUniqueFiber(allMeta, meta, parsed);
             }
             pendingNumberId = null;
             pendingNumberText = null;
         }
 
         ImGui.SameLine(0f, 0f);
-        if (ImGui.ArrowButton(id + "_up", ImGuiDir.Up)) changed |= AssignUniqueNumber(rois, roi, field, value + 1);
+        if (ImGui.ArrowButton(id + "_up", ImGuiDir.Up)) changed |= AssignUniqueFiber(allMeta, meta, value + 1);
         ImGui.SameLine(0f, 0f);
         ImGui.BeginDisabled(value <= 0);
-        if (ImGui.ArrowButton(id + "_down", ImGuiDir.Down)) changed |= AssignUniqueNumber(rois, roi, field, value - 1);
+        if (ImGui.ArrowButton(id + "_down", ImGuiDir.Down)) changed |= AssignUniqueFiber(allMeta, meta, value - 1);
         ImGui.EndDisabled();
         return changed;
     }

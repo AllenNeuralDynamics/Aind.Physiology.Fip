@@ -49,6 +49,7 @@ namespace FipExtensions
                 var mask = default(IplImage);
                 var currentRoiSettings = default(RoiSettings);
                 var currentSource = default(FipCameraSource);
+                var currentFipCircles = default(FipCircle[]);
                 var currentCircles = default(Bonsai.Vision.Circle[]);
                 var boundingRegions = default(Rect[]);
                 return source.Select(frame =>
@@ -68,7 +69,8 @@ namespace FipExtensions
                     {
                         currentRoiSettings = roiSettings;
                         currentSource = cameraSource;
-                        currentCircles = ToCircleArray(roiSettings, cameraSource);
+                        currentFipCircles = ToFipCircleArray(roiSettings, cameraSource);
+                        currentCircles = currentFipCircles == null ? null : currentFipCircles.Select(ConvertToBonsaiVisionCircle).ToArray();
                         if (currentCircles != null)
                         {
                             mask.SetZero();
@@ -104,13 +106,12 @@ namespace FipExtensions
                         for (int i = 0; i < boundingRegions.Length; i++)
                         {
                             var rect = boundingRegions[i];
-                            var circle = currentCircles[i];
                             using (var region = img.GetSubRect(rect))
                             using (var regionMask = activeMask.GetSubRect(rect))
                             {
                                 output.Add(new CircleActivity
                                 {
-                                    Circle = circle,
+                                    FipCircle = currentFipCircles[i],
                                     Activity = activation(region, regionMask)
                                 });
                             }
@@ -125,7 +126,7 @@ namespace FipExtensions
         // Background first, then each Roi in order - matching the RoiManagerVisualizer/
         // RoiCircleConverter convention. Iso and Green share the GreenIso circles (same
         // optics/sensor, just different exposures); Red has its own.
-        private static Bonsai.Vision.Circle[] ToCircleArray(RoiSettings settings, FipCameraSource cameraSource)
+        private static FipCircle[] ToFipCircleArray(RoiSettings settings, FipCameraSource cameraSource)
         {
             if (settings == null) return null;
 
@@ -146,18 +147,18 @@ namespace FipExtensions
                     return null;
             }
 
-            var ordered = new List<Bonsai.Vision.Circle>();
-            if (background != null) ordered.Add(ConvertToBonsaiVisionCircle(background.Center, background.Radius));
-            if (rois != null) ordered.AddRange(rois.Select(roi => ConvertToBonsaiVisionCircle(roi.Center, roi.Radius)));
+            var ordered = new List<FipCircle>();
+            if (background != null) ordered.Add(background);
+            if (rois != null) ordered.AddRange(rois);
             return ordered.ToArray();
         }
 
-        private static Bonsai.Vision.Circle ConvertToBonsaiVisionCircle(AindPhysiologyFip.Point2f center, double radius)
+        private static Bonsai.Vision.Circle ConvertToBonsaiVisionCircle(FipCircle circle)
         {
             return new Bonsai.Vision.Circle
             {
-                Center = new OpenCV.Net.Point2f((float)center.X, (float)center.Y),
-                Radius = (float)radius
+                Center = new OpenCV.Net.Point2f((float)circle.Center.X, (float)circle.Center.Y),
+                Radius = (float)circle.Radius
             };
         }
 

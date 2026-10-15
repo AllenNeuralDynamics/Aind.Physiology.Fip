@@ -47,9 +47,42 @@ public class FipActivityGridVisualizer
 
     const float rowHeight = 150f;
 
-    static string RoiName(int index)
+    // `index` counts the Background as 0 (the CircleActivityCollection order), so ROI n is
+    // index n + 1. Labeled "ROI n : F<fiber>" when the Roi has a fiber number.
+    static string RoiName(int index, AindPhysiologyFip.FipCircle circle)
     {
-        return index == 0 ? "Background" : "ROI" + (index - 1).ToString();
+        if (index == 0) return "Background";
+        var name = "ROI " + (index - 1).ToString();
+        if (circle != null && circle.FiberNumber.HasValue) name += " : F" + circle.FiberNumber.Value.ToString();
+        return name;
+    }
+
+    // Labels for every region index seen so far. Fiber numbers are shared by all cameras, so
+    // the first camera that has a circle for an index provides it. Call while holding bufferLock.
+    static string[] RoiNames(Dictionary<FipCameraSource, CameraBuffer> buffers, int count)
+    {
+        var names = new string[count];
+        for (int i = 0; i < count; i++)
+        {
+            AindPhysiologyFip.FipCircle circle = null;
+            foreach (var buffer in buffers.Values)
+            {
+                if (i < buffer.Circles.Length && buffer.Circles[i] != null)
+                {
+                    circle = buffer.Circles[i];
+                    break;
+                }
+            }
+            names[i] = RoiName(i, circle);
+        }
+        return names;
+    }
+
+    // `index` counts the Background as 0 (the CircleActivityCollection order), so ROI n is
+    // index n + 1. Same colors as the circles in RoiManagerVisualizer.
+    static Vector4 RoiColor(int index)
+    {
+        return index == 0 ? ColorExtensions.BackgroundColor : ColorExtensions.RoiColor(index - 1);
     }
 
     private struct ActivityPoint
@@ -67,6 +100,8 @@ public class FipActivityGridVisualizer
     private class CameraBuffer
     {
         public List<ActivityPoint>[] Rois = new List<ActivityPoint>[0];
+        // The Roi definition behind each region, from the most recent activity.
+        public AindPhysiologyFip.FipCircle[] Circles = new AindPhysiologyFip.FipCircle[0];
     }
 
     static void EnsureRoiCount(CameraBuffer buffer, int count)
@@ -115,6 +150,7 @@ public class FipActivityGridVisualizer
                             {
                                 var count = activity.Value.Count;
                                 EnsureRoiCount(buffer, count);
+                                buffer.Circles = activity.Value.FipCircles;
 
                                 var time = activity.Seconds;
                                 for (int i = 0; i < count; i++)
@@ -141,19 +177,24 @@ public class FipActivityGridVisualizer
                     if (!Visible) { observer.OnNext(Unit.Default); return; }
 
                     int maxRoiCount;
-                    lock (bufferLock) { maxRoiCount = buffers.Values.Select(b => b.Rois.Length).DefaultIfEmpty(0).Max(); }
+                    string[] roiNames;
+                    lock (bufferLock)
+                    {
+                        maxRoiCount = buffers.Values.Select(b => b.Rois.Length).DefaultIfEmpty(0).Max();
+                        roiNames = RoiNames(buffers, maxRoiCount);
+                    }
 
                     ImGui.PushFont(ImGui.GetFont(), FontSize);
                     if (ImGui.BeginTabBar("##FipActivityGridTabs"))
                     {
                         if (ImGui.BeginTabItem("By Channel"))
                         {
-                            RenderByChannel(buffers, bufferLock, selectedRois, maxRoiCount);
+                            RenderByChannel(buffers, bufferLock, selectedRois, roiNames);
                             ImGui.EndTabItem();
                         }
                         if (ImGui.BeginTabItem("By ROI"))
                         {
-                            RenderByRoi(buffers, bufferLock);
+                            RenderByRoi(buffers, bufferLock, roiNames);
                             ImGui.EndTabItem();
                         }
                         ImGui.EndTabBar();
@@ -173,15 +214,16 @@ public class FipActivityGridVisualizer
         Dictionary<FipCameraSource, CameraBuffer> buffers,
         object bufferLock,
         HashSet<int> selectedRois,
-        int roiCount)
+        string[] roiNames)
     {
-        var comboLabel = selectedRois.Count == 0 ? "None" : string.Join(", ", selectedRois.OrderBy(i => i).Select(RoiName));
+        var roiCount = roiNames.Length;
+        var comboLabel = selectedRois.Count == 0 ? "None" : string.Join(", ", selectedRois.Where(i => i < roiCount).OrderBy(i => i).Select(i => roiNames[i]));
         if (ImGui.BeginCombo("ROIs##FipActivityGrid", comboLabel))
         {
             for (int i = 0; i < roiCount; i++)
             {
                 var isSelected = selectedRois.Contains(i);
-                if (ImGui.Checkbox(RoiName(i) + "##roiSelect" + i.ToString(), ref isSelected))
+                if (ImGui.Checkbox(roiNames[i] + "##roiSelect" + i.ToString(), ref isSelected))
                 {
                     if (isSelected) selectedRois.Add(i);
                     else selectedRois.Remove(i);
@@ -222,14 +264,14 @@ public class FipActivityGridVisualizer
                 SetupRowAxes(ColorExtensions.CameraDisplayName(camera), latest, Capacity, ColorExtensions.CameraColor(camera));
                 for (int i = 0; i < snapshots.Count; i++)
                 {
-                    PlotSeries(RoiName(snapshots[i].Item1), snapshots[i].Item2, ImPlot.GetColormapColor(snapshots[i].Item1));
+                    PlotSeries(roiNames[snapshots[i].Item1], snapshots[i].Item2, RoiColor(snapshots[i].Item1));
                 }
                 ImPlot.EndPlot();
             }
         }
     }
 
-    void RenderByRoi(Dictionary<FipCameraSource, CameraBuffer> buffers, object bufferLock)
+    void RenderByRoi(Dictionary<FipCameraSource, CameraBuffer> buffers, object bufferLock, string[] roiNames)
     {
         var roiCount = int.MaxValue;
         lock (bufferLock)
@@ -265,7 +307,7 @@ public class FipActivityGridVisualizer
 
             if (ImPlot.BeginPlot("##roi" + roi.ToString(), new Vector2(-1, rowHeight), ImPlotFlags.NoTitle | ImPlotFlags.NoLegend))
             {
-                SetupRowAxes(RoiName(roi), latest, Capacity, null);
+                SetupRowAxes(roi < roiNames.Length ? roiNames[roi] : RoiName(roi, null), latest, Capacity, null);
                 for (int i = 0; i < lines.Count; i++)
                 {
                     PlotSeries(ColorExtensions.CameraDisplayName(lines[i].Item1), lines[i].Item2, ColorExtensions.CameraColor(lines[i].Item1));

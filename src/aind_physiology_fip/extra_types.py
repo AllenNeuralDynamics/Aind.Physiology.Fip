@@ -20,7 +20,5 @@ class RoiSettings(BaseModel):
     camera_red_background: FipCircle = Field(
         description="ROI to compute the background for the red camera channel",
     )
-    camera_green_iso_roi: list[FipCircle] = Field(
-        description="ROI for the green/iso camera channel", validate_default=True
-    )
-    camera_red_roi: list[FipCircle] = Field(description="ROI for the red camera channel", validate_default=True)
+    camera_green_iso_roi: list[FipCircle] = Field(description="ROI for the green/iso camera channel")
+    camera_red_roi: list[FipCircle] = Field(description="ROI for the red camera channel")

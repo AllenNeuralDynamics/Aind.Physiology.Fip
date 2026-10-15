@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
-using Bonsai.Vision;
 
 
 namespace FipExtensions
@@ -13,9 +12,9 @@ namespace FipExtensions
             FipFrame = fipFrame;
         }
 
-        public Circle[] Circles
+        public AindPhysiologyFip.FipCircle[] FipCircles
         {
-            get { return this.Select(circleActivity => circleActivity.Circle).ToArray(); }
+            get { return this.Select(circleActivity => circleActivity.FipCircle).ToArray(); }
         }
     }
 }

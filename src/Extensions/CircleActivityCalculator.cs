@@ -129,8 +129,8 @@ namespace FipExtensions
         {
             if (settings == null) return null;
 
-            AindPhysiologyFip.Circle background;
-            List<AindPhysiologyFip.Circle> rois;
+            AindPhysiologyFip.FipCircle background;
+            List<AindPhysiologyFip.FipCircle> rois;
             switch (cameraSource)
             {
                 case FipCameraSource.Iso:
@@ -146,18 +146,18 @@ namespace FipExtensions
                     return null;
             }
 
-            var ordered = new List<AindPhysiologyFip.Circle>();
-            if (background != null) ordered.Add(background);
-            if (rois != null) ordered.AddRange(rois);
-            return ordered.Select(ConvertToBonsaiVisionCircle).ToArray();
+            var ordered = new List<Bonsai.Vision.Circle>();
+            if (background != null) ordered.Add(ConvertToBonsaiVisionCircle(background.Center, background.Radius));
+            if (rois != null) ordered.AddRange(rois.Select(roi => ConvertToBonsaiVisionCircle(roi.Center, roi.Radius)));
+            return ordered.ToArray();
         }
 
-        private static Bonsai.Vision.Circle ConvertToBonsaiVisionCircle(AindPhysiologyFip.Circle circle)
+        private static Bonsai.Vision.Circle ConvertToBonsaiVisionCircle(AindPhysiologyFip.Point2f center, double radius)
         {
             return new Bonsai.Vision.Circle
             {
-                Center = new OpenCV.Net.Point2f((float)circle.Center.X, (float)circle.Center.Y),
-                Radius = (float)circle.Radius
+                Center = new OpenCV.Net.Point2f((float)center.X, (float)center.Y),
+                Radius = (float)radius
             };
         }
 

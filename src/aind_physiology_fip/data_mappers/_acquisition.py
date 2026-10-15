@@ -40,7 +40,8 @@ from aind_behavior_services.session import Session
 from pandas import DataFrame
 
 from aind_physiology_fip.data_contract import dataset
-from aind_physiology_fip.rig import AindPhysioFipRig, RoiSettings
+from aind_physiology_fip.extra_types import RoiSettings
+from aind_physiology_fip.rig import AindPhysioFipRig
 
 from ._base import DataMapper
 

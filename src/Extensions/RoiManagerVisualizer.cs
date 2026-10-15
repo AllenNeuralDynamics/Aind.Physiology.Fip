@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -75,11 +76,19 @@ public class RoiManagerVisualizer
     static readonly Vector4 activeCircleColor = new Vector4(0.15f, 0.85f, 0.15f, 1f);
     static readonly Vector4 labelColor = new Vector4(1f, 1f, 1f, 1f);
 
+    static readonly Vector4 disabledCircleColor = new Vector4(0.55f, 0.55f, 0.55f, 1f);
+
+    // Mirrors AindPhysiologyFip.FipCircle (geometry + Roi metadata). The Background circle uses
+    // the same class but only its geometry is persisted.
     class PickerCircle
     {
         public float X;
         public float Y;
         public float Radius;
+        public int? RoiNumber;
+        public int? FiberNumber;
+        public string Name;
+        public bool Enabled = true;
     }
 
     class RoiCircleSet
@@ -106,17 +115,79 @@ public class RoiManagerVisualizer
         return new PickerCircle { X = x, Y = y, Radius = radius };
     }
 
-    // -1 is the Background circle; 0.. are the Rois list indices. Purely positional - deleting
-    // an Roi renumbers everything after it, same as the channel-visualizer naming convention.
-    static string RoiName(int index)
+    // Short label drawn on the circle itself in the image overlay: the Roi's RoiNumber, falling
+    // back to its (positional) list index when no RoiNumber is assigned.
+    static string RoiOverlayLabel(PickerCircle circle, int index)
     {
-        return index < 0 ? "Background" : "ROI" + index;
+        return circle.RoiNumber.HasValue ? circle.RoiNumber.Value.ToString() : index.ToString();
     }
 
-    // Matches the short label drawn on the circle itself in the image overlay.
-    static string RoiIndexLabel(int index)
+    // RoiNumber and FiberNumber are each kept unique within one camera's Roi list (Green/Iso or
+    // Red); this selects which one a helper below reads/writes.
+    enum NumberField { Roi, Fiber }
+
+    static int? GetNumber(PickerCircle circle, NumberField field)
     {
-        return index < 0 ? "B" : index.ToString();
+        return field == NumberField.Roi ? circle.RoiNumber : circle.FiberNumber;
+    }
+
+    static void SetNumber(PickerCircle circle, NumberField field, int? value)
+    {
+        if (field == NumberField.Roi) circle.RoiNumber = value;
+        else circle.FiberNumber = value;
+    }
+
+    // Smallest non-negative number not already used by any Roi in the list, so adding an Roi
+    // fills gaps left by deletions before growing the range.
+    static int NextFreeNumber(List<PickerCircle> rois, NumberField field)
+    {
+        var used = new HashSet<int>();
+        foreach (var roi in rois)
+        {
+            var number = GetNumber(roi, field);
+            if (number.HasValue) used.Add(number.Value);
+        }
+        var next = 0;
+        while (used.Contains(next)) next++;
+        return next;
+    }
+
+    // Sets `target`'s number to `value`; if another Roi already holds `value`, it takes
+    // `target`'s previous number instead (a swap), so numbers stay unique and never go blank.
+    static bool AssignUniqueNumber(List<PickerCircle> rois, PickerCircle target, NumberField field, int value)
+    {
+        var previous = GetNumber(target, field);
+        if (previous == value) return false;
+        foreach (var roi in rois)
+        {
+            if (roi != target && GetNumber(roi, field) == value) SetNumber(roi, field, previous);
+        }
+        SetNumber(target, field, value);
+        return true;
+    }
+
+    // Fills in missing numbers and resolves duplicates (e.g. from an older file without
+    // RoiNumber/FiberNumber, or one edited by hand) by reassigning the next free number.
+    static void NormalizeNumbers(List<PickerCircle> rois, NumberField field)
+    {
+        var seen = new HashSet<int>();
+        var needsNumber = new List<PickerCircle>();
+        foreach (var roi in rois)
+        {
+            var number = GetNumber(roi, field);
+            if (number.HasValue && number.Value >= 0 && seen.Add(number.Value)) continue;
+            SetNumber(roi, field, null);
+            needsNumber.Add(roi);
+        }
+        foreach (var roi in needsNumber) SetNumber(roi, field, NextFreeNumber(rois, field));
+    }
+
+    static PickerCircle MakeRoi(float x, float y, float radius, int roiNumber, int fiberNumber)
+    {
+        var circle = MakeCircle(x, y, radius);
+        circle.RoiNumber = roiNumber;
+        circle.FiberNumber = fiberNumber;
+        return circle;
     }
 
     static List<PickerCircle> DefaultRois()
@@ -127,7 +198,7 @@ public class RoiManagerVisualizer
         {
             foreach (var y in offsets)
             {
-                rois.Add(MakeCircle(x, y, 20));
+                rois.Add(MakeRoi(x, y, 20, rois.Count, rois.Count));
             }
         }
         return rois;
@@ -144,20 +215,45 @@ public class RoiManagerVisualizer
         set.Rois = DefaultRois();
     }
 
-    static Circle ToFipCircle(PickerCircle c)
+    // The Background is a FipCircle too, but only its geometry is meaningful.
+    static FipCircle ToBackgroundCircle(PickerCircle c)
     {
-        return new Circle { Center = new AindPhysiologyFip.Point2f { X = c.X, Y = c.Y }, Radius = c.Radius };
+        return new FipCircle { Center = new AindPhysiologyFip.Point2f { X = c.X, Y = c.Y }, Radius = c.Radius };
     }
 
-    static PickerCircle FromFipCircle(Circle c, float fallbackX, float fallbackY, float fallbackRadius)
+    static FipCircle ToFipCircle(PickerCircle c)
+    {
+        return new FipCircle
+        {
+            Center = new AindPhysiologyFip.Point2f { X = c.X, Y = c.Y },
+            Radius = c.Radius,
+            RoiNumber = c.RoiNumber,
+            FiberNumber = c.FiberNumber,
+            Name = c.Name,
+            Enabled = c.Enabled,
+        };
+    }
+
+    static PickerCircle FromBackgroundCircle(FipCircle c, float fallbackX, float fallbackY, float fallbackRadius)
     {
         if (c == null) return MakeCircle(fallbackX, fallbackY, fallbackRadius);
         return MakeCircle((float)c.Center.X, (float)c.Center.Y, (float)c.Radius);
     }
 
-    static void ApplySettings(RoiCircleSet set, Circle background, List<Circle> rois)
+    static PickerCircle FromFipCircle(FipCircle c, PickerCircle fallback)
     {
-        set.Background = FromFipCircle(background, 0, 0, 20);
+        if (c == null) return fallback;
+        var circle = MakeCircle((float)c.Center.X, (float)c.Center.Y, (float)c.Radius);
+        circle.RoiNumber = c.RoiNumber;
+        circle.FiberNumber = c.FiberNumber;
+        circle.Name = c.Name;
+        circle.Enabled = c.Enabled;
+        return circle;
+    }
+
+    static void ApplySettings(RoiCircleSet set, FipCircle background, List<FipCircle> rois)
+    {
+        set.Background = FromBackgroundCircle(background, 0, 0, 20);
         var defaults = DefaultRois();
         if (rois == null || rois.Count == 0)
         {
@@ -168,9 +264,11 @@ public class RoiManagerVisualizer
         var result = new List<PickerCircle>();
         for (int i = 0; i < rois.Count; i++)
         {
-            var fallback = i < defaults.Count ? defaults[i] : defaults[defaults.Count - 1];
-            result.Add(FromFipCircle(rois[i], fallback.X, fallback.Y, fallback.Radius));
+            var fallback = i < defaults.Count ? defaults[i] : MakeRoi(defaults[defaults.Count - 1].X, defaults[defaults.Count - 1].Y, 20, i, i);
+            result.Add(FromFipCircle(rois[i], fallback));
         }
+        NormalizeNumbers(result, NumberField.Roi);
+        NormalizeNumbers(result, NumberField.Fiber);
         set.Rois = result;
     }
 
@@ -178,9 +276,9 @@ public class RoiManagerVisualizer
     {
         return new RoiSettings
         {
-            CameraGreenIsoBackground = ToFipCircle(greenIso.Background),
+            CameraGreenIsoBackground = ToBackgroundCircle(greenIso.Background),
             CameraGreenIsoRoi = greenIso.Rois.Select(ToFipCircle).ToList(),
-            CameraRedBackground = ToFipCircle(red.Background),
+            CameraRedBackground = ToBackgroundCircle(red.Background),
             CameraRedRoi = red.Rois.Select(ToFipCircle).ToList(),
         };
     }
@@ -450,7 +548,7 @@ public class RoiManagerVisualizer
         for (int i = 0; i < slot.Circles.Rois.Count; i++)
         {
             var key = "roi" + i;
-            changed |= RenderCircleOverlay(slot.Circles.Rois[i], i.ToString(), key, key + "_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
+            changed |= RenderCircleOverlay(slot.Circles.Rois[i], RoiOverlayLabel(slot.Circles.Rois[i], i), key, key + "_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
         }
 
         // A bare SetCursorScreenPos with no item submitted afterward can't grow the
@@ -473,7 +571,8 @@ public class RoiManagerVisualizer
         var changed = ClampToBounds(circle, boundsWidth, boundsHeight);
 
         var isActive = previousActiveKeys.Contains(activeKey) || selectedKeys.Contains(activeKey);
-        var color = isActive ? activeCircleColor : inactiveCircleColor;
+        // Disabled Rois are drawn grey (still draggable/selectable) so they read as "excluded".
+        var color = isActive ? activeCircleColor : circle.Enabled ? inactiveCircleColor : disabledCircleColor;
         var center = origin + new Vector2(circle.X, circle.Y) * scale;
         var radius = circle.Radius * scale;
 
@@ -482,6 +581,11 @@ public class RoiManagerVisualizer
         drawList.AddCircle(center, radius, ImGui.ColorConvertFloat4ToU32(color), 0, circleStrokeThickness);
         var textSize = ImGui.CalcTextSize(label);
         drawList.AddText(center - textSize * 0.5f, ImGui.ColorConvertFloat4ToU32(labelColor), label);
+        if (!string.IsNullOrEmpty(circle.Name))
+        {
+            var nameSize = ImGui.CalcTextSize(circle.Name);
+            drawList.AddText(center + new Vector2(-nameSize.X * 0.5f, radius + 2f), ImGui.ColorConvertFloat4ToU32(color), circle.Name);
+        }
 
         ImGui.SetCursorScreenPos(center - new Vector2(radius, radius));
         ImGui.InvisibleButton("circle_" + widgetIdSuffix, new Vector2(radius * 2f, radius * 2f));
@@ -538,25 +642,29 @@ public class RoiManagerVisualizer
         {
             var x = slot.TextureWidth > 0 ? slot.TextureWidth / 2f : 100f;
             var y = slot.TextureHeight > 0 ? slot.TextureHeight / 2f : 100f;
-            rois.Add(MakeCircle(x, y, 20));
+            rois.Add(MakeRoi(x, y, 20, NextFreeNumber(rois, NumberField.Roi), NextFreeNumber(rois, NumberField.Fiber)));
             changed = true;
         }
         ImGui.EndDisabled();
 
-        if (ImGui.BeginTable("##RoiTable" + slot.Camera, 3, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+        // Columns mirror AindPhysiologyFip.FipCircle: RoiNumber, FiberNumber, Name, Enabled.
+        if (ImGui.BeginTable("##RoiTable" + slot.Camera, 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
         {
-            var indexWidth = ImGui.GetContentRegionAvail().X / 9f;
-            ImGui.TableSetupColumn("Index", ImGuiTableColumnFlags.WidthFixed, indexWidth);
-            ImGui.TableSetupColumn("Roi", ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed, indexWidth);
+            // Room for a 3-digit number plus the two arrow buttons.
+            var numberWidth = ImGui.CalcTextSize("000").X + ImGui.GetFrameHeight() * 2.5f;
+            ImGui.TableSetupColumn("ROI", ImGuiTableColumnFlags.WidthFixed, numberWidth);
+            ImGui.TableSetupColumn("Fiber", ImGuiTableColumnFlags.WidthFixed, numberWidth);
+            ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn("Enabled", ImGuiTableColumnFlags.WidthFixed);
+            ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
             ImGui.TableHeadersRow();
 
-            RenderRoiRow(slot, "bg", RoiIndexLabel(-1), RoiName(-1), selectedKeys, deletable: false, enabled: enabled);
+            RenderBackgroundRow(slot, selectedKeys);
 
             var deleteIndex = -1;
             for (int i = 0; i < rois.Count; i++)
             {
-                if (RenderRoiRow(slot, "roi" + i, RoiIndexLabel(i), RoiName(i), selectedKeys, deletable: true, enabled: enabled)) deleteIndex = i;
+                if (RenderRoiRow(slot, "roi" + i, rois, rois[i], selectedKeys, enabled, ref changed)) deleteIndex = i;
             }
 
             if (deleteIndex >= 0)
@@ -575,21 +683,14 @@ public class RoiManagerVisualizer
         return changed;
     }
 
-    static bool RenderRoiRow(ImageSlot slot, string key, string indexLabel, string name, HashSet<string> selectedKeys, bool deletable, bool enabled)
+    // Row-wide selectable drawn first in the row, with an empty label so the cell's own widgets
+    // render on top of it. AllowOverlap lets those widgets (inputs, checkbox, delete button)
+    // reliably take their clicks over the selectable's SpanAllColumns hit region. Hovering the
+    // row outside those widgets shows the circle's geometry as a tooltip.
+    static void RenderRowSelectable(string key, string idSuffix, PickerCircle circle, HashSet<string> selectedKeys)
     {
-        var requestDelete = false;
-        var idSuffix = slot.Camera + "_" + key;
-
-        ImGui.TableNextRow();
-        ImGui.TableNextColumn();
-        ImGui.TextUnformatted(indexLabel);
-
-        ImGui.TableNextColumn();
         var selected = selectedKeys.Contains(key);
-        // AllowOverlap: lets the Delete button (next column) sit on top of this selectable's
-        // SpanAllColumns hit region and reliably take the click - without it, clicks between
-        // the two resolve erratically frame to frame.
-        if (ImGui.Selectable(name + "##roiRow_" + idSuffix, selected, ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowOverlap))
+        if (ImGui.Selectable("##roiRow_" + idSuffix, selected, ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowOverlap, new Vector2(0f, ImGui.GetFrameHeight())))
         {
             if (selected)
             {
@@ -603,16 +704,116 @@ public class RoiManagerVisualizer
                 selectedKeys.Add(key);
             }
         }
+        if (ImGui.IsItemHovered() && ImGui.BeginTooltip())
+        {
+            ImGui.TextUnformatted(string.Format(CultureInfo.InvariantCulture,
+                "Center: ({0:F1}, {1:F1}) px\nRadius: {2:F1} px", circle.X, circle.Y, circle.Radius));
+            ImGui.EndTooltip();
+        }
+        ImGui.SameLine(0f, 0f);
+    }
+
+    // Only the Background circle's geometry is persisted, so its
+    // row shows fixed placeholders instead of editable Roi metadata.
+    static void RenderBackgroundRow(ImageSlot slot, HashSet<string> selectedKeys)
+    {
+        ImGui.TableNextRow();
+        ImGui.TableNextColumn();
+        RenderRowSelectable("bg", slot.Camera + "_bg", slot.Circles.Background, selectedKeys);
+        ImGui.AlignTextToFramePadding();
+        ImGui.TextUnformatted("B");
 
         ImGui.TableNextColumn();
-        if (deletable)
+        ImGui.AlignTextToFramePadding();
+        ImGui.TextDisabled("-");
+
+        ImGui.TableNextColumn();
+        ImGui.AlignTextToFramePadding();
+        ImGui.TextUnformatted("Background");
+
+        ImGui.TableNextColumn();
+        ImGui.TableNextColumn();
+    }
+
+    static bool RenderRoiRow(ImageSlot slot, string key, List<PickerCircle> rois, PickerCircle roi, HashSet<string> selectedKeys, bool enabled, ref bool changed)
+    {
+        var requestDelete = false;
+        var idSuffix = slot.Camera + "_" + key;
+
+        ImGui.TableNextRow();
+        ImGui.TableNextColumn();
+        RenderRowSelectable(key, idSuffix, roi, selectedKeys);
+
+        ImGui.BeginDisabled(!enabled);
+        // Disabled Rois render their text grey, matching their grey circle in the images.
+        if (!roi.Enabled) ImGui.PushStyleColor(ImGuiCol.Text, disabledCircleColor);
+        changed |= UniqueNumberInput("##roiNumber_" + idSuffix, rois, roi, NumberField.Roi);
+
+        ImGui.TableNextColumn();
+        changed |= UniqueNumberInput("##fiberNumber_" + idSuffix, rois, roi, NumberField.Fiber);
+
+        ImGui.TableNextColumn();
+        var name = roi.Name ?? string.Empty;
+        ImGui.SetNextItemWidth(-1f);
+        if (ImGui.InputTextWithHint("##roiName_" + idSuffix, "(unnamed)", ref name, new UIntPtr(128u)))
         {
-            ImGui.BeginDisabled(!enabled);
-            if (ImGui.Button("x##roiDelete_" + idSuffix)) requestDelete = true;
-            ImGui.EndDisabled();
+            roi.Name = name.Length == 0 ? null : name;
+            changed = true;
         }
+        if (!roi.Enabled) ImGui.PopStyleColor();
+
+        ImGui.TableNextColumn();
+        if (ImGui.Checkbox("##roiEnabled_" + idSuffix, ref roi.Enabled)) changed = true;
+
+        ImGui.TableNextColumn();
+        if (ImGui.Button("x##roiDelete_" + idSuffix)) requestDelete = true;
+        ImGui.EndDisabled();
 
         return requestDelete;
+    }
+
+    // The number field currently being typed into, and its uncommitted text. Typed numbers are
+    // only applied once the field is left (Enter or click away; Escape cancels), so typing "12"
+    // doesn't swap through Roi 1 on the way.
+    static string pendingNumberId;
+    static string pendingNumberText;
+
+    // Non-negative number field with up/down arrow buttons. Picking a number another Roi in the
+    // same list already uses swaps the two (see AssignUniqueNumber), so the arrows also work as
+    // a quick way to reorder Rois.
+    static bool UniqueNumberInput(string id, List<PickerCircle> rois, PickerCircle roi, NumberField field)
+    {
+        var changed = false;
+        var current = GetNumber(roi, field);
+        var value = current.HasValue ? current.Value : 0;
+        var arrowWidth = ImGui.GetFrameHeight();
+
+        var text = pendingNumberId == id ? pendingNumberText : value.ToString(CultureInfo.InvariantCulture);
+        ImGui.SetNextItemWidth(Math.Max(1f, ImGui.GetContentRegionAvail().X - 2f * arrowWidth));
+        if (ImGui.InputText(id, ref text, new UIntPtr(16u), ImGuiInputTextFlags.CharsDecimal))
+        {
+            pendingNumberId = id;
+            pendingNumberText = text;
+        }
+        if (ImGui.IsItemDeactivated() && pendingNumberId == id)
+        {
+            int parsed;
+            if (!ImGui.IsKeyPressed(ImGuiKey.Escape) &&
+                int.TryParse(pendingNumberText, NumberStyles.None, CultureInfo.InvariantCulture, out parsed))
+            {
+                changed |= AssignUniqueNumber(rois, roi, field, parsed);
+            }
+            pendingNumberId = null;
+            pendingNumberText = null;
+        }
+
+        ImGui.SameLine(0f, 0f);
+        if (ImGui.ArrowButton(id + "_up", ImGuiDir.Up)) changed |= AssignUniqueNumber(rois, roi, field, value + 1);
+        ImGui.SameLine(0f, 0f);
+        ImGui.BeginDisabled(value <= 0);
+        if (ImGui.ArrowButton(id + "_down", ImGuiDir.Down)) changed |= AssignUniqueNumber(rois, roi, field, value - 1);
+        ImGui.EndDisabled();
+        return changed;
     }
 
     // Keeps the circle fully inside [0, boundsWidth] x [0, boundsHeight] - shrinking the radius

@@ -193,15 +193,8 @@
             <Expression xsi:type="rx:AsyncSubject">
               <Name>BackgroundFramesCount</Name>
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>RigSchema</Name>
-            </Expression>
-            <Expression xsi:type="MemberSelector">
-              <Selector>RoiSettings</Selector>
-            </Expression>
-            <Expression xsi:type="IncludeWorkflow" Path="AllenNeuralDynamics.Core:FilterNotNull.bonsai" />
-            <Expression xsi:type="rx:BehaviorSubject">
-              <Name>CurrentRoiSettings</Name>
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p1:RoiSettings">
+              <rx:Name>CurrentRoiSettings</rx:Name>
             </Expression>
           </Nodes>
           <Edges>
@@ -227,9 +220,6 @@
             <Edge From="32" To="33" Label="Source1" />
             <Edge From="34" To="35" Label="Source1" />
             <Edge From="35" To="36" Label="Source1" />
-            <Edge From="37" To="38" Label="Source1" />
-            <Edge From="38" To="39" Label="Source1" />
-            <Edge From="39" To="40" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>

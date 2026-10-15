@@ -56,19 +56,6 @@
           "description": "Lime (560nm) light source",
           "title": "Lime light source"
         },
-        "roi_settings": {
-          "default": null,
-          "description": "Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program.",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/RoiSettings"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Region of interest settings"
-        },
         "cuttlefish_fip": {
           "$ref": "#/$defs/HarpCuttlefishfip",
           "description": "CuttlefishFip board for controlling the trigger of cameras and light-sources",
@@ -106,28 +93,6 @@
     "BaseModel": {
       "properties": {},
       "title": "BaseModel",
-      "type": "object"
-    },
-    "Circle": {
-      "description": "Represents a circle defined by its center point and radius.",
-      "properties": {
-        "center": {
-          "$ref": "#/$defs/Point2f",
-          "default": {
-            "x": 0.0,
-            "y": 0.0
-          },
-          "description": "Center of the circle (px)"
-        },
-        "radius": {
-          "default": 1,
-          "description": "Radius of the circle (px)",
-          "minimum": 0,
-          "title": "Radius",
-          "type": "number"
-        }
-      },
-      "title": "Circle",
       "type": "object"
     },
     "FipCamera": {
@@ -176,6 +141,75 @@
         "serial_number"
       ],
       "title": "FipCamera",
+      "type": "object"
+    },
+    "FipCircle": {
+      "description": "Describes a circle in the FIP system with associated ROI, fiber, and optional name.",
+      "properties": {
+        "center": {
+          "$ref": "#/$defs/Point2f",
+          "default": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "description": "Center of the circle (px)"
+        },
+        "radius": {
+          "default": 1,
+          "description": "Radius of the circle (px)",
+          "minimum": 0,
+          "title": "Radius",
+          "type": "number"
+        },
+        "roi_number": {
+          "default": null,
+          "description": "ROI number associated with the circle",
+          "oneOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Roi Number"
+        },
+        "fiber_number": {
+          "default": null,
+          "description": "Fiber number associated with the circle",
+          "oneOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Fiber Number"
+        },
+        "name": {
+          "default": null,
+          "description": "Name associated with the circle",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Name"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Indicates whether the circle is enabled",
+          "title": "Enabled",
+          "type": "boolean"
+        }
+      },
+      "title": "FipCircle",
       "type": "object"
     },
     "FipTask": {
@@ -429,31 +463,17 @@
       "description": "Region of Interest (ROI) settings for camera channels in the FIP system.",
       "properties": {
         "camera_green_iso_background": {
-          "$ref": "#/$defs/Circle",
-          "default": {
-            "center": {
-              "x": 10.0,
-              "y": 10.0
-            },
-            "radius": 10.0
-          },
+          "$ref": "#/$defs/FipCircle",
           "description": "ROI to compute the background for the green/iso camera channel"
         },
         "camera_red_background": {
-          "$ref": "#/$defs/Circle",
-          "default": {
-            "center": {
-              "x": 10.0,
-              "y": 10.0
-            },
-            "radius": 10.0
-          },
+          "$ref": "#/$defs/FipCircle",
           "description": "ROI to compute the background for the red camera channel"
         },
         "camera_green_iso_roi": {
           "description": "ROI for the green/iso camera channel",
           "items": {
-            "$ref": "#/$defs/Circle"
+            "$ref": "#/$defs/FipCircle"
           },
           "title": "Camera Green Iso Roi",
           "type": "array"
@@ -461,12 +481,18 @@
         "camera_red_roi": {
           "description": "ROI for the red camera channel",
           "items": {
-            "$ref": "#/$defs/Circle"
+            "$ref": "#/$defs/FipCircle"
           },
           "title": "Camera Red Roi",
           "type": "array"
         }
       },
+      "required": [
+        "camera_green_iso_background",
+        "camera_red_background",
+        "camera_green_iso_roi",
+        "camera_red_roi"
+      ],
       "title": "RoiSettings",
       "type": "object"
     },

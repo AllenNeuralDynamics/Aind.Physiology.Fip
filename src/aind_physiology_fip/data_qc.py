@@ -19,7 +19,7 @@ from contraqctor.qc.csv import CsvTestSuite
 from aind_physiology_fip import __semver__
 from aind_physiology_fip.data_contract import FipRawFrame, RoiSettings, dataset
 from aind_physiology_fip.data_qc_helpers import plot_sensor_floor
-from aind_physiology_fip.rig import Circle
+from aind_physiology_fip.extra_types import FipCircle
 
 
 class FipChannelMetadataTestSuite(Suite):
@@ -189,8 +189,8 @@ class FipRawImageTestSuite(Suite):
         self,
         binary_raw_data: FipRawFrame,
         color_channel: contract.csv.Csv,
-        background_region: Circle,
-        regions: list[Circle],
+        background_region: FipCircle,
+        regions: list[FipCircle],
         *,
         cv_threshold: float = 0.05,
     ) -> None:
@@ -215,7 +215,7 @@ class FipRawImageTestSuite(Suite):
             )
 
     @staticmethod
-    def _get_pixels_in_circle(array: np.ndarray, circle: Circle) -> tuple[np.ndarray, np.ndarray]:
+    def _get_pixels_in_circle(array: np.ndarray, circle: FipCircle) -> tuple[np.ndarray, np.ndarray]:
         h, w = array.shape[:2]
         y, x = np.ogrid[:h, :w]
         mask = (x - circle.center.x) ** 2 + (y - circle.center.y) ** 2 <= circle.radius**2
@@ -224,7 +224,7 @@ class FipRawImageTestSuite(Suite):
 
     @staticmethod
     def _render_roi(
-        image: np.ndarray, circle: Circle, text: str, color: tuple[int, int, int] = (255, 0, 0), thickness: int = 1
+        image: np.ndarray, circle: FipCircle, text: str, color: tuple[int, int, int] = (255, 0, 0), thickness: int = 1
     ) -> np.ndarray:
         """Render a circle on the image."""
         image = cv2.circle(image, (int(circle.center.x), int(circle.center.y)), int(circle.radius), color, thickness)

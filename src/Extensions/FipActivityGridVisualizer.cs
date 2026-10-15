@@ -47,6 +47,10 @@ public class FipActivityGridVisualizer
 
     const float rowHeight = 150f;
 
+    // Region indices in a CircleActivityCollection: the Background first, then ROI 0.
+    const int BackgroundIndex = 0;
+    const int DefaultRoiIndex = 1;
+
     // `index` counts the Background as 0 (the CircleActivityCollection order), so ROI n is
     // index n + 1. Labeled "ROI n : F<fiber>" when the Roi has a fiber number.
     static string RoiName(int index, AindPhysiologyFip.FipCircle circle)
@@ -94,16 +98,18 @@ public class FipActivityGridVisualizer
         public AindPhysiologyFip.FipCircle[] Circles = new AindPhysiologyFip.FipCircle[0];
     }
 
-    static void EnsureRoiCount(CameraBuffer buffer, int count)
+    // Keeps exactly one trace per region. When the Roi count changes (Add ROI / delete), the
+    // region indices no longer line up with the old traces - deleting ROI 1 makes the old ROI 2
+    // the new ROI 1 - so the camera's history is cleared rather than shifted or kept stale.
+    static void MatchRoiCount(CameraBuffer buffer, int count)
     {
-        if (buffer.Rois.Length >= count) return;
-        var resized = new List<ActivityPoint>[count];
-        Array.Copy(buffer.Rois, resized, buffer.Rois.Length);
-        for (int i = buffer.Rois.Length; i < count; i++)
+        if (buffer.Rois.Length == count) return;
+        var rois = new List<ActivityPoint>[count];
+        for (int i = 0; i < count; i++)
         {
-            resized[i] = new List<ActivityPoint>();
+            rois[i] = new List<ActivityPoint>();
         }
-        buffer.Rois = resized;
+        buffer.Rois = rois;
     }
 
     public IObservable<Unit> Process<TTickSource>(
@@ -114,9 +120,9 @@ public class FipActivityGridVisualizer
         {
             var buffers = new Dictionary<FipCameraSource, CameraBuffer>();
             var bufferLock = new object();
-            // Default to Background + ROI0. Safe even if ROI0 never appears: RenderByChannel
-            // already skips any selected index >= that camera's known ROI count.
-            var selectedRois = new HashSet<int> { 0, 1 };
+            // Default to the Background (region index 0) + ROI 0 (region index 1). Safe even if
+            // ROI 0 never appears: RenderByChannel skips any selected index >= the known ROI count.
+            var selectedRois = new HashSet<int> { BackgroundIndex, DefaultRoiIndex };
             var innerSubs = new CompositeDisposable();
 
             var streamsSub = streams.SubscribeSafe(Observer.Create<System.Reactive.Linq.IGroupedObservable<FipCameraSource, Bonsai.Harp.Timestamped<CircleActivityCollection>>>(
@@ -139,7 +145,7 @@ public class FipActivityGridVisualizer
                             lock (bufferLock)
                             {
                                 var count = activity.Value.Count;
-                                EnsureRoiCount(buffer, count);
+                                MatchRoiCount(buffer, count);
                                 buffer.Circles = activity.Value.FipCircles;
 
                                 var time = activity.Seconds;
@@ -230,7 +236,12 @@ public class FipActivityGridVisualizer
         Vector4[] roiColors)
     {
         var roiCount = roiNames.Length;
-        var comboLabel = selectedRois.Count == 0 ? "None" : string.Join(", ", selectedRois.Where(i => i < roiCount).OrderBy(i => i).Select(i => roiNames[i]));
+        // Selections are never pruned: the ROI count can dip briefly (e.g. before the ROI settings
+        // reach the calculator), and pruning then would silently drop the default selection.
+        // Indices past the current ROI count (deleted ROIs) are just not shown or plotted, and come
+        // back if the ROI is re-added. Before any data has arrived, label by index alone.
+        var visibleSelection = selectedRois.Where(i => roiCount == 0 || i < roiCount).OrderBy(i => i).ToList();
+        var comboLabel = visibleSelection.Count == 0 ? "None" : string.Join(", ", visibleSelection.Select(i => i < roiCount ? roiNames[i] : RoiName(i, null)));
         if (ImGui.BeginCombo("ROIs##FipActivityGrid", comboLabel))
         {
             for (int i = 0; i < roiCount; i++)

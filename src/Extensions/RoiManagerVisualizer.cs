@@ -395,7 +395,7 @@ public class RoiManagerVisualizer
                         RenderWarningPopup();
 
                         var currentActiveKeys = new HashSet<string>();
-                        changed |= RenderCameras(slots, state.Meta, previousActiveKeys, currentActiveKeys, selectedKeys, Enabled);
+                        changed |= RenderCameras(slots, state.Meta, previousActiveKeys, currentActiveKeys, selectedKeys, Enabled, !hideRois);
                         previousActiveKeys = currentActiveKeys;
 
                         ImGui.TextDisabled("Drag a circle to move it  -  Scroll while hovering it to resize");
@@ -411,6 +411,9 @@ public class RoiManagerVisualizer
                             ImGui.BeginDisabled(!Enabled);
                             RenderControls(state, slots, selectedKeys, ref changed);
                             ImGui.EndDisabled();
+                            // View-only, so it stays usable during acquisition (outside the
+                            // disabled block).
+                            RenderHideRoisButton();
 
                             ImGui.TableNextColumn();
                             changed |= RenderRoiTable(state, selectedKeys, Enabled);
@@ -561,6 +564,27 @@ public class RoiManagerVisualizer
     // Set when a load fails (at startup or from Load Roi); shown as a modal until dismissed.
     string warningMessage;
 
+    // "Hide ROIs" toggle: when set, the circles aren't drawn (or draggable) on the images.
+    bool hideRois;
+
+    static readonly Vector4 toggleOffColor = new Vector4(0.35f, 0.35f, 0.35f, 1f);
+    static readonly Vector4 toggleOnColor = new Vector4(0.20f, 0.45f, 0.85f, 1f);
+
+    // Grey while ROIs are shown, blue while they're hidden.
+    void RenderHideRoisButton()
+    {
+        var color = hideRois ? toggleOnColor : toggleOffColor;
+        var hovered = new Vector4(Math.Min(1f, color.X + 0.1f), Math.Min(1f, color.Y + 0.1f), Math.Min(1f, color.Z + 0.1f), 1f);
+        ImGui.PushStyleColor(ImGuiCol.Button, color);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, hovered);
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, color);
+        if (ImGui.Button("Hide ROIs##RoiManager", new Vector2(controlButtonWidth, ImGui.GetFrameHeight() * 1.6f)))
+        {
+            hideRois = !hideRois;
+        }
+        ImGui.PopStyleColor(3);
+    }
+
     void RenderWarningPopup()
     {
         const string popupId = "Warning##RoiManagerWarning";
@@ -577,7 +601,7 @@ public class RoiManagerVisualizer
         }
     }
 
-    static bool RenderCameras(List<ImageSlot> slots, List<RoiMeta> meta, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled)
+    static bool RenderCameras(List<ImageSlot> slots, List<RoiMeta> meta, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled, bool showRois)
     {
         var changed = false;
         if (ImGui.BeginTable("##RoiManagerCameras", slots.Count, ImGuiTableFlags.SizingStretchSame))
@@ -586,7 +610,7 @@ public class RoiManagerVisualizer
             foreach (var slot in slots)
             {
                 ImGui.TableNextColumn();
-                changed |= RenderCameraImage(slot, meta, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
+                changed |= RenderCameraImage(slot, meta, previousActiveKeys, currentActiveKeys, selectedKeys, enabled, showRois);
             }
 
             ImGui.EndTable();
@@ -594,7 +618,7 @@ public class RoiManagerVisualizer
         return changed;
     }
 
-    static bool RenderCameraImage(ImageSlot slot, List<RoiMeta> meta, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled)
+    static bool RenderCameraImage(ImageSlot slot, List<RoiMeta> meta, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled, bool showRois)
     {
         if (slot.TextureId == 0 || slot.TextureWidth <= 0 || slot.TextureHeight <= 0)
         {
@@ -634,12 +658,17 @@ public class RoiManagerVisualizer
         drawList.AddRectFilled(labelPos - new Vector2(3f, 1f), labelPos + labelSize + new Vector2(3f, 1f), ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.6f)));
         drawList.AddText(labelPos, ImGui.ColorConvertFloat4ToU32(ColorExtensions.CameraColor(slot.Camera)), slot.Label);
 
-        changed |= RenderCircleOverlay(slot.Circles.Background, "B", null, true, ColorExtensions.BackgroundColor, ColorExtensions.BackgroundColor, "bg", "bg_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
-        for (int i = 0; i < slot.Circles.Rois.Count; i++)
+        // "Hide ROIs": skip the circles entirely (no drawing, no drag/resize); the image, border
+        // and channel name still render.
+        if (showRois)
         {
-            var key = "roi" + i;
-            // Outline in the Roi number's color, fill in the fiber number's color.
-            changed |= RenderCircleOverlay(slot.Circles.Rois[i], i.ToString(), meta[i].Name, meta[i].Enabled, ColorExtensions.RoiColor(i), ColorExtensions.RoiColor(meta[i].FiberNumber), key, key + "_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
+            changed |= RenderCircleOverlay(slot.Circles.Background, "B", null, true, ColorExtensions.BackgroundColor, ColorExtensions.BackgroundColor, "bg", "bg_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
+            for (int i = 0; i < slot.Circles.Rois.Count; i++)
+            {
+                var key = "roi" + i;
+                // Outline in the Roi number's color, fill in the fiber number's color.
+                changed |= RenderCircleOverlay(slot.Circles.Rois[i], i.ToString(), meta[i].Name, meta[i].Enabled, ColorExtensions.RoiColor(i), ColorExtensions.RoiColor(meta[i].FiberNumber), key, key + "_" + slot.Camera, origin, scale, boundsWidth, boundsHeight, drawList, previousActiveKeys, currentActiveKeys, selectedKeys, enabled);
+            }
         }
 
         // A bare SetCursorScreenPos with no item submitted afterward can't grow the

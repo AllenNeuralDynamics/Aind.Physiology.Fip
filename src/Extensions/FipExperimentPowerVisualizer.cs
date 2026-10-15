@@ -11,7 +11,7 @@ using Hexa.NET.ImGui;
 
 /// <summary>
 /// Represents an operator that renders one row per Fip camera channel found in
-/// <see cref="LightSources"/> with its color-filled channel and light cells and two editable,
+/// <see cref="LightSources"/> with its channel and light names in their colors and two editable,
 /// mutually-locked values: the power an experiment will use and the duty cycle that produces it.
 /// Source1 = Frame subject.
 /// </summary>
@@ -25,7 +25,7 @@ using Hexa.NET.ImGui;
 /// </remarks>
 [Combinator]
 [WorkflowElementCategory(ElementCategory.Combinator)]
-[Description("Renders one row per Fip camera channel found in LightSources (color-filled channel and light cells, editable experiment power in microwatts, and editable duty cycle; the two are locked to each other through the calibration). Each committed edit emits a Dictionary<FipCameraSource, CalibratedLightSource> with the edit applied. Source1 = Frame subject; LightSources is set via PropertyMapping, not wired as a Process argument. Set Enabled to false to display the values without allowing changes.")]
+[Description("Renders one row per Fip camera channel found in LightSources (channel and light names in their colors, editable experiment power in microwatts, and editable duty cycle; the two are locked to each other through the calibration). Each committed edit emits a Dictionary<FipCameraSource, CalibratedLightSource> with the edit applied. Source1 = Frame subject; LightSources is set via PropertyMapping, not wired as a Process argument. Set Enabled to false to display the values without allowing changes.")]
 public class FipExperimentPowerVisualizer
 {
     private bool visible = true;
@@ -108,10 +108,10 @@ public class FipExperimentPowerVisualizer
                             ImGui.TableNextRow(ImGuiTableRowFlags.None, FipPowerUi.RowHeight);
 
                             ImGui.TableNextColumn();
-                            ImGui.TableSetBgColor(ImGuiTableBgTarget.CellBg, ImGui.ColorConvertFloat4ToU32(ColorExtensions.CameraColor(channel)));
+                            FipPowerUi.CenteredText(channel.ToString(), ColorExtensions.CameraColor(channel));
 
                             ImGui.TableNextColumn();
-                            ImGui.TableSetBgColor(ImGuiTableBgTarget.CellBg, ImGui.ColorConvertFloat4ToU32(ColorExtensions.LightSourceColor(channel)));
+                            FipPowerUi.CenteredText(ColorExtensions.LightSourceName(channel), ColorExtensions.LightSourceColor(channel));
 
                             if (lightSource == null)
                             {

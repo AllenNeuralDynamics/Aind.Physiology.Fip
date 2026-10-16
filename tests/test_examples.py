@@ -1,24 +1,13 @@
 """testing examples"""
 
 import glob
-import sys
-import unittest
 
-sys.path.append(".")
-from tests import EXAMPLES_DIR, build_example  # isort:skip # pylint: disable=wrong-import-position
+import pytest
 
-
-class ExampleTests(unittest.TestCase):
-    """tests for examples"""
-
-    def test_examples(self):
-        for script_path in glob.glob(str(EXAMPLES_DIR / "*.py")):
-            with self.subTest(script_path=script_path):
-                module = build_example(script_path)
-                # Check if the module executed successfully
-                if hasattr(module, "__name__") and module.__name__ == "__main__":
-                    self.assertEqual(module.__name__, "__main__", f"Script {script_path} failed to execute")
+from tests import EXAMPLES_DIR, build_example
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.mark.parametrize("script_path", sorted(glob.glob(str(EXAMPLES_DIR / "*.py"))))
+def test_examples(script_path):
+    """Each script in the examples folder executes without raising."""
+    build_example(script_path)  # raises if the example fails to execute

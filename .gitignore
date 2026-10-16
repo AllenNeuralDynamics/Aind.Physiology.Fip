@@ -100,3 +100,4 @@ ipython_config.py
 
 # C# solution files
 *.sln
+!tests/fixtures/**/*.bin

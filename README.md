@@ -86,7 +86,7 @@ See [wiki](https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/wiki) for 
 
 ### Generating input configurations [Optional]
 
-The current pipeline relies on two input configuration files. These configure the rig/instruments and session parameters, respectively. These files are formalized as pydantic models as shown in `./examples/examples.py`. Template configuration files are included in the `./examples/` folder, and running the `examples.py` will create configuration files into  `./local/`
+The current pipeline relies on two input configuration files. These configure the rig/instruments and session parameters, respectively. These files are formalized as pydantic models as shown in `./examples/example.py`. Template configuration files are included in the `./examples/` folder, and running the `example.py` will create configuration files into  `./local/`
 
 Briefly:
 
@@ -176,7 +176,7 @@ For a list of available subcommands and options, run:
 
 ## Generating `aind-data-schema` metadata
 
-The repository will maintain tools to generate `aind-data-schema` compliant metadata for experiments run using the IsoForce task:
+The repository will maintain tools to generate `aind-data-schema` compliant metadata for experiments run using the FIP system:
 
 1. Install the `mappers` optional dependencies:
 
@@ -187,7 +187,7 @@ uv sync --extra mappers
 2. Run the metadata generation tool via the command line and provide the necessary arguments
 
 ```powershell
-uv run fip data-mapper -h
+uv run fip data-mappers -h
 ```
 
 Alternatively, you can use the mapping classes directly. For instance to run the mapper/extractor for acquisition data:

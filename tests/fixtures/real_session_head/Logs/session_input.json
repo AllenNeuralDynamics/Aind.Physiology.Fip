@@ -1,0 +1,17 @@
+{
+  "aind_behavior_services_pkg_version": "0.12.5",
+  "version": "0.12.5",
+  "experiment": null,
+  "experimenter": [
+    "anonymous.experimenter"
+  ],
+  "date": "2026-04-17T17:03:02.691512Z",
+  "root_path": "D:\\Data\\816214",
+  "session_name": "816214_2026-04-17T170302Z",
+  "subject": "816214",
+  "experiment_version": "",
+  "notes": "",
+  "commit_hash": "f0e21508b664757e7e5cf07d9ba20d9e2d26cba2",
+  "allow_dirty_repo": true,
+  "skip_hardware_validation": false
+}

@@ -58,7 +58,7 @@ class FipChannelMetadataTestSuite(Suite):
             )
 
         inter_clock_diff = diff_metadata["CameraFrameTime"] - diff_metadata["ReferenceTime"]
-        if not all(inter_clock_diff.dropna() < self.clock_jitter_s):
+        if not all(inter_clock_diff.dropna().abs() < self.clock_jitter_s):
             return self.fail_test(
                 None,
                 f"Detected a difference between CameraFrameTime and ReferenceTime greater than the expected threshold: {self.clock_jitter_s} s.",
@@ -73,7 +73,9 @@ class FipChannelMetadataTestSuite(Suite):
         period = np.diff(self.channel_data.data.index.values)
         if np.std(period) > 1e-4:
             return self.fail_test(None, f"High std in frame period detected: {np.std(period)}")
-        if abs(_mean := np.mean(period) - (_expected := (1.0 / self.expected_fps))) > (_expected * 0.01):
+        _mean = np.mean(period)
+        _expected = 1.0 / self.expected_fps
+        if abs(_mean - _expected) > (_expected * 0.01):
             return self.fail_test(None, f"Mean frame period ({_mean}) is different than expected: {_expected}")
 
         return self.pass_test(None, f"Mean frame period ({_mean}) is within expected range: {_expected}")
@@ -130,7 +132,7 @@ class FipChannelSignalTestSuite(Suite):
         data_cols = [col for col in self.data.columns if re.match(self._reg_exp_, col)]
         for ch in data_cols:
             ch_data = self.data[ch]
-            if (sudden_changes := np.sum(np.abs(np.diff(ch_data)) > 1000)) > 0:
+            if (sudden_changes := np.sum(np.abs(np.diff(ch_data)) > self.sudden_change_limit)) > 0:
                 yield self.fail_test(
                     False,
                     f"Detected {sudden_changes} sudden changes in channel {ch}.",
@@ -223,6 +225,16 @@ class FipRawImageTestSuite(Suite):
         return pixels_inside, mask
 
     @staticmethod
+    def _coefficient_of_variation(pixels: np.ndarray) -> float:
+        """Returns std/mean of the pixels, or inf if it is undefined (no pixels or zero mean) so that it fails."""
+        if pixels.size == 0:
+            return float("inf")
+        mean = float(np.mean(pixels))
+        if mean == 0:
+            return float("inf")
+        return float(np.std(pixels)) / mean
+
+    @staticmethod
     def _render_roi(
         image: np.ndarray, circle: Circle, text: str, color: tuple[int, int, int] = (255, 0, 0), thickness: int = 1
     ) -> np.ndarray:
@@ -255,13 +267,13 @@ class FipRawImageTestSuite(Suite):
         metrics = {}
         # Background pixels
         pixels_inside, _ = self._get_pixels_in_circle(reference_image, self.background_region)
-        cv = np.std(pixels_inside) / np.mean(pixels_inside)
+        cv = self._coefficient_of_variation(pixels_inside)
         metrics["background_cv"] = cv
         render_image = self._render_roi(render_image, self.background_region, "B")
 
         for i, r in enumerate(self.regions):
             pixels_inside, _ = self._get_pixels_in_circle(reference_image, r)
-            cv = np.std(pixels_inside) / np.mean(pixels_inside)
+            cv = self._coefficient_of_variation(pixels_inside)
             render_image = self._render_roi(render_image, r, f"{i}")
 
             metrics[f"roi_{i}_cv"] = cv

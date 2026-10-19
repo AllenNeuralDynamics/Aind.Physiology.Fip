@@ -216,7 +216,7 @@ class TestAindInstrumentMapper(unittest.TestCase):
 
         blue = by_device["470nm LED"]
         self.assertEqual(blue.output, [0.0, 10.0, 20.0])
-        self.assertEqual(blue.output_unit, "milliwatt")
+        self.assertEqual(blue.output_unit, "microwatt")
         # Duty cycle is stored as a fraction but recorded as a percentage strength.
         self.assertEqual(blue.input, [0.0, 10.0, 20.0])
         self.assertEqual(blue.input_unit, "percent")

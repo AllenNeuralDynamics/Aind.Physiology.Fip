@@ -148,8 +148,8 @@ class AindInstrumentDataMapper:
         for epoch in epochs:
             try:
                 return epoch, dataset(root=epoch)["rig_input"].read()
-            except (OSError, ValueError, KeyError) as e:
-                # Missing file, malformed JSON or a rig that fails validation: try the next epoch.
+            except (FileNotFoundError, ValueError, KeyError) as e:
+                # No rig_input, malformed JSON or a rig that fails validation: try the next epoch.
                 logger.debug("No readable rig_input in %s: %s", epoch, e)
         raise ValueError(f"No readable rig_input.json in any FIP epoch under {root_path}.")
 
@@ -168,7 +168,8 @@ class AindInstrumentDataMapper:
 
         The rig stores duty cycle as a fraction (``le=1``) while the only non-absolute input
         unit aind-data-schema offers is ``percent``, whose inputs are percentage strengths, so
-        the look-up table inputs are scaled to 0-100.
+        the look-up table inputs are scaled to 0-100. Outputs are passed through in the unit
+        ``LightSourcePower`` declares, which is microwatts.
         """
         calibrations = []
         for led, light_source, _ in cls._light_sources(rig):
@@ -182,7 +183,7 @@ class AindInstrumentDataMapper:
                     input=[duty_cycle * 100 for duty_cycle, _ in lut],
                     input_unit=PowerUnit.PERCENT,
                     output=[power for _, power in lut],
-                    output_unit=PowerUnit.MW,
+                    output_unit=PowerUnit.UW,
                 )
             )
         return calibrations

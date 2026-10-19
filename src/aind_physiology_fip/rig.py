@@ -61,7 +61,7 @@ class Networking(BaseModel):
     )
 
 
-LightSourcePower = Annotated[float, Field(ge=0, description="Power (mW)")]
+LightSourcePower = Annotated[float, Field(ge=0, description="Power (uW)")]
 DutyCycle = Annotated[float, Field(ge=0, le=1, description="Duty cycle (0-100%)")]
 
 
@@ -111,7 +111,7 @@ class LightSource(rig.Device):
     """Light source device configuration with power control and timing tasks."""
 
     device_type: Literal["LightSource"] = "LightSource"
-    power: float = Field(default=0, ge=0, description="Power (mW)")
+    power: float = Field(default=0, ge=0, description="Power (uW)")
     calibration: LightSourceCalibration | None = Field(
         default=None,
         title="Calibration",

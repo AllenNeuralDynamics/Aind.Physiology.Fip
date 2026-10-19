@@ -11,7 +11,7 @@ authors = [
 ]
 license = { text = "MIT" }
 requires-python = ">=3.11"
-version = "0.3.2"
+version = "0.3.5"
 readme = { file = "README.md", content-type = "text/markdown" }
 classifiers = [
     "Programming Language :: Python :: 3.11",
@@ -36,6 +36,7 @@ mappers = ["aind-data-schema>=2.9"]
 [dependency-groups]
 
 dev = [
+    "pytest",
     "ruff",
     "codespell",
     "aind-physiology-fip[data]",
@@ -69,6 +70,9 @@ pydocstyle = { convention = 'google' }
 [tool.codespell]
 skip = '.git,*.pdf,*.svg,./.bonsai,*.bonsai,./site,uv.lock'
 ignore-words-list = 'nd'
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.uv]
 default-groups = ['dev']

@@ -36,7 +36,7 @@ public class CreateTaskFromLightSource
             // Interpolate the power:
             var power = value.Power;
             var calibratedDutyCycle = interpolator.Item2.Interpolate(power);
-            return new CalibratedLightSource(value, interpolator.Item2, interpolator.Item1, calibratedDutyCycle);
+            return new CalibratedLightSource(value, interpolator.Item1, interpolator.Item2, calibratedDutyCycle);
             }
         );
     }

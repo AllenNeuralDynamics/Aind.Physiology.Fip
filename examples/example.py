@@ -82,6 +82,7 @@ def make_mapped() -> ProtoAcquisitionDataSchema:
                 id=f"fip_{now_local.strftime('%Y-%m-%dT%H%M%S')}",
                 start_time=now_local,
                 end_time=now_local + datetime.timedelta(hours=1),
+                regions=RoiSettings(),
             )
         ],
         session=session,

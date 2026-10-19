@@ -1,10 +1,10 @@
 import os
 import sys
-import unittest
 import warnings
 from pathlib import Path
 from typing import Generic, TypeVar
 
+import pytest
 from aind_behavior_services.session import Session
 from aind_behavior_services.utils import run_bonsai_process
 from pydantic import ValidationError
@@ -18,42 +18,46 @@ from tests import JSON_ROOT  # isort:skip # pylint: disable=wrong-import-positio
 TModel = TypeVar("TModel", bound=AindPhysioFipRig | Session)
 
 
-class BonsaiTests(unittest.TestCase):
-    def test_deserialization(self):
-        example.main()
+@pytest.mark.skipif(not Path("./.bonsai/Bonsai.exe").exists(), reason="Bonsai is not set up (run .bonsai/setup.ps1)")
+def test_deserialization(monkeypatch):
+    """The example rig and session JSON deserialize identically through the Bonsai workflow."""
+    monkeypatch.setattr(sys, "argv", ["example.py"])  # example.main() parses sys.argv
+    example.main()
 
-        models_to_test = [
-            TestModel(bonsai_property="SessionPath", json_root=JSON_ROOT, model=Session),
-            TestModel(bonsai_property="RigPath", json_root=JSON_ROOT, model=AindPhysioFipRig),
-        ]
+    models_to_test = [
+        TestModel(bonsai_property="SessionPath", json_root=JSON_ROOT, model=Session),
+        TestModel(bonsai_property="RigPath", json_root=JSON_ROOT, model=AindPhysioFipRig),
+    ]
 
-        workflow_props = {
-            bonsai_prop: path
-            for bonsai_prop, path in zip(
-                [model.bonsai_property for model in models_to_test], [model.json_path for model in models_to_test]
-            )
-        }
-
-        completed_proc = run_bonsai_process(
-            workflow_file=Path("./src/test_deserialization.bonsai").resolve(),
-            is_editor_mode=False,
-            layout=None,
-            additional_properties=workflow_props,
-            bonsai_exe=Path("./.bonsai/Bonsai.exe").resolve(),
+    workflow_props = {
+        bonsai_prop: path
+        for bonsai_prop, path in zip(
+            [model.bonsai_property for model in models_to_test], [model.json_path for model in models_to_test]
         )
-        stdout = completed_proc.stdout.decode().split("\n")
-        stdout = [line for line in stdout if (line or line != "")]
+    }
 
-        with warnings.catch_warnings():  # suppress the warnings relative to the coercion of version across schemas
-            warnings.simplefilter("ignore")
-            for model in models_to_test:
-                try:
-                    model.try_deserialization(stdout)
-                except ValueError:
-                    self.fail(f"Could not find a match for {model.input_model.__class__.__name__}.")
+    completed_proc = run_bonsai_process(
+        workflow_file=Path("./src/test_deserialization.bonsai").resolve(),
+        is_editor_mode=False,
+        layout=None,
+        additional_properties=workflow_props,
+        bonsai_exe=Path("./.bonsai/Bonsai.exe").resolve(),
+    )
+    stdout = completed_proc.stdout.decode().split("\n")
+    stdout = [line for line in stdout if (line or line != "")]
+
+    with warnings.catch_warnings():  # suppress the warnings relative to the coercion of version across schemas
+        warnings.simplefilter("ignore")
+        for model in models_to_test:
+            try:
+                model.try_deserialization(stdout)
+            except ValueError:
+                pytest.fail(f"Could not find a match for {model.input_model.__class__.__name__}.")
 
 
 class TestModel(Generic[TModel]):
+    __test__ = False  # helper, not a pytest test class
+
     def __init__(self, bonsai_property: str, json_root: Path, model: TModel):
         self.bonsai_property: str = bonsai_property
         self.json_path: Path = json_root / f"{model.__name__}.json"
@@ -103,7 +107,3 @@ class TestModel(Generic[TModel]):
 
     def __repr__(self) -> str:
         return self.__str__()
-
-
-if __name__ == "__main__":
-    unittest.main()

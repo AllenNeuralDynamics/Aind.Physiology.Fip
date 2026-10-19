@@ -12,12 +12,15 @@ using Hexa.NET.ImGui;
 /// <summary>
 /// Represents an operator that renders one row per Fip camera channel found in
 /// <see cref="LightSources"/>: name, light source, a 0-1 power slider with a real-unit readout,
-/// a "Set Power" button, and an On/Off state driven by <see cref="State"/>. A global "Off"/"Fip
-/// Mode" button row below the table acts on every channel at once. Source1 = Frame subject.
+/// a "Set Power" button, a read-only "Experiment" column showing the calibrated power that will
+/// actually be used once an experiment starts, and an On/Off state driven by <see cref="State"/>.
+/// A global "Off"/"Fip Mode" button row below the table acts on every channel at once.
+/// Source1 = Frame subject.
 /// </summary>
 /// <remarks>
-/// "Set Power" emits a <see cref="ContinuousLaserTask"/> for that channel only. "Off"/"Fip Mode"
-/// emit a single <see cref="OffLaserTask"/>/<see cref="FipModeLaserTask"/>, since neither carries
+/// "Set Power" emits a <see cref="ContinuousLaserTask"/> for that channel only and only affects
+/// the live preview slider/readout, not what an experiment will use. "Off"/"Fip Mode" emit a
+/// single <see cref="OffLaserTask"/>/<see cref="FipModeLaserTask"/>, since neither carries
 /// per-channel data. <see cref="State"/> should be fed (via PropertyMapping, from a
 /// feedback/readback subject) with whichever task is actually running, since only one
 /// <see cref="ITriggerLaserTask"/> can be active at a time; buttons/rows highlight themselves
@@ -26,7 +29,7 @@ using Hexa.NET.ImGui;
 /// </remarks>
 [Combinator]
 [WorkflowElementCategory(ElementCategory.Combinator)]
-[Description("Renders a power-control row (name, light source, 0-1 power slider, real-unit readout, Set Power button, state) per Fip camera channel found in LightSources, plus global Off/Fip Mode buttons. Set Power emits a ContinuousLaserTask for that channel; Off/Fip Mode emit a single OffLaserTask/FipModeLaserTask. State should be fed the currently-running ITriggerLaserTask so the active mode/channel can be highlighted. Source1 = Frame subject; LightSources/State are set via PropertyMapping, not wired as Process arguments. Set Enabled to false to disable the slider and buttons.")]
+[Description("Renders a power-control row (name, light source, 0-1 power slider, real-unit readout, Set Power button, read-only Experiment column showing the calibrated power an experiment will actually use, state) per Fip camera channel found in LightSources, plus global Off/Fip Mode buttons. Set Power emits a ContinuousLaserTask for that channel and only affects the live preview, not the powers an experiment will use from the rig config. Off/Fip Mode emit a single OffLaserTask/FipModeLaserTask. State should be fed the currently-running ITriggerLaserTask so the active mode/channel can be highlighted. Source1 = Frame subject; LightSources/State are set via PropertyMapping, not wired as Process arguments. Set Enabled to false to disable the slider and buttons.")]
 public class FipCameraPowerControlVisualizer
 {
     private bool visible = true;
@@ -97,13 +100,16 @@ public class FipCameraPowerControlVisualizer
                     }
 
                     ImGui.PushFont(ImGui.GetFont(), FontSize);
+                    ImGui.TextUnformatted("Note: `Start Experiment` will use powers set in the rig config");
+
                     var tableFlags = ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchProp;
-                    if (ImGui.BeginTable("##FipCameraPowerControl", 5, tableFlags))
+                    if (ImGui.BeginTable("##FipCameraPowerControl", 6, tableFlags))
                     {
                         ImGui.TableSetupColumn("Name");
                         ImGui.TableSetupColumn("Light Source");
                         ImGui.TableSetupColumn("Power");
                         ImGui.TableSetupColumn("Set Power");
+                        ImGui.TableSetupColumn("Experiment");
                         ImGui.TableSetupColumn("State");
                         ImGui.TableHeadersRow();
 
@@ -134,13 +140,14 @@ public class FipCameraPowerControlVisualizer
                             }
 
                             // Uncalibrated DutyCycleToPower is just the unity LUT, so show that
-                            // case as a percentage rather than fake microwatts.
+                            // case as a percentage rather than fake microwatts. Calibration LUTs
+                            // are stored directly in microwatts, so no further scaling applies.
                             if (lightSource != null)
                             {
                                 var realPower = lightSource.DutyCycleToPower.Interpolate(row.Power);
                                 var isCalibrated = lightSource.LightSource != null && lightSource.LightSource.Calibration != null;
                                 var readout = isCalibrated
-                                    ? (realPower * 1000).ToString("F1") + " \u00B5W"
+                                    ? realPower.ToString("F1") + " \u00B5W"
                                     : (realPower * 100).ToString("F1") + "%";
                                 ImGui.TextUnformatted(readout);
                             }
@@ -159,6 +166,18 @@ public class FipCameraPowerControlVisualizer
                             ImGui.PopStyleColor();
 
                             ImGui.EndDisabled();
+
+                            // Ground truth: whatever will actually be used once Start Experiment
+                            // is clicked, independent of the slider above.
+                            ImGui.TableNextColumn();
+                            if (lightSource != null)
+                            {
+                                ImGui.TextUnformatted(lightSource.CalibratedPower.ToString("F1") + " \u00B5W");
+                            }
+                            else
+                            {
+                                ImGui.TextUnformatted("-");
+                            }
 
                             ImGui.TableNextColumn();
                             ImGui.TextColored(isActiveChannel ? activeButtonColor : inactiveButtonColor, isActiveChannel ? "On" : "Off");

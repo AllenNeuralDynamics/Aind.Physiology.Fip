@@ -11,7 +11,8 @@ from contraqctor.contract import Dataset, DataStream, DataStreamCollection, File
 from contraqctor.contract.json import PydanticModel, SoftwareEvents
 
 from aind_physiology_fip import __semver__
-from aind_physiology_fip.rig import AindPhysioFipRig, RoiSettings
+from aind_physiology_fip.extra_types import RoiSettings
+from aind_physiology_fip.rig import AindPhysioFipRig
 
 logger = logging.getLogger(__name__)
 

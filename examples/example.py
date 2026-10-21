@@ -2,10 +2,12 @@ import argparse
 import datetime
 import os
 
+from aind_behavior_services.common import Point2f
 from aind_behavior_services.rig.harp import HarpCuttlefishfip
 from aind_behavior_services.session import Session
 
 from aind_physiology_fip.data_mappers._acquisition import ProtoAcquisitionDataSchema, _FipDataStreamMetadata
+from aind_physiology_fip.extra_types import FipCircle, RoiSettings
 from aind_physiology_fip.rig import (
     AindPhysioFipRig,
     FipCamera,
@@ -14,7 +16,6 @@ from aind_physiology_fip.rig import (
     LightSourceCalibration,
     Networking,
     Ports,
-    RoiSettings,
 )
 
 
@@ -28,6 +29,25 @@ def mock_session() -> Session:
         allow_dirty_repo=True,
         skip_hardware_validation=False,
         experimenter=["Foo", "Bar"],
+    )
+
+
+def mock_roi_settings() -> RoiSettings:
+    """Generates a mock RoiSettings model with four ROIs per camera"""
+
+    def make_rois() -> list[FipCircle]:
+        centers = [(x, y) for x in (50, 150) for y in (50, 150)]
+        return [
+            FipCircle(center=Point2f(x=x, y=y), radius=20, roi_number=i, fiber_number=i)
+            for i, (x, y) in enumerate(centers)
+        ]
+
+    background = FipCircle(center=Point2f(x=10, y=10), radius=10, name="Background")
+    return RoiSettings(
+        camera_green_iso_background=background,
+        camera_red_background=background,
+        camera_green_iso_roi=make_rois(),
+        camera_red_roi=make_rois(),
     )
 
 
@@ -64,7 +84,6 @@ def mock_rig() -> AindPhysioFipRig:
                 light_source_port=Ports.IO3,
             ),
         ),
-        roi_settings=RoiSettings(),
         networking=Networking(),
         cuttlefish_fip=HarpCuttlefishfip(
             port_name="COM1",
@@ -82,7 +101,7 @@ def make_mapped() -> ProtoAcquisitionDataSchema:
                 id=f"fip_{now_local.strftime('%Y-%m-%dT%H%M%S')}",
                 start_time=now_local,
                 end_time=now_local + datetime.timedelta(hours=1),
-                regions=RoiSettings(),
+                regions=mock_roi_settings(),
             )
         ],
         session=session,

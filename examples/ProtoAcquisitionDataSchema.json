@@ -10,14 +10,22 @@
             "x": 10.0,
             "y": 10.0
           },
-          "radius": 10.0
+          "radius": 10.0,
+          "roi_number": null,
+          "fiber_number": null,
+          "name": "Background",
+          "enabled": true
         },
         "camera_red_background": {
           "center": {
             "x": 10.0,
             "y": 10.0
           },
-          "radius": 10.0
+          "radius": 10.0,
+          "roi_number": null,
+          "fiber_number": null,
+          "name": "Background",
+          "enabled": true
         },
         "camera_green_iso_roi": [
           {
@@ -25,28 +33,44 @@
               "x": 50.0,
               "y": 50.0
             },
-            "radius": 20.0
+            "radius": 20.0,
+            "roi_number": 0,
+            "fiber_number": 0,
+            "name": null,
+            "enabled": true
           },
           {
             "center": {
               "x": 50.0,
               "y": 150.0
             },
-            "radius": 20.0
+            "radius": 20.0,
+            "roi_number": 1,
+            "fiber_number": 1,
+            "name": null,
+            "enabled": true
           },
           {
             "center": {
               "x": 150.0,
               "y": 50.0
             },
-            "radius": 20.0
+            "radius": 20.0,
+            "roi_number": 2,
+            "fiber_number": 2,
+            "name": null,
+            "enabled": true
           },
           {
             "center": {
               "x": 150.0,
               "y": 150.0
             },
-            "radius": 20.0
+            "radius": 20.0,
+            "roi_number": 3,
+            "fiber_number": 3,
+            "name": null,
+            "enabled": true
           }
         ],
         "camera_red_roi": [
@@ -55,28 +79,44 @@
               "x": 50.0,
               "y": 50.0
             },
-            "radius": 20.0
+            "radius": 20.0,
+            "roi_number": 0,
+            "fiber_number": 0,
+            "name": null,
+            "enabled": true
           },
           {
             "center": {
               "x": 50.0,
               "y": 150.0
             },
-            "radius": 20.0
+            "radius": 20.0,
+            "roi_number": 1,
+            "fiber_number": 1,
+            "name": null,
+            "enabled": true
           },
           {
             "center": {
               "x": 150.0,
               "y": 50.0
             },
-            "radius": 20.0
+            "radius": 20.0,
+            "roi_number": 2,
+            "fiber_number": 2,
+            "name": null,
+            "enabled": true
           },
           {
             "center": {
               "x": 150.0,
               "y": 150.0
             },
-            "radius": 20.0
+            "radius": 20.0,
+            "roi_number": 3,
+            "fiber_number": 3,
+            "name": null,
+            "enabled": true
           }
         ]
       }
@@ -100,7 +140,7 @@
   },
   "rig": {
     "aind_behavior_services_pkg_version": "0.13.8",
-    "version": "0.3.5",
+    "version": "0.4.0-rc1",
     "computer_name": "test_computer",
     "rig_name": "test_rig",
     "data_directory": "C:/data",
@@ -183,82 +223,6 @@
         "mute_output": false,
         "pwm_frequency": 10000.0
       }
-    },
-    "roi_settings": {
-      "camera_green_iso_background": {
-        "center": {
-          "x": 10.0,
-          "y": 10.0
-        },
-        "radius": 10.0
-      },
-      "camera_red_background": {
-        "center": {
-          "x": 10.0,
-          "y": 10.0
-        },
-        "radius": 10.0
-      },
-      "camera_green_iso_roi": [
-        {
-          "center": {
-            "x": 50.0,
-            "y": 50.0
-          },
-          "radius": 20.0
-        },
-        {
-          "center": {
-            "x": 50.0,
-            "y": 150.0
-          },
-          "radius": 20.0
-        },
-        {
-          "center": {
-            "x": 150.0,
-            "y": 50.0
-          },
-          "radius": 20.0
-        },
-        {
-          "center": {
-            "x": 150.0,
-            "y": 150.0
-          },
-          "radius": 20.0
-        }
-      ],
-      "camera_red_roi": [
-        {
-          "center": {
-            "x": 50.0,
-            "y": 50.0
-          },
-          "radius": 20.0
-        },
-        {
-          "center": {
-            "x": 50.0,
-            "y": 150.0
-          },
-          "radius": 20.0
-        },
-        {
-          "center": {
-            "x": 150.0,
-            "y": 50.0
-          },
-          "radius": 20.0
-        },
-        {
-          "center": {
-            "x": 150.0,
-            "y": 150.0
-          },
-          "radius": 20.0
-        }
-      ]
     },
     "cuttlefish_fip": {
       "device_type": "cuTTLefishFip",

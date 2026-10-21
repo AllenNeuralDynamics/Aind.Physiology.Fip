@@ -55,7 +55,7 @@ jobs:
         run: ./setup.ps1
 
       - name: Run python unit tests
-        run: uv run python -m unittest
+        run: uv run pytest
 
       - name: Regenerate schemas
         run: uv run fip regenerate

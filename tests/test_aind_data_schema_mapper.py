@@ -9,13 +9,13 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
-from aind_behavior_services.common import Circle, Point2f
+from aind_behavior_services.common import Point2f
 from aind_data_schema.core import instrument
 from contraqctor.contract import DataStream
 
 from aind_physiology_fip.data_mappers import INSTRUMENT_FILE_NAME, DataMapperCli, ProtoAcquisitionMapper
 from aind_physiology_fip.data_mappers._instrument import AindInstrumentDataMapper
-from aind_physiology_fip.rig import RoiSettings
+from aind_physiology_fip.extra_types import FipCircle, RoiSettings
 
 sys.path.append(".")
 from examples.example import mock_rig
@@ -26,6 +26,19 @@ class MockCsv(DataStream[pd.DataFrame, Any]):
 
     def _reader(self, params: Any) -> pd.DataFrame:
         return self._inner_data
+
+
+def _make_regions(**overrides: Any) -> RoiSettings:
+    background = FipCircle(center=Point2f(x=10, y=10), radius=10)
+    rois = [FipCircle(center=Point2f(x=50, y=50), radius=20, roi_number=0, fiber_number=0)]
+    fields: dict[str, Any] = {
+        "camera_green_iso_background": background,
+        "camera_red_background": background,
+        "camera_green_iso_roi": rois,
+        "camera_red_roi": rois,
+    }
+    fields.update(overrides)
+    return RoiSettings(**fields)
 
 
 def _make_epoch(root: Path, name: str, regions: RoiSettings | None) -> Path:
@@ -66,7 +79,9 @@ def test_time_extraction_default():
 
 def test_regions_are_extracted_from_regions_json(tmp_path):
     """An epoch's id, regions and start/end times are extracted from regions.json and the session events."""
-    regions = RoiSettings(camera_green_iso_roi=[Circle(center=Point2f(x=10, y=20), radius=5)])
+    regions = _make_regions(
+        camera_green_iso_roi=[FipCircle(center=Point2f(x=10, y=20), radius=5, roi_number=0, fiber_number=1, name="NAc")]
+    )
     epoch = _make_epoch(tmp_path, "fip_epoch", regions)
     streams = ProtoAcquisitionMapper._extract_start_end_times([epoch])
 
@@ -79,7 +94,7 @@ def test_regions_are_extracted_from_regions_json(tmp_path):
 
 def test_epoch_without_regions_is_skipped(tmp_path, caplog):
     """An epoch lacking regions.json is skipped with a warning instead of failing the whole mapping."""
-    good = _make_epoch(tmp_path, "fip_good", RoiSettings())
+    good = _make_epoch(tmp_path, "fip_good", _make_regions())
     bad = _make_epoch(tmp_path, "fip_bad", None)
     # tests/__init__.py disables logging globally; re-enable it to assert on the warning
     logging.disable(logging.NOTSET)

@@ -27,7 +27,7 @@
         <Selector>Item2</Selector>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="p1:CheckRoiCountMatches" />
+        <Combinator xsi:type="p1:ValidateRoiSettings" />
       </Expression>
       <Expression xsi:type="scr:ExpressionCondition">
         <scr:Expression>it</scr:Expression>

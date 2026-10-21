@@ -2,7 +2,7 @@ from enum import IntFlag
 from typing import Annotated, Literal, Self
 
 from aind_behavior_services import rig
-from aind_behavior_services.common import Circle, Point2f
+from aind_behavior_services.common import Point2f
 from aind_behavior_services.rig import harp
 from pydantic import BaseModel, Field, model_validator
 
@@ -25,29 +25,6 @@ class FipCamera(rig.Device):
     serial_number: str = Field(description="Camera serial number")
     gain: float = Field(default=0, ge=0, description="Gain")
     offset: Point2f = Field(default=Point2f(x=0, y=0), description="Offset (px)", validate_default=True)
-
-
-def _make_default_rois() -> list[Circle]:
-    return [Circle(center=Point2f(x=x, y=y), radius=20) for x in (50, 150) for y in (50, 150)]
-
-
-class RoiSettings(BaseModel):
-    """Region of Interest (ROI) settings for camera channels in the FIP system."""
-
-    camera_green_iso_background: Circle = Field(
-        default=Circle(center=Point2f(x=10, y=10), radius=10),
-        description="ROI to compute the background for the green/iso camera channel",
-    )
-    camera_red_background: Circle = Field(
-        default=Circle(center=Point2f(x=10, y=10), radius=10),
-        description="ROI to compute the background for the red camera channel",
-    )
-    camera_green_iso_roi: list[Circle] = Field(
-        default_factory=_make_default_rois, description="ROI for the green/iso camera channel", validate_default=True
-    )
-    camera_red_roi: list[Circle] = Field(
-        default_factory=_make_default_rois, description="ROI for the red camera channel", validate_default=True
-    )
 
 
 class Networking(BaseModel):
@@ -135,11 +112,6 @@ class AindPhysioFipRig(rig.Rig):
     light_source_uv: LightSource = Field(title="UV light source", description="UV (415nm) light source")
     light_source_blue: LightSource = Field(title="Blue light source", description="Blue (470nm) light source")
     light_source_lime: LightSource = Field(title="Lime light source", description="Lime (560nm) light source")
-    roi_settings: RoiSettings | None = Field(
-        default=None,
-        title="Region of interest settings",
-        description="Region of interest settings. Leave empty to attempt to load from local file or manually define it in the program.",
-    )
     cuttlefish_fip: harp.HarpCuttlefishfip = Field(
         title="CuttlefishFip",
         description="CuttlefishFip board for controlling the trigger of cameras and light-sources",

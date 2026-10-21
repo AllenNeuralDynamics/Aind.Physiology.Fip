@@ -6,10 +6,10 @@
                  xmlns:p1="clr-namespace:AindPhysiologyFip;assembly=Extensions"
                  xmlns:p2="clr-namespace:System.Reactive;assembly=System.Reactive.Core"
                  xmlns:sys="clr-namespace:System;assembly=mscorlib"
-                 xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
                  xmlns:p3="clr-namespace:AllenNeuralDynamics.AindBehaviorServices.DataTypes;assembly=AllenNeuralDynamics.AindBehaviorServices"
                  xmlns:p4="clr-namespace:AllenNeuralDynamics.VersionControl;assembly=AllenNeuralDynamics.VersionControl"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
+                 xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
                  xmlns:p5="clr-namespace:FipExtensions;assembly=Extensions"
                  xmlns:p6="clr-namespace:AllenNeuralDynamics.CuttlefishFip;assembly=AllenNeuralDynamics.CuttlefishFip"
                  xmlns:harp="clr-namespace:Bonsai.Harp;assembly=Bonsai.Harp"
@@ -83,9 +83,6 @@
             </Expression>
             <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:Unit">
               <rx:Name>StartExperiment</rx:Name>
-            </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="cv:Circle[]">
-              <rx:Name>CurrentRedRoi</rx:Name>
             </Expression>
             <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p1:RoiSettings">
               <rx:Name>CurrentCombinedRoi</rx:Name>
@@ -182,37 +179,27 @@
             <Expression xsi:type="rx:AsyncSubject">
               <Name>BackgroundFramesCount</Name>
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>RigSchema</Name>
-            </Expression>
-            <Expression xsi:type="MemberSelector">
-              <Selector>RoiSettings</Selector>
-            </Expression>
-            <Expression xsi:type="IncludeWorkflow" Path="AllenNeuralDynamics.Core:FilterNotNull.bonsai" />
-            <Expression xsi:type="rx:BehaviorSubject">
-              <Name>CurrentRoiSettings</Name>
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p1:RoiSettings">
+              <rx:Name>CurrentRoiSettings</rx:Name>
             </Expression>
           </Nodes>
           <Edges>
-            <Edge From="8" To="9" Label="Source1" />
-            <Edge From="10" To="11" Label="Source1" />
-            <Edge From="11" To="18" Label="Source1" />
+            <Edge From="7" To="8" Label="Source1" />
+            <Edge From="9" To="10" Label="Source1" />
+            <Edge From="10" To="17" Label="Source1" />
+            <Edge From="11" To="12" Label="Source1" />
             <Edge From="12" To="13" Label="Source1" />
-            <Edge From="13" To="14" Label="Source1" />
-            <Edge From="14" To="18" Label="Source2" />
+            <Edge From="13" To="17" Label="Source2" />
+            <Edge From="14" To="15" Label="Source1" />
             <Edge From="15" To="16" Label="Source1" />
-            <Edge From="16" To="17" Label="Source1" />
-            <Edge From="17" To="18" Label="Source3" />
-            <Edge From="18" To="19" Label="Source1" />
+            <Edge From="16" To="17" Label="Source3" />
+            <Edge From="17" To="18" Label="Source1" />
+            <Edge From="20" To="21" Label="Source1" />
             <Edge From="21" To="22" Label="Source1" />
-            <Edge From="22" To="23" Label="Source1" />
+            <Edge From="23" To="24" Label="Source1" />
             <Edge From="24" To="25" Label="Source1" />
-            <Edge From="25" To="26" Label="Source1" />
+            <Edge From="26" To="27" Label="Source1" />
             <Edge From="27" To="28" Label="Source1" />
-            <Edge From="28" To="29" Label="Source1" />
-            <Edge From="30" To="31" Label="Source1" />
-            <Edge From="31" To="32" Label="Source1" />
-            <Edge From="32" To="33" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
@@ -979,7 +966,7 @@
                                       <Combinator xsi:type="p6:ConfigureTask">
                                         <p6:MessageType>Write</p6:MessageType>
                                         <p6:PwmPort>IO4</p6:PwmPort>
-                                        <p6:DutyCycle>0.2</p6:DutyCycle>
+                                        <p6:DutyCycle>0.389436632</p6:DutyCycle>
                                         <p6:Frequency>10000</p6:Frequency>
                                         <p6:TriggerPorts>IO1</p6:TriggerPorts>
                                         <p6:EventsEnabled>true</p6:EventsEnabled>
@@ -1162,7 +1149,7 @@
                                       <Combinator xsi:type="p6:ConfigureTask">
                                         <p6:MessageType>Write</p6:MessageType>
                                         <p6:PwmPort>IO2</p6:PwmPort>
-                                        <p6:DutyCycle>0.314</p6:DutyCycle>
+                                        <p6:DutyCycle>0.614</p6:DutyCycle>
                                         <p6:Frequency>10000</p6:Frequency>
                                         <p6:TriggerPorts>None</p6:TriggerPorts>
                                         <p6:EventsEnabled>false</p6:EventsEnabled>

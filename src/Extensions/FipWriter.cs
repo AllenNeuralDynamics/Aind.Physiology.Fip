@@ -103,6 +103,11 @@ namespace FipExtensions
             internal int? ExpectedRegionCount = null;
             const int MetadataOffset = 3;
 
+            // Which regions (indices into the CircleActivityCollection) are written, in column
+            // order: the Background first, then every enabled Roi sorted by fiber number. Fixed
+            // from the first frame - the Roi settings can't change once acquisition has started.
+            int[] regionOrder;
+
             internal FipCsvWriter(FipWriter writer, int? expectedRegionCount)
             {
                 Writer = writer;
@@ -134,13 +139,24 @@ namespace FipExtensions
                 "Background", // We assume the first region is always the background region
             };
 
-                if (nRegions > 0)
+                // Roi columns are labeled by each Roi's fiber number (falling back to its position
+                // if it has none) and sorted by it. Disabled Rois are never written.
+                var rois = new List<KeyValuePair<int, int>>(); // (region index, fiber number)
+                for (int i = 1; i < nRegions; i++)
                 {
-                    for (int i = 1; i < nRegions; i++)
+                    var circle = input.Value[i].FipCircle;
+                    if (circle != null && !circle.Enabled) continue;
+                    var fiberNumber = circle != null && circle.FiberNumber.HasValue ? circle.FiberNumber.Value : i - 1;
+                    if (rois.Any(roi => roi.Value == fiberNumber))
                     {
-                        columns.Add("Fiber_" + (i - 1).ToString(CultureInfo.InvariantCulture));
+                        throw new ArgumentException("Duplicate fiber number " + fiberNumber + ": every ROI must have a unique fiber number.");
                     }
+                    rois.Add(new KeyValuePair<int, int>(i, fiberNumber));
                 }
+                rois.Sort((a, b) => a.Value.CompareTo(b.Value));
+
+                regionOrder = new[] { 0 }.Concat(rois.Select(roi => roi.Key)).ToArray();
+                columns.AddRange(rois.Select(roi => "Fiber_" + roi.Value.ToString(CultureInfo.InvariantCulture)));
                 var header = string.Join(",", columns);
                 writer.WriteLine(header);
                 return writer;
@@ -153,18 +169,16 @@ namespace FipExtensions
                 {
                     throw new ArgumentException("Number of regions in the input stream does not match the number of regions in the first frame.");
                 }
-                var values = new List<string>(MetadataOffset + nRegions)
+                var values = new List<string>(MetadataOffset + regionOrder.Length)
                 {
                     input.Seconds.ToString(CultureInfo.InvariantCulture),
                     input.Value.FipFrame.FrameNumber.ToString(CultureInfo.InvariantCulture),
                     input.Value.FipFrame.FrameTime.ToString(CultureInfo.InvariantCulture)
                 };
 
-                var activity = input.Value.Select(x => x.Activity).ToArray();
-
-                for (int i = 0; i < activity.Length; i++)
+                foreach (var region in regionOrder)
                 {
-                    values.Add(activity[i].Val0.ToString(CultureInfo.InvariantCulture));
+                    values.Add(input.Value[region].Activity.Val0.ToString(CultureInfo.InvariantCulture));
                 }
                 var line = string.Join(",", values);
                 writer.WriteLine(line);

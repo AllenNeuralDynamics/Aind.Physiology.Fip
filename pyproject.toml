@@ -34,6 +34,7 @@ data = ["contraqctor < 0.6", "pydantic_settings", "opencv-python"]
 [dependency-groups]
 
 dev = [
+    "pytest",
     "ruff",
     "codespell",
     "aind-physiology-fip[data]",
@@ -66,6 +67,9 @@ pydocstyle = { convention = 'google' }
 [tool.codespell]
 skip = '.git,*.pdf,*.svg,./.bonsai,*.bonsai,*.Generated.cs,./site,uv.lock'
 ignore-words-list = 'nd'
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.uv]
 default-groups = ['dev']

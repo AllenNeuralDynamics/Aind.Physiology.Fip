@@ -63,6 +63,30 @@ The temporal multiplexing sequence:
 
 This cycling occurs at 60 Hz, allowing near-simultaneous measurement of multiple signals while preventing crosstalk between channels. Each LED is activated in sequence and cameras are synchronized to capture data only during their respective LED's ON period.
 
+### Camera exposure and LED timing
+
+Timing is configured per light source through the `task` field (`FipTask`) of `light_source_uv`, `light_source_blue` and `light_source_lime` in the rig configuration. Four durations (in µs) define one acquisition cycle:
+
+| Rig field | Default (µs) | Meaning |
+|-----------|-------------:|---------|
+| `delta_1` | 15650 | Camera exposure time, i.e. the window in which the LED is on and the camera integrates |
+| `delta_2` | 666 | Guard interval between LED/camera transitions |
+| `delta_3` | 300 | Guard interval before the camera exposure |
+| `delta_4` | 50 | Guard interval after the camera exposure |
+
+The four values sum to the cycle period, so the acquisition frequency follows from them: `delta_1 + delta_2 + delta_3 + delta_4 = 1 / frequency`. With the defaults this is 16666 µs, i.e. 60 Hz. The guard intervals (`delta_2` to `delta_4`) should be minimized for better signal, but if they are too short, LED instability contributes periodic noise, so they should be optimized empirically. For more information, check the [cuttlefish-fip firmware documentation](https://github.com/AllenNeuralDynamics/harp.device.cuttlefish-fip#waveform-parameter-overview).
+
+Other `task` fields that shape the waveform:
+
+* `light_source_port` and `camera_port`: the output ports that trigger the LED and the camera of that channel.
+* `pwm_frequency`: PWM frequency (Hz) of the light source output (minimum 10000).
+* `events_enabled` and `mute_output`: whether trigger events are emitted, and whether outputs are silenced while timing is preserved.
+
+LED intensity is set separately from timing, through the PWM duty cycle (0-1) of each light source:
+
+* If the light source has no `calibration`, `power` is used directly as the duty cycle and must be between 0 and 1.
+* If `calibration` is provided, `power` is expressed in µW and converted to a duty cycle using the `power_lut` look-up table (duty cycle -> power).
+
 ## Using the acquisition system
 
 See [wiki](https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/wiki) for AIND internal installation instructions.
@@ -86,7 +110,7 @@ See [wiki](https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/wiki) for 
 
 ### Generating input configurations [Optional]
 
-The current pipeline relies on two input configuration files. These configure the rig/instruments and session parameters, respectively. These files are formalized as pydantic models as shown in `./examples/examples.py`. Template configuration files are included in the `./examples/` folder, and running the `examples.py` will create configuration files into  `./local/`
+The current pipeline relies on two input configuration files. These configure the rig/instruments and session parameters, respectively. These files are formalized as pydantic models as shown in `./examples/example.py`. Template configuration files are included in the `./examples/` folder, and running the `example.py` will create configuration files into  `./local/`
 
 Briefly:
 
@@ -176,7 +200,7 @@ For a list of available subcommands and options, run:
 
 ## Generating `aind-data-schema` metadata
 
-The repository will maintain tools to generate `aind-data-schema` compliant metadata for experiments run using the IsoForce task:
+The repository will maintain tools to generate `aind-data-schema` compliant metadata for experiments run using the FIP system:
 
 1. Install the `mappers` optional dependencies:
 
@@ -187,7 +211,7 @@ uv sync --extra mappers
 2. Run the metadata generation tool via the command line and provide the necessary arguments
 
 ```powershell
-uv run fip data-mapper -h
+uv run fip data-mappers -h
 ```
 
 Alternatively, you can use the mapping classes directly. For instance to run the mapper/extractor for acquisition data:

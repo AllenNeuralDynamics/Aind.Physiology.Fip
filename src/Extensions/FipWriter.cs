@@ -139,21 +139,15 @@ namespace FipExtensions
                 "Background", // We assume the first region is always the background region
             };
 
-                // Roi columns are labeled by each Roi's fiber number (falling back to its position
-                // if it has none) and sorted by it. Disabled Rois are never written.
-                var rois = new List<KeyValuePair<int, int>>(); // (region index, fiber number)
+                // Only enabled Rois are written, labeled by their Roi number (their position in the
+                // input), not their fiber number.
+                var rois = new List<KeyValuePair<int, int>>(); // (region index, roi number)
                 for (int i = 1; i < nRegions; i++)
                 {
                     var circle = input.Value[i].FipCircle;
                     if (circle != null && !circle.Enabled) continue;
-                    var fiberNumber = circle != null && circle.FiberNumber.HasValue ? circle.FiberNumber.Value : i - 1;
-                    if (rois.Any(roi => roi.Value == fiberNumber))
-                    {
-                        throw new ArgumentException("Duplicate fiber number " + fiberNumber + ": every ROI must have a unique fiber number.");
-                    }
-                    rois.Add(new KeyValuePair<int, int>(i, fiberNumber));
+                    rois.Add(new KeyValuePair<int, int>(i, i - 1));
                 }
-                rois.Sort((a, b) => a.Value.CompareTo(b.Value));
 
                 regionOrder = new[] { 0 }.Concat(rois.Select(roi => roi.Key)).ToArray();
                 columns.AddRange(rois.Select(roi => "Fiber_" + roi.Value.ToString(CultureInfo.InvariantCulture)));

@@ -177,14 +177,22 @@ public class RoiManagerVisualizer
     }
 
     // Sets `target`'s fiber number to `value`; if another Roi already has `value`, it takes
-    // `target`'s previous number instead (a swap), so fiber numbers stay unique.
+    // `target`'s previous number instead (a swap), so fiber numbers stay unique. Name and enabled
+    // belong to the fiber, so they travel with the fiber number in a swap.
     static bool AssignUniqueFiber(List<RoiMeta> meta, RoiMeta target, int value)
     {
         var previous = target.FiberNumber;
         if (previous == value) return false;
         foreach (var other in meta)
         {
-            if (other != target && other.FiberNumber == value) other.FiberNumber = previous;
+            if (other == target || other.FiberNumber != value) continue;
+            other.FiberNumber = previous;
+            var name = other.Name;
+            other.Name = target.Name;
+            target.Name = name;
+            var otherEnabled = other.Enabled;
+            other.Enabled = target.Enabled;
+            target.Enabled = otherEnabled;
         }
         target.FiberNumber = value;
         return true;
@@ -680,9 +688,8 @@ public class RoiManagerVisualizer
 
     // Circle center/radius are stored in image-pixel space; `scale` converts to/from the
     // on-screen display size. Drag moves the circle, mouse wheel while hovering resizes it.
-    // `activeKey` is shared across columns (e.g. "roi0" for every camera's rendition of Roi 0)
-    // so hovering/dragging it in any column highlights it everywhere; `widgetIdSuffix` stays
-    // unique per column to avoid ImGui ID collisions.
+    // Hover/drag highlighting is tracked per column (`widgetIdSuffix`), so it stays in the camera
+    // being interacted with; table row selection does not highlight circles.
     static unsafe bool RenderCircleOverlay(
         PickerCircle circle, string label, string name, bool roiEnabled, Vector4 edgeColor, Vector4 fillColor, string activeKey, string widgetIdSuffix,
         Vector2 origin, float scale, float boundsWidth, float boundsHeight, ImDrawListPtr drawList,
@@ -690,9 +697,9 @@ public class RoiManagerVisualizer
     {
         var changed = ClampToBounds(circle, boundsWidth, boundsHeight);
 
-        var isActive = previousActiveKeys.Contains(activeKey) || selectedKeys.Contains(activeKey);
+        var isActive = previousActiveKeys.Contains(widgetIdSuffix);
         // Each Roi has a fixed outline color (its Roi number) and fill color (its fiber number), see
-        // ColorExtensions.RoiColor. Hover/drag or table selection turns the whole circle green;
+        // ColorExtensions.RoiColor. Hover/drag turns the whole circle green;
         // disabled Rois are drawn grey (still draggable/selectable) so they read as "excluded".
         var color = isActive ? activeCircleColor : roiEnabled ? edgeColor : disabledCircleColor;
         var fill = isActive ? activeCircleColor : roiEnabled ? fillColor : disabledCircleColor;
@@ -701,6 +708,14 @@ public class RoiManagerVisualizer
 
         drawList.AddCircleFilled(center, radius, ImGui.ColorConvertFloat4ToU32(new Vector4(fill.X, fill.Y, fill.Z, circleFillAlpha)));
         drawList.AddCircle(center, radius, ImGui.ColorConvertFloat4ToU32(color), 0, circleStrokeThickness);
+        if (!roiEnabled)
+        {
+            // Cross over the circle, reaching past its edge, so disabled Rois are unmistakable.
+            var arm = radius * 1.3f / (float)Math.Sqrt(2.0);
+            var crossColor = ImGui.ColorConvertFloat4ToU32(disabledCircleColor);
+            drawList.AddLine(center + new Vector2(-arm, -arm), center + new Vector2(arm, arm), crossColor, circleStrokeThickness);
+            drawList.AddLine(center + new Vector2(-arm, arm), center + new Vector2(arm, -arm), crossColor, circleStrokeThickness);
+        }
         var textSize = ImGui.CalcTextSize(label);
         drawList.AddText(center - textSize * 0.5f, ImGui.ColorConvertFloat4ToU32(labelColor), label);
         if (!string.IsNullOrEmpty(name))
@@ -712,11 +727,11 @@ public class RoiManagerVisualizer
         ImGui.SetCursorScreenPos(center - new Vector2(radius, radius));
         ImGui.InvisibleButton("circle_" + widgetIdSuffix, new Vector2(radius * 2f, radius * 2f));
 
-        // Hover/active tracking (and the resulting cross-column green highlight) stays live even
+        // Hover/active tracking (and the resulting green highlight) stays live even
         // when disabled; only the actual drag/resize mutations below are gated on `enabled`.
         var hovered = ImGui.IsItemHovered();
         var active = ImGui.IsItemActive();
-        if (hovered || active) currentActiveKeys.Add(activeKey);
+        if (hovered || active) currentActiveKeys.Add(widgetIdSuffix);
 
         if (enabled)
         {
@@ -751,8 +766,7 @@ public class RoiManagerVisualizer
     }
 
     // One table for every camera: row i is Roi i in Green/Iso and in Red, so editing a row or
-    // deleting it applies to all cameras. Selecting a row reuses the same activeKey highlighting
-    // as hover/drag, so that Roi stays green in every column.
+    // deleting it applies to all cameras. Row selection does not highlight the circles.
     static bool RenderRoiTable(RoiState state, HashSet<string> selectedKeys, bool enabled)
     {
         var changed = false;
@@ -872,14 +886,16 @@ public class RoiManagerVisualizer
 
         // Disabled Rois render their text (and swatch) grey, matching their grey circle in the
         // images.
-        if (!meta.Enabled) ImGui.PushStyleColor(ImGuiCol.Text, disabledCircleColor);
+        // Captured once: a fiber swap below can change meta.Enabled between the push and the pop.
+        var rowEnabled = meta.Enabled;
+        if (!rowEnabled) ImGui.PushStyleColor(ImGuiCol.Text, disabledCircleColor);
         ImGui.AlignTextToFramePadding();
         ImGui.TextUnformatted(index.ToString(CultureInfo.InvariantCulture));
 
         ImGui.TableNextColumn();
         // Fiber color inside, Roi color as the border - same as the circle. Drawn before the fiber
         // input, so a fiber change shows its new color from the next frame.
-        if (meta.Enabled) RenderColorSwatch(ColorExtensions.RoiColor(meta.FiberNumber), ColorExtensions.RoiColor(index));
+        if (rowEnabled) RenderColorSwatch(ColorExtensions.RoiColor(meta.FiberNumber), ColorExtensions.RoiColor(index));
         else RenderColorSwatch(disabledCircleColor, disabledCircleColor);
 
         ImGui.BeginDisabled(!enabled);
@@ -894,7 +910,7 @@ public class RoiManagerVisualizer
             meta.Name = name.Length == 0 ? null : name;
             changed = true;
         }
-        if (!meta.Enabled) ImGui.PopStyleColor();
+        if (!rowEnabled) ImGui.PopStyleColor();
 
         ImGui.TableNextColumn();
         if (ImGui.Checkbox("##roiEnabled_" + key, ref meta.Enabled)) changed = true;

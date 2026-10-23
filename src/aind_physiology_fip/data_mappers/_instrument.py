@@ -79,16 +79,10 @@ class AindInstrumentDataMapper:
 
         connections = [
             Connection(
-                source_device=cuttlefish_device.name,
-                source_port=rig.cuttlefish_fip.port_name,
-                target_device=computer.name,
-            ),
-            Connection(
                 source_device=white_rabbit.name,
-                source_port=TrackedDevicesInfo.PORT_CLOCK,
                 target_device=cuttlefish_device.name,
-                target_port=rig.cuttlefish_fip.port_name,
-                send_and_receive=False,
+                source_port="ClkOut",
+                target_port="ClkIn",
             ),
             *cls._get_trigger_connections(rig, cuttlefish_device.name),
         ]
@@ -110,6 +104,17 @@ class AindInstrumentDataMapper:
                 all_components.extend(item)  # unwrap lists
             else:
                 all_components.append(item)  # keep single items
+
+        connections.extend(
+            cls._get_connections_from_computer_to_type(
+                computer,
+                [devices.HarpDevice, devices.Detector],
+                all_components,
+                source_port="USB",
+                target_port="USB",
+                send_and_receive=True,
+            )
+        )
 
         # Coordinate system matching behavior (bregma with X/Y/Z axes, not BREGMA_ARI)
         coordinate_system = coordinates.CoordinateSystem(
@@ -228,6 +233,31 @@ class AindInstrumentDataMapper:
             magnification=TrackedDevicesInfo.OBJECTIVE_MAGNIFICATION,
             immersion=devices.ImmersionMedium.AIR,
         )
+
+    @staticmethod
+    def _get_connections_from_computer_to_type(
+        computer: devices.Computer,
+        types: list[type[devices.Device]],
+        components: list[devices.Device],
+        source_port: str | None = None,
+        target_port: str | None = None,
+        send_and_receive: bool = True,
+    ) -> list[Connection]:
+        result_connections = []
+        computer_name = computer.name
+
+        for device in components:
+            if any(isinstance(device, device_type) for device_type in types):
+                result_connections.append(
+                    Connection(
+                        source_device=computer_name,
+                        target_device=device.name,
+                        source_port=source_port,
+                        target_port=target_port,
+                        send_and_receive=send_and_receive,
+                    )
+                )
+        return result_connections
 
     @staticmethod
     def _get_computer(rig: AindPhysioFipRig) -> devices.Computer:

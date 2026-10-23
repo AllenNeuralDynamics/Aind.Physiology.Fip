@@ -218,7 +218,9 @@ class TestAindInstrumentMapper(unittest.TestCase):
     def test_shared_camera_port_is_not_duplicated(self):
         """The uv and blue tasks name the same camera line, which is one connection not two"""
         mapped = self.rig_mapper.map()
-        green = [c for c in mapped.connections if c.target_device == "Green CMOS"]
+        green = [
+            c for c in mapped.connections if c.source_device == "cuTTLefishFip" and c.target_device == "Green CMOS"
+        ]
         self.assertEqual(len(green), 1)
 
     def test_calibrations(self):

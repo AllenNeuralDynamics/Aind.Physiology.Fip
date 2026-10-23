@@ -46,9 +46,6 @@ class TrackedDevicesInfo:
     DETECTOR_BIN_HEIGHT = 4
     DETECTOR_MODEL = "BFS-U3-20S40M"
 
-    # Ports
-    PORT_CLOCK = "ClkOut"
-
     # Patch cord
     PATCH_CORD_MODEL = "BBP(4)_200/220/900-0.37_Custom_FCM-4xMF1.25"
     PATCH_CORD_DIAMETER = 200

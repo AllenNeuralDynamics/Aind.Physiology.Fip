@@ -111,6 +111,8 @@ def test_epoch_without_regions_is_skipped(tmp_path, caplog):
 class TestAindInstrumentMapper(unittest.TestCase):
     """Tests aind schema instrument generation"""
 
+    CLOCK_GENERATOR_NAME = "harp_clock_generator"
+
     def setUp(self):
         """Set up for tests"""
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -128,7 +130,9 @@ class TestAindInstrumentMapper(unittest.TestCase):
         self._write_frame_metadata("iso", 200, 200, "U16")
         self._write_frame_metadata("red", 200, 200, "U16")
 
-        self.rig_mapper = AindInstrumentDataMapper(data_path=self.data_path)
+        self.rig_mapper = AindInstrumentDataMapper(
+            data_path=self.data_path, clock_generator_name=self.CLOCK_GENERATOR_NAME
+        )
 
     def _write_frame_metadata(self, channel: str, width: int, height: int, depth: str) -> None:
         """Write a channel metadata file of the shape FipWriter.cs emits."""
@@ -189,7 +193,7 @@ class TestAindInstrumentMapper(unittest.TestCase):
         """The CLI writes the instrument next to the acquisition metadata it already emitted"""
         mock_acquisition_mapper.return_value.map.return_value.model_dump_json.return_value = "{}"
 
-        DataMapperCli(data_path=self.data_path).cli_cmd()
+        DataMapperCli(data_path=self.data_path, clock_generator_name=self.CLOCK_GENERATOR_NAME).cli_cmd()
 
         written = self.data_path / INSTRUMENT_FILE_NAME
         self.assertTrue(written.is_file())
@@ -247,7 +251,11 @@ class TestAindInstrumentMapper(unittest.TestCase):
 
     def test_objective_serial_number(self):
         """The objective serial is supplied per instrument rather than hardcoded"""
-        mapper = AindInstrumentDataMapper(data_path=self.data_path, objective_serial_number="12812388")
+        mapper = AindInstrumentDataMapper(
+            data_path=self.data_path,
+            clock_generator_name=self.CLOCK_GENERATOR_NAME,
+            objective_serial_number="12812388",
+        )
         objective = next(c for c in mapper.map().components if c.object_type == "Objective")
         self.assertEqual(objective.serial_number, "12812388")
 
@@ -255,6 +263,27 @@ class TestAindInstrumentMapper(unittest.TestCase):
         """An instrument that was never configured records no serial rather than a wrong one"""
         objective = next(c for c in self.rig_mapper.map().components if c.object_type == "Objective")
         self.assertIsNone(objective.serial_number)
+
+    def test_clock_generator_name_is_supplied(self):
+        """The clock generator takes the name the behavior side uses, wherever it is referenced"""
+        mapper = AindInstrumentDataMapper(data_path=self.data_path, clock_generator_name="WhiteRabbit")
+        mapped = mapper.map()
+
+        clocks = [c for c in mapped.components if getattr(c, "is_clock_generator", False)]
+        self.assertEqual([c.name for c in clocks], ["WhiteRabbit"])
+        self.assertTrue(
+            any(c.source_device == "WhiteRabbit" and c.target_device == "cuTTLefishFip" for c in mapped.connections)
+        )
+        self.assertFalse(any("harp_clock_generator" in (c.source_device, c.target_device) for c in mapped.connections))
+
+    def test_fip_only_records_no_clock_generator(self):
+        """Without a behavior task there is no clock name to copy, so no clock generator is recorded"""
+        mapped = AindInstrumentDataMapper(data_path=self.data_path).map()
+
+        self.assertFalse(any(getattr(c, "is_clock_generator", False) for c in mapped.components))
+        self.assertFalse(any(c.source_port == "ClkOut" or c.target_port == "ClkIn" for c in mapped.connections))
+        # Still a valid instrument: nothing references the absent clock generator.
+        instrument.Instrument.model_validate_json(mapped.model_dump_json())
 
     def test_partial_frame_metadata_raises(self):
         """One half of the green/iso pair is not enough to check the two agree"""

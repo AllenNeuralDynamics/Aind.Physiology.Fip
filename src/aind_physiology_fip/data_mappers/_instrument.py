@@ -33,12 +33,23 @@ logger = logging.getLogger(__name__)
 class AindInstrumentDataMapper:
     """Mapper for AIND FIP photometry rigs into aind-data-schema Instrument objects."""
 
-    def __init__(self, data_path: os.PathLike, objective_serial_number: str | None = None):
+    def __init__(
+        self,
+        data_path: os.PathLike,
+        clock_generator_name: str | None = None,
+        objective_serial_number: str | None = None,
+    ):
         """Create a mapper for one session directory.
 
         Args:
             data_path (os.PathLike): Session directory holding the ``fib/fip_*`` acquisition
                 epochs.
+            clock_generator_name (str | None): Name of the Harp clock generator (WhiteRabbit)
+                that synchronises the cuttlefish board. When FIP is acquired alongside a behavior
+                task, the clock generator belongs to that task and may be named differently by
+                each, so the name is supplied rather than assumed in order for the two
+                instruments to agree. Left unset, as for a FIP-only acquisition, no clock
+                generator is recorded at all, since nothing on the FIP side says one is present.
             objective_serial_number (str | None): Serial number of the objective, which differs
                 between instruments. It is not part of the rig configuration because the workflow
                 does not use it and nothing can validate it against the hardware, so it is
@@ -47,6 +58,7 @@ class AindInstrumentDataMapper:
                 Left unset, the objective is recorded without a serial.
         """
         self._data_path = Path(data_path)
+        self._clock_generator_name = clock_generator_name
         self._objective_serial_number = objective_serial_number
         self._mapped: instrument.Instrument | None = None
 
@@ -59,11 +71,16 @@ class AindInstrumentDataMapper:
     def map(self) -> instrument.Instrument:
         """Map the rig JSON input into an AIND instrument."""
         logger.info("Mapping FIP photometry rig to AIND schema.")
-        self._mapped = self._map(self._data_path, self._objective_serial_number)
+        self._mapped = self._map(self._data_path, self._clock_generator_name, self._objective_serial_number)
         return self.mapped
 
     @classmethod
-    def _map(cls, root_path: os.PathLike, objective_serial_number: str | None = None) -> instrument.Instrument:
+    def _map(
+        cls,
+        root_path: os.PathLike,
+        clock_generator_name: str | None = None,
+        objective_serial_number: str | None = None,
+    ) -> instrument.Instrument:
         """Helper to map to instrument schema"""
         epoch, rig = cls._find_epoch(Path(root_path))
 
@@ -74,18 +91,25 @@ class AindInstrumentDataMapper:
         filters = cls._get_filters()
         lens = cls._get_lens()
         cuttlefish_device = cls._get_cuttlefish_device(rig)
-        white_rabbit = cls._get_white_rabbit_device()
         objective = cls._get_objective(objective_serial_number)
 
-        connections = [
-            Connection(
-                source_device=white_rabbit.name,
-                target_device=cuttlefish_device.name,
-                source_port="ClkOut",
-                target_port="ClkIn",
-            ),
-            *cls._get_trigger_connections(rig, cuttlefish_device.name),
-        ]
+        connections = cls._get_trigger_connections(rig, cuttlefish_device.name)
+
+        # The device and its connection are emitted together: aind-data-schema rejects a
+        # connection that names a device absent from the instrument.
+        clock_generator: list[devices.HarpDevice] = []
+        if clock_generator_name is not None:
+            white_rabbit = cls._get_white_rabbit_device(clock_generator_name)
+            clock_generator.append(white_rabbit)
+            connections.insert(
+                0,
+                Connection(
+                    source_device=white_rabbit.name,
+                    target_device=cuttlefish_device.name,
+                    source_port="ClkOut",
+                    target_port="ClkIn",
+                ),
+            )
 
         # Put everything in a list and unwrap lists
         all_components = []
@@ -98,7 +122,7 @@ class AindInstrumentDataMapper:
             filters,
             lens,
             cuttlefish_device,
-            white_rabbit,
+            clock_generator,
         ]:
             if isinstance(item, list):
                 all_components.extend(item)  # unwrap lists
@@ -326,10 +350,10 @@ class AindInstrumentDataMapper:
         ]
 
     @staticmethod
-    def _get_white_rabbit_device() -> devices.HarpDevice:
+    def _get_white_rabbit_device(name: str) -> devices.HarpDevice:
         """Gets the white rabbit device"""
         return devices.HarpDevice(
-            name=TrackedDeviceName.CLOCK_GENERATOR,
+            name=name,
             harp_device_type=devices.HarpDeviceType.WHITERABBIT,
             manufacturer=devices.Organization.AIND,
             is_clock_generator=True,

@@ -25,7 +25,6 @@ class TrackedDeviceName(enum.StrEnum):
     instrument, since they are the identifiers that ``Connection`` objects refer to.
     """
 
-    CLOCK_GENERATOR = "harp_clock_generator"
     CUTTLEFISH = "cuTTLefishFip"
     CAMERA_GREEN_ISO = "Green CMOS"
     CAMERA_RED = "Red CMOS"

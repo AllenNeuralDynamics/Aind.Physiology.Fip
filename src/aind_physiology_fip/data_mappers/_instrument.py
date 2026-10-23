@@ -165,22 +165,46 @@ class AindInstrumentDataMapper:
         )
 
     @staticmethod
-    def _find_epoch(root_path: Path) -> tuple[Path, AindPhysioFipRig]:
-        """Find the FIP epoch holding the rig configuration, and read it.
+    def _read_rig(epoch: Path) -> AindPhysioFipRig | None:
+        """The rig input an epoch logged, or None if it has none that can be read."""
+        try:
+            return dataset(root=epoch)["rig_input"].read()
+        except (FileNotFoundError, ValueError, KeyError) as e:
+            # No rig_input, malformed JSON or a rig that fails validation.
+            logger.debug("No readable rig_input in %s: %s", epoch, e)
+            return None
 
-        Mirrors ``ProtoAcquisitionMapper``: epochs live at ``<root>/fib/fip_*`` and their
-        contents are addressed through the data contract rather than by hand-built paths.
+    @classmethod
+    def _find_epoch(cls, root_path: Path) -> tuple[Path, AindPhysioFipRig]:
+        """Read the rig configuration from the session's FIP epochs, checking they all agree.
+
+        Epochs live at ``<root>/fib/fip_*`` and are addressed through the data contract rather
+        than by hand-built paths. A session can hold several epochs, each logging its own rig
+        input, but they all describe one instrument, so every rig input found must be
+        identical. Once that holds, the first epoch is used.
         """
         epochs = sorted(path for path in (root_path / "fib").glob("fip_*") if path.is_dir())
         if not epochs:
             raise ValueError(f"No FIP epochs (fib/fip_*) found in {root_path}.")
+
+        # Read every epoch's rig input, skipping epochs that have none.
+        readable: list[tuple[Path, AindPhysioFipRig]] = []
         for epoch in epochs:
-            try:
-                return epoch, dataset(root=epoch)["rig_input"].read()
-            except (FileNotFoundError, ValueError, KeyError) as e:
-                # No rig_input, malformed JSON or a rig that fails validation: try the next epoch.
-                logger.debug("No readable rig_input in %s: %s", epoch, e)
-        raise ValueError(f"No readable rig_input.json in any FIP epoch under {root_path}.")
+            rig = cls._read_rig(epoch)
+            if rig is not None:
+                readable.append((epoch, rig))
+        if not readable:
+            raise ValueError(f"No readable rig_input.json in any FIP epoch under {root_path}.")
+
+        # Matching the first is enough for all epochs to match each other.
+        first_epoch, first_rig = readable[0]
+        for epoch, rig in readable[1:]:
+            if rig != first_rig:
+                raise ValueError(
+                    f"Rig input in {epoch.name} differs from {first_epoch.name}. "
+                    "Epochs of one session must describe the same instrument."
+                )
+        return first_epoch, first_rig
 
     @staticmethod
     def _light_sources(rig: AindPhysioFipRig) -> list[tuple[LedId, LightSource, TrackedDeviceName]]:

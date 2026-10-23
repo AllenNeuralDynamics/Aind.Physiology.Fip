@@ -285,6 +285,35 @@ class TestAindInstrumentMapper(unittest.TestCase):
         # Still a valid instrument: nothing references the absent clock generator.
         instrument.Instrument.model_validate_json(mapped.model_dump_json())
 
+    def _add_epoch(self, name: str, rig) -> Path:
+        """Add another FIP epoch to the session, logging the given rig input."""
+        epoch = self.data_path / "fib" / name
+        (epoch / "Logs").mkdir(parents=True, exist_ok=True)
+        with open(epoch / "Logs" / "rig_input.json", "w", encoding="utf-8") as f:
+            json.dump(rig.model_dump(mode="json"), f, indent=2)
+        return epoch
+
+    def test_identical_epochs_map(self):
+        """Several epochs logging the same rig input describe one instrument, so mapping succeeds"""
+        self._add_epoch("fip_2025-10-30T170000", mock_rig())
+        mapped = self.rig_mapper.map()
+        self.assertEqual(mapped.instrument_id, mock_rig().rig_name)
+
+    def test_differing_epochs_raise(self):
+        """Epochs whose rig inputs disagree cannot be reconciled into one instrument"""
+        other = mock_rig()
+        other.camera_red.serial_number = "not-the-same-camera"
+        self._add_epoch("fip_2025-10-30T170000", other)
+        with self.assertRaises(ValueError) as ctx:
+            self.rig_mapper.map()
+        self.assertIn("fip_2025-10-30T170000", str(ctx.exception))
+
+    def test_epoch_without_rig_input_is_skipped(self):
+        """An epoch that never logged a rig input is not a disagreement"""
+        (self.data_path / "fib" / "fip_2025-10-30T170000").mkdir(parents=True)
+        mapped = self.rig_mapper.map()
+        self.assertEqual(mapped.instrument_id, mock_rig().rig_name)
+
     def test_partial_frame_metadata_raises(self):
         """One half of the green/iso pair is not enough to check the two agree"""
         (self.epoch / "iso_metadata.json").unlink()

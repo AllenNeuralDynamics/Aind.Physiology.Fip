@@ -1,8 +1,8 @@
 """Utility constants and factories for rigs and device configurations."""
 
+import dataclasses
 import enum
 from pathlib import Path
-from typing import NamedTuple
 
 import numpy as np
 from aind_data_schema.components import devices
@@ -157,7 +157,8 @@ class LedId(enum.Enum):
     LIME = enum.auto()
 
 
-class LedSpec(NamedTuple):
+@dataclasses.dataclass(frozen=True)
+class LedSpec:
     """Fixed properties of one of the rig's LEDs.
 
     The Thorlabs part numbers encode the emission wavelength, so ``model`` and
@@ -203,14 +204,20 @@ def snap_to_grid(value: float, step: int) -> int:
     return round(value / step) * step
 
 
-# Raw frame streams written per channel, grouped by the camera that acquired them.
-CAMERA_FRAME_STREAMS: dict[TrackedDeviceName, tuple[str, ...]] = {
-    TrackedDeviceName.CAMERA_GREEN_ISO: ("raw_green", "raw_iso"),
-    TrackedDeviceName.CAMERA_RED: ("raw_red",),
-}
+@dataclasses.dataclass(frozen=True)
+class CameraSpec:
+    """A FIP camera and the raw frame streams it writes, one per channel it acquires."""
+
+    name: TrackedDeviceName
+    frame_streams: tuple[str, ...]
 
 
-class FrameMetadata(NamedTuple):
+GREEN_ISO_CAMERA = CameraSpec(TrackedDeviceName.CAMERA_GREEN_ISO, ("raw_green", "raw_iso"))
+RED_CAMERA = CameraSpec(TrackedDeviceName.CAMERA_RED, ("raw_red",))
+
+
+@dataclasses.dataclass(frozen=True)
+class FrameMetadata:
     """Crop geometry and bit depth as actually written out for a channel."""
 
     crop_width: int
@@ -228,7 +235,7 @@ def read_frame_metadata(epoch_dataset: Dataset, stream: str) -> FrameMetadata:
     return FrameMetadata(params.width, params.height, np.dtype(params.bit_depth).itemsize * 8)
 
 
-def camera_frame_metadata(epoch: Path, camera: TrackedDeviceName) -> FrameMetadata:
+def camera_frame_metadata(epoch: Path, camera: CameraSpec) -> FrameMetadata:
     """Frame metadata for one camera, which may have written a stream per channel.
 
     The green/iso camera writes both ``green_metadata.json`` and ``iso_metadata.json``. They
@@ -236,12 +243,12 @@ def camera_frame_metadata(epoch: Path, camera: TrackedDeviceName) -> FrameMetada
     no value the mapper would be entitled to pick if they did not.
     """
     epoch_dataset = dataset(root=epoch)
-    found = {stream: read_frame_metadata(epoch_dataset, stream) for stream in CAMERA_FRAME_STREAMS[camera]}
+    found = {stream: read_frame_metadata(epoch_dataset, stream) for stream in camera.frame_streams}
     if len(set(found.values())) > 1:
         detail = "; ".join(
             f"{stream}={m.crop_width}x{m.crop_height}@{m.bit_depth}-bit" for stream, m in sorted(found.items())
         )
-        raise ValueError(f"Frame metadata for {camera} disagrees between channels in {epoch}: {detail}")
+        raise ValueError(f"Frame metadata for {camera.name} disagrees between channels in {epoch}: {detail}")
     return next(iter(found.values()))
 
 

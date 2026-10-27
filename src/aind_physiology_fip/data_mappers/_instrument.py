@@ -14,7 +14,10 @@ from aind_data_schema_models.units import PowerUnit
 
 from aind_physiology_fip.data_contract import dataset
 from aind_physiology_fip.data_mappers._utils import (
+    GREEN_ISO_CAMERA,
     LED_SPECS,
+    RED_CAMERA,
+    CameraSpec,
     FilterId,
     LedId,
     TrackedDeviceName,
@@ -344,11 +347,11 @@ class AindInstrumentDataMapper:
     def _get_detectors(rig: AindPhysioFipRig, epoch: Path) -> list[devices.Detector]:
         """Return list of cameras / detectors in the rig."""
 
-        def _get_detector(name: TrackedDeviceName, cam: FipCamera) -> devices.Detector:
-            metadata = camera_frame_metadata(epoch, name)
+        def _get_detector(spec: CameraSpec, cam: FipCamera) -> devices.Detector:
             """Returns the detector"""
+            metadata = camera_frame_metadata(epoch, spec)
             return devices.Detector(
-                name=name,
+                name=spec.name,
                 serial_number=cam.serial_number,
                 manufacturer=devices.Organization.FLIR,
                 model=TrackedDevicesInfo.DETECTOR_MODEL,
@@ -369,8 +372,8 @@ class AindInstrumentDataMapper:
             )
 
         return [
-            _get_detector(TrackedDeviceName.CAMERA_GREEN_ISO, rig.camera_green_iso),
-            _get_detector(TrackedDeviceName.CAMERA_RED, rig.camera_red),
+            _get_detector(GREEN_ISO_CAMERA, rig.camera_green_iso),
+            _get_detector(RED_CAMERA, rig.camera_red),
         ]
 
     @staticmethod

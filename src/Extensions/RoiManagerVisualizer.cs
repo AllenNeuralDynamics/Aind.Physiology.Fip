@@ -32,15 +32,15 @@ using OpenTK.Graphics.OpenGL4;
 /// the images lists every ROI once (ROI number = row index) with its fiber number, name and
 /// enabled flag, which apply to all cameras. Add ROI adds a circle to every camera; deleting a
 /// row removes it from every camera. Emits the current <see cref="AindPhysiologyFip.RoiSettings"/>
-/// whenever anything changes. "Save Roi"/"Load Roi"/"Reset Roi" each require confirming an
+/// whenever anything changes. "Save ROI"/"Load ROI"/"Reset ROI" each require confirming an
 /// inline popup; Save/Load only persist circle positions (not fiber/name/enabled), to/from
 /// <see cref="LocalRoiDefaultPath"/>. At startup the ROI positions are loaded from
 /// <see cref="LocalRoiDefaultPath"/> if it is set; if that fails, a warning is shown and the
-/// Reset Roi defaults are used.
+/// Reset ROI defaults are used.
 /// </remarks>
 [Combinator]
 [WorkflowElementCategory(ElementCategory.Combinator)]
-[Description("Renders a live-image ROI picker with one column per camera (Iso, Green, Red; Iso/Green share yoked ROIs) and a single ROI table shared by all cameras, plus Save Roi/Load Roi/Reset Roi (each behind a confirm popup) and Add ROI buttons, emitting the current RoiSettings whenever it changes. Source1 = Frame subject; Source2 = the grouped Fip activity stream (e.g. ParsedFipStreams), used only for the live preview images.")]
+[Description("Renders a live-image ROI picker with one column per camera (Iso, Green, Red; Iso/Green share yoked ROIs) and a single ROI table shared by all cameras, plus Save ROI/Load ROI/Reset ROI (each behind a confirm popup) and Add ROI buttons, emitting the current RoiSettings whenever it changes. Source1 = Frame subject; Source2 = the grouped Fip activity stream (e.g. ParsedFipStreams), used only for the live preview images.")]
 public class RoiManagerVisualizer
 {
     private bool visible = true;
@@ -56,7 +56,7 @@ public class RoiManagerVisualizer
     public float FontSize { get { return fontSize; } set { fontSize = value; } }
 
     private string localRoiDefaultPath = "../local/default.json";
-    [Description("The path used by Save Roi/Load Roi to persist the ROI circle positions. If set, the ROI positions are also loaded from it at startup (falling back to the defaults, with a warning, if that fails).")]
+    [Description("The path used by Save ROI/Load ROI to persist the ROI circle positions. If set, the ROI positions are also loaded from it at startup (falling back to the defaults, with a warning, if that fails).")]
     [FileNameFilter("JSON|*.json|All Files|*.*")]
     [Editor("Bonsai.Design.OpenFileNameEditor, Bonsai.Design", DesignTypes.UITypeEditor)]
     public string LocalRoiDefaultPath { get { return localRoiDefaultPath; } set { localRoiDefaultPath = value; } }
@@ -273,7 +273,7 @@ public class RoiManagerVisualizer
         };
     }
 
-    // What Save Roi writes: circle positions only, no fiber/name/enabled assignments.
+    // What Save ROI writes: circle positions only, no fiber/name/enabled assignments.
     static RoiSettings ToGeometrySettings(RoiState state)
     {
         return new RoiSettings
@@ -367,9 +367,10 @@ public class RoiManagerVisualizer
                     if (!Visible) return;
 
                     var changed = false;
+                    var editable = Enabled && !locked;
                     if (!seeded)
                     {
-                        // Startup: load the saved ROI positions, falling back to the Reset Roi
+                        // Startup: load the saved ROI positions, falling back to the Reset ROI
                         // defaults if that fails.
                         string error;
                         if (!string.IsNullOrEmpty(LocalRoiDefaultPath) && !TryLoadFromDisk(state, out error))
@@ -403,7 +404,7 @@ public class RoiManagerVisualizer
                         RenderWarningPopup();
 
                         var currentActiveKeys = new HashSet<string>();
-                        changed |= RenderCameras(slots, state.Meta, previousActiveKeys, currentActiveKeys, selectedKeys, Enabled, !hideRois);
+                        changed |= RenderCameras(slots, state.Meta, previousActiveKeys, currentActiveKeys, selectedKeys, editable, !hideRois);
                         previousActiveKeys = currentActiveKeys;
 
                         ImGui.TextDisabled("Drag a circle to move it  -  Scroll while hovering it to resize");
@@ -411,20 +412,25 @@ public class RoiManagerVisualizer
                         // Buttons stacked in a fixed-width column to the left of the Roi table.
                         if (ImGui.BeginTable("##RoiManagerBottom", 2, ImGuiTableFlags.None))
                         {
-                            ImGui.TableSetupColumn("##RoiManagerControls", ImGuiTableColumnFlags.WidthFixed, controlButtonWidth);
+                            ImGui.TableSetupColumn("##RoiManagerControls", ImGuiTableColumnFlags.WidthFixed, controlButtonWidth * 2f + 8f);
                             ImGui.TableSetupColumn("##RoiManagerTable", ImGuiTableColumnFlags.WidthStretch);
                             ImGui.TableNextRow();
 
                             ImGui.TableNextColumn();
-                            ImGui.BeginDisabled(!Enabled);
+                            // The lock is outside any disabled block so it can always be toggled.
+                            // Hide ROIs is view-only, so it stays usable during acquisition
+                            // (Enabled=false), but it is still covered by the lock.
+                            RenderLockButton();
+                            ImGui.SameLine();
+                            ImGui.BeginDisabled(locked);
+                            RenderHideRoisButton();
+                            ImGui.EndDisabled();
+                            ImGui.BeginDisabled(!editable);
                             RenderControls(state, slots, selectedKeys, ref changed);
                             ImGui.EndDisabled();
-                            // View-only, so it stays usable during acquisition (outside the
-                            // disabled block).
-                            RenderHideRoisButton();
 
                             ImGui.TableNextColumn();
-                            changed |= RenderRoiTable(state, selectedKeys, Enabled);
+                            changed |= RenderRoiTable(state, selectedKeys, editable);
 
                             ImGui.EndTable();
                         }
@@ -453,7 +459,7 @@ public class RoiManagerVisualizer
     {
         var buttonSize = new Vector2(controlButtonWidth, ImGui.GetFrameHeight() * 1.6f);
 
-        if (ImGui.Button("Save Roi##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmSaveRoi##RoiManager");
+        if (ImGui.Button("Save ROI##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmSaveRoi##RoiManager");
         if (ConfirmPopup("ConfirmSaveRoi##RoiManager", "Overwrite the saved ROI positions on disk?"))
         {
             string error;
@@ -463,7 +469,8 @@ public class RoiManagerVisualizer
             }
         }
 
-        if (ImGui.Button("Load Roi##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmLoadRoi##RoiManager");
+        ImGui.SameLine();
+        if (ImGui.Button("Load ROI##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmLoadRoi##RoiManager");
         if (ConfirmPopup("ConfirmLoadRoi##RoiManager", "Load the saved ROI positions? This overwrites the current positions."))
         {
             string error;
@@ -478,7 +485,7 @@ public class RoiManagerVisualizer
             }
         }
 
-        if (ImGui.Button("Reset Roi##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmResetRoi##RoiManager");
+        if (ImGui.Button("Reset ROI##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmResetRoi##RoiManager");
         if (ConfirmPopup("ConfirmResetRoi##RoiManager", "Reset to the default ROI configuration?"))
         {
             ResetToDefault(state);
@@ -486,6 +493,7 @@ public class RoiManagerVisualizer
             changed = true;
         }
 
+        ImGui.SameLine();
         if (ImGui.Button("Add ROI##RoiManager", buttonSize))
         {
             AddRoi(state, slots);
@@ -569,16 +577,32 @@ public class RoiManagerVisualizer
         return true;
     }
 
-    // Set when a load fails (at startup or from Load Roi); shown as a modal until dismissed.
+    // Set when a load fails (at startup or from Load ROI); shown as a modal until dismissed.
     string warningMessage;
 
     // "Hide ROIs" toggle: when set, the circles aren't drawn (or draggable) on the images.
     bool hideRois;
+    // Locked at startup so the ROIs can't be changed by accident before the experiment.
+    bool locked = true;
 
     static readonly Vector4 toggleOffColor = new Vector4(0.35f, 0.35f, 0.35f, 1f);
     static readonly Vector4 toggleOnColor = new Vector4(0.20f, 0.45f, 0.85f, 1f);
 
     // Grey while ROIs are shown, blue while they're hidden.
+    void RenderLockButton()
+    {
+        var color = locked ? toggleOnColor : toggleOffColor;
+        var hovered = new Vector4(Math.Min(1f, color.X + 0.1f), Math.Min(1f, color.Y + 0.1f), Math.Min(1f, color.Z + 0.1f), 1f);
+        ImGui.PushStyleColor(ImGuiCol.Button, color);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, hovered);
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, color);
+        if (ImGui.Button((locked ? "Locked" : "Unlocked") + "##RoiManagerLock", new Vector2(controlButtonWidth, ImGui.GetFrameHeight() * 1.6f)))
+        {
+            locked = !locked;
+        }
+        ImGui.PopStyleColor(3);
+    }
+
     void RenderHideRoisButton()
     {
         var color = hideRois ? toggleOnColor : toggleOffColor;

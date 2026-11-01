@@ -503,7 +503,7 @@
             <Expression xsi:type="rx:PublishSubject">
               <Name>SocketResponse</Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p4:NetMQMessage">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="sys:String">
               <rx:Name>SocketRequest</rx:Name>
             </Expression>
             <Expression xsi:type="SubscribeSubject">

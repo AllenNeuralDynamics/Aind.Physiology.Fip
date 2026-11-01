@@ -896,7 +896,7 @@
               <Combinator xsi:type="rx:WithLatestFrom" />
             </Expression>
             <Expression xsi:type="Format">
-              <Format>{{"start": {1},"timestamp": {0}}}</Format>
+              <Format>{{"start": {0},"timestamp": {1}}}</Format>
               <Selector>Item1,Item2</Selector>
             </Expression>
             <Expression xsi:type="MulticastSubject">
@@ -940,7 +940,7 @@
               <Combinator xsi:type="rx:WithLatestFrom" />
             </Expression>
             <Expression xsi:type="Format">
-              <Format>{{"end": {1},"timestamp": {0}}}</Format>
+              <Format>{{"end": {0},"timestamp": {1}}}</Format>
               <Selector>Item1,Item2</Selector>
             </Expression>
             <Expression xsi:type="MulticastSubject">

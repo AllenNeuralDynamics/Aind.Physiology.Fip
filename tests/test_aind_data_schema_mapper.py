@@ -13,7 +13,12 @@ from aind_behavior_services.common import Point2f
 from aind_data_schema.core import instrument
 from contraqctor.contract import DataStream
 
-from aind_physiology_fip.data_mappers import INSTRUMENT_FILE_NAME, DataMapperCli, ProtoAcquisitionMapper
+from aind_physiology_fip.data_mappers import (
+    ACQUISITION_FILE_NAME,
+    INSTRUMENT_FILE_NAME,
+    AindAcquisitionDataMapper,
+    DataMapperCli,
+)
 from aind_physiology_fip.data_mappers._instrument import AindInstrumentDataMapper
 from aind_physiology_fip.extra_types import FipCircle, RoiSettings
 
@@ -72,7 +77,7 @@ def test_time_extraction_default():
         }
     )
 
-    start_utc, end_utc = ProtoAcquisitionMapper._extract_from_df(data_stream.read())
+    start_utc, end_utc = AindAcquisitionDataMapper._extract_from_df(data_stream.read())
     assert start_utc == datetime.fromisoformat("2025-07-18T19:03:19Z")
     assert end_utc == datetime.fromisoformat("2025-07-18T19:03:21+00:00")
 
@@ -83,7 +88,7 @@ def test_regions_are_extracted_from_regions_json(tmp_path):
         camera_green_iso_roi=[FipCircle(center=Point2f(x=10, y=20), radius=5, roi_number=0, fiber_number=1, name="NAc")]
     )
     epoch = _make_epoch(tmp_path, "fip_epoch", regions)
-    streams = ProtoAcquisitionMapper._extract_start_end_times([epoch])
+    streams = AindAcquisitionDataMapper._extract_start_end_times([epoch])
 
     assert len(streams) == 1
     assert streams[0].id == "fip_epoch"
@@ -100,7 +105,7 @@ def test_epoch_without_regions_is_skipped(tmp_path, caplog):
     logging.disable(logging.NOTSET)
     try:
         with caplog.at_level(logging.WARNING, logger="aind_physiology_fip.data_mappers._acquisition"):
-            streams = ProtoAcquisitionMapper._extract_start_end_times([good, bad])
+            streams = AindAcquisitionDataMapper._extract_start_end_times([good, bad])
     finally:
         logging.disable(logging.CRITICAL)
 
@@ -188,9 +193,9 @@ class TestAindInstrumentMapper(unittest.TestCase):
             self.rig_mapper.map()
         self.assertIn("green_metadata.json", str(ctx.exception))
 
-    @patch("aind_physiology_fip.data_mappers.ProtoAcquisitionMapper")
-    def test_cli_writes_instrument_file(self, mock_acquisition_mapper):
-        """The CLI writes the instrument next to the acquisition metadata it already emitted"""
+    @patch("aind_physiology_fip.data_mappers.AindAcquisitionDataMapper")
+    def test_cli_writes_instrument_and_acquisition(self, mock_acquisition_mapper):
+        """The CLI writes the instrument and acquisition side by side in the session directory"""
         mock_acquisition_mapper.return_value.map.return_value.model_dump_json.return_value = "{}"
 
         DataMapperCli(data_path=self.data_path, clock_generator_name=self.CLOCK_GENERATOR_NAME).cli_cmd()
@@ -199,6 +204,7 @@ class TestAindInstrumentMapper(unittest.TestCase):
         self.assertTrue(written.is_file())
         mapped = instrument.Instrument.model_validate_json(written.read_text(encoding="utf-8"))
         self.assertEqual(mapped.instrument_id, mock_rig().rig_name)
+        self.assertEqual((self.data_path / ACQUISITION_FILE_NAME).read_text(encoding="utf-8"), "{}")
 
     def test_trigger_connections(self):
         """The cuttlefish board is wired out to each LED and camera it triggers"""

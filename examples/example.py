@@ -6,7 +6,6 @@ from aind_behavior_services.common import Point2f
 from aind_behavior_services.rig.harp import HarpCuttlefishfip
 from aind_behavior_services.session import Session
 
-from aind_physiology_fip.data_mappers._acquisition import ProtoAcquisitionDataSchema, _FipDataStreamMetadata
 from aind_physiology_fip.extra_types import FipCircle, RoiSettings
 from aind_physiology_fip.rig import (
     AindPhysioFipRig,
@@ -91,24 +90,6 @@ def mock_rig() -> AindPhysioFipRig:
     )
 
 
-def make_mapped() -> ProtoAcquisitionDataSchema:
-    session = mock_session()
-    now = session.date
-    now_local = now.astimezone()
-    return ProtoAcquisitionDataSchema(
-        data_stream_metadata=[
-            _FipDataStreamMetadata(
-                id=f"fip_{now_local.strftime('%Y-%m-%dT%H%M%S')}",
-                start_time=now_local,
-                end_time=now_local + datetime.timedelta(hours=1),
-                regions=mock_roi_settings(),
-            )
-        ],
-        session=session,
-        rig=mock_rig(),
-    )
-
-
 def main():
     parser = argparse.ArgumentParser(description="Generate mock session and rig JSON files")
     parser.add_argument(
@@ -120,11 +101,10 @@ def main():
 
     example_session = mock_session()
     example_rig = mock_rig()
-    example_mapped = make_mapped()
 
     os.makedirs(os.path.dirname(args.path_seed), exist_ok=True)
 
-    for model in [example_session, example_rig, example_mapped]:
+    for model in [example_session, example_rig]:
         with open(args.path_seed.format(schema=model.__class__.__name__), "w", encoding="utf-8") as f:
             f.write(model.model_dump_json(indent=2))
 

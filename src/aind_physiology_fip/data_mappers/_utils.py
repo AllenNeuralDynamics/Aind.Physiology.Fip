@@ -2,6 +2,8 @@
 
 import dataclasses
 import enum
+import os
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import numpy as np
@@ -264,3 +266,47 @@ def port_names(ports: Ports) -> list[str]:
     own connection. ``Ports.NONE`` yields nothing.
     """
     return [line.name for line in Ports if line.value and line in ports]
+
+
+# -------------------------------
+# Photometry channels
+# -------------------------------
+
+
+@dataclasses.dataclass(frozen=True)
+class ChannelSpec:
+    """One photometry channel: the LED that excites it and the camera that records its emission.
+
+    Every patch cord carries all three channels, since each fiber is excited by every LED in turn.
+    """
+
+    name: str
+    led: LedId
+    camera: CameraSpec
+    emission_wavelength: int
+
+
+FIP_CHANNELS: tuple[ChannelSpec, ...] = (
+    ChannelSpec("Green", LedId.BLUE, GREEN_ISO_CAMERA, 520),
+    ChannelSpec("Isosbestic", LedId.UV, GREEN_ISO_CAMERA, 520),
+    ChannelSpec("Red", LedId.LIME, RED_CAMERA, 590),
+)
+
+
+def patch_cord_name(index: int) -> str:
+    """Name of the patch cord at ``index``, which also collects ROI ``index`` on each camera."""
+    return f"Patch Cord {index}"
+
+
+# -------------------------------
+# Bonsai environment
+# -------------------------------
+
+
+def snapshot_bonsai_environment(config_file: os.PathLike) -> dict[str, str]:
+    """Package ids and versions from a Bonsai configuration file.
+
+    Copied from ``clabe.data_mapper.helpers`` rather than depending on clabe for one function.
+    """
+    root = ET.parse(Path(config_file)).getroot()
+    return {package.attrib["id"]: package.attrib["version"] for package in root.findall("Packages/Package")}

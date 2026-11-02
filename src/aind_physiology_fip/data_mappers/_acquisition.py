@@ -1,100 +1,52 @@
-"""
-Acquisition Data Mapper Module
+"""Maps a FIP session to an aind-data-schema Acquisition.
 
-This module provides functionality for mapping raw fiber photometry (FIP)
-acquisition data to a prototype acquisition data schema compatible with
-the AIND (Allen Institute for Neural Dynamics) data schema format.
-
-The module processes raw FIP data directories containing multiple
-acquisition epochs and extracts timing information, session metadata,
-and rig configuration to create a standardized acquisition data model.
-
-The module requires the 'aind-data-schema' package to be installed. This
-is typically included as an optional dependency in the project's
-pyproject.toml file.
+Each FIP epoch in the session becomes one data stream, recording which patch cords were
+acquired and how each of their channels was excited and imaged.
 
 Classes:
-    ProtoAcquisitionDataSchema: Pydantic model representing the prototype
-                                acquisition data structure.
-    ProtoAcquisitionMapper: Mapper class that transforms raw acquisition
-                           data into the prototype schema format.
-    _FipDataStreamMetadata: Internal model for individual data stream
-                           timing metadata.
-
-Example:
-    >>> from pathlib import Path
-    >>> mapper = ProtoAcquisitionMapper(data_directory=Path("data"))
-    >>> acquisition = mapper.map()
-    >>> print(acquisition.model_dump_json(indent=4))
+    AindAcquisitionDataMapper: Maps a session directory to an ``Acquisition``.
 """
 
 import json
 import logging
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import cast
 
+import git
 import pydantic
 from aind_behavior_services.session import Session
+from aind_data_schema.components import configs
+from aind_data_schema.components.connections import Connection
+from aind_data_schema.components.identifiers import Code
+from aind_data_schema.core import acquisition
+from aind_data_schema_models.modalities import Modality
+from aind_data_schema_models.units import PowerUnit, SizeUnit, TimeUnit
 from pandas import DataFrame
 
+from aind_physiology_fip import __semver__
 from aind_physiology_fip.data_contract import dataset
+from aind_physiology_fip.data_mappers._base import DataMapper
+from aind_physiology_fip.data_mappers._utils import (
+    FIP_CHANNELS,
+    GREEN_ISO_CAMERA,
+    LED_SPECS,
+    RED_CAMERA,
+    LedId,
+    TrackedDeviceName,
+    patch_cord_name,
+    snapshot_bonsai_environment,
+)
 from aind_physiology_fip.extra_types import RoiSettings
 from aind_physiology_fip.rig import AindPhysioFipRig
-
-from ._base import DataMapper
 
 logger = logging.getLogger(__name__)
 
 
-class ProtoAcquisitionDataSchema(pydantic.BaseModel):
-    """
-    Prototype acquisition model for raw acquisition data.
-
-    This model represents the intermediate data structure for acquisition
-    metadata before final transformation to the AIND data schema
-    Acquisition format. It aggregates timing information from multiple
-    data streams along with session and rig configuration metadata.
-
-    This prototype will be consumed by upstream aind-metadata-extractor or
-    aind-data-schema metadata mappers to create the final standardized Acquisition object.
-
-    Attributes:
-        data_stream_metadata (list[_FipDataStreamMetadata]): List of
-            metadata objects for each data stream in the acquisition,
-            including timing information. Must contain at least one entry.
-        session (Session): The behavior session metadata
-            that instantiated this acquisition.
-        rig (AindPhysioFipRig): The FIP rig configuration metadata that
-            was used for this acquisition.
-    """
-
-    data_stream_metadata: list["_FipDataStreamMetadata"] = pydantic.Field(
-        min_length=1,
-        description="Metadata for each data stream in the acquisition.",
-    )
-    session: Session = pydantic.Field(description="The session information that instantiated the acquisition.")
-    rig: AindPhysioFipRig = pydantic.Field(description="The rig configuration that instantiated the acquisition.")
-
-
 class _FipDataStreamMetadata(pydantic.BaseModel):
-    """
-    Internal metadata model for individual FIP data streams.
-
-    Captures timing information for a single data stream within a FIP
-    acquisition epoch, including the stream identifier and temporal
-    boundaries.
-
-    Attributes:
-        id (str): Unique identifier for the data stream (typically the
-            epoch name).
-        start_time (pydantic.AwareDatetime): Timezone-aware timestamp
-            marking the beginning of data collection for this stream.
-        end_time (pydantic.AwareDatetime): Timezone-aware timestamp
-            marking the end of data collection for this stream.
-        regions (RoiSettings): The region of interest settings associated with this data stream.
-    """
+    """Timing and regions of interest for one FIP epoch, which becomes one data stream."""
 
     id: str
     start_time: pydantic.AwareDatetime
@@ -102,74 +54,220 @@ class _FipDataStreamMetadata(pydantic.BaseModel):
     regions: RoiSettings
 
 
-class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
-    """
-    Maps raw acquisition data to the prototype acquisition schema format.
+def _fiber_name(fiber_number: int) -> str:
+    """Name of an implanted fiber, as recorded in the subject's procedures."""
+    return f"Fiber {fiber_number}"
 
-    This mapper processes raw FIP acquisition data from a directory
-    structure containing multiple acquisition epochs. It extracts timing
-    information from data streams, session metadata, and rig configuration
-    to create a complete ProtoAcquisitionDataSchema object.
 
-    The mapper scans for FIP epoch directories (named 'fip_*') within a
-    'fib' subdirectory and aggregates metadata from all discovered epochs.
+class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
+    """Maps a FIP session directory to an aind-data-schema ``Acquisition``."""
 
-    Attributes:
-        _mapped (Optional[ProtoAcquisitionDataSchema]): The cached mapped
-            acquisition object, populated after map() is called.
-        _data_directory (os.PathLike): Path to the root data directory
-            containing the acquisition data.
-
-    Example:
-        >>> from pathlib import Path
-        >>> mapper = ProtoAcquisitionMapper(Path("./data"))
-        >>> acquisition = mapper.map()
-        >>> print(acquisition.session.subject_id)
-    """
-
-    def __init__(self, data_directory: os.PathLike):
-        """
-        Initialize the ProtoAcquisitionMapper.
+    def __init__(self, data_path: os.PathLike, repository_path: os.PathLike):
+        """Create a mapper for one session directory.
 
         Args:
-            data_directory (os.PathLike): Path to the root directory
-                containing the FIP acquisition data. Should contain a
-                'fib' subdirectory with FIP epoch folders.
+            data_path (os.PathLike): Session directory holding the ``fib/fip_*`` acquisition
+                epochs.
+            repository_path (os.PathLike): Checkout of the Aind.Physiology.Fip repository the
+                session was acquired with. Its remote, commit and Bonsai environment are
+                recorded as the code that produced the data.
         """
-        # Initialize the cached mapping result to None
-        self._mapped = None
-        # Store the data directory path for access during mapping
-        self._data_directory = data_directory
+        self._data_path = Path(data_path)
+        self._repository_path = Path(repository_path)
+        self._mapped: acquisition.Acquisition | None = None
 
-    def map(self) -> ProtoAcquisitionDataSchema:
-        """
-        Map raw acquisition data to prototype acquisition schema format.
+    def map(self) -> acquisition.Acquisition:
+        """Map the session into an AIND acquisition."""
+        logger.info("Mapping FIP acquisition to AIND schema.")
+        self._mapped = self._map()
+        return self._mapped
 
-        This method orchestrates the extraction of all acquisition metadata
-        including data stream timing, session information, and rig
-        configuration from the raw data directory structure.
-
-        Returns:
-            ProtoAcquisitionDataSchema: Complete prototype acquisition
-                object containing all extracted metadata.
-
-        Raises:
-            ValueError: If no valid session or rig configuration is found
-                in any of the processed epochs.
-        """
-        # Discover all FIP epoch directories within the data directory
-        epochs = list((Path(self._data_directory) / "fib").glob("fip_*"))
-
-        # Extract session and rig metadata from the epochs
+    def _map(self) -> acquisition.Acquisition:
+        epochs = sorted(path for path in (self._data_path / "fib").glob("fip_*") if path.is_dir())
         session, rig = self._extract_session_and_rig(epochs)
+        streams = self._extract_start_end_times(epochs)
+        if not streams:
+            raise ValueError(f"No FIP epoch under {self._data_path} has both regions and timing to map.")
 
-        # Extract timing information from all data streams
-        data_streams_metadata = self._extract_start_end_times(epochs)
+        code = self._get_code()
+        return acquisition.Acquisition(
+            subject_id=session.subject,
+            acquisition_start_time=min(stream.start_time for stream in streams),
+            acquisition_end_time=max(stream.end_time for stream in streams),
+            experimenters=session.experimenter,
+            notes=session.notes,
+            instrument_id=rig.rig_name,
+            # Left blank on purpose: the behavior task FIP runs alongside supplies it.
+            acquisition_type="",
+            data_streams=[self._get_data_stream(rig, stream, code) for stream in streams],
+        )
 
-        return ProtoAcquisitionDataSchema(
-            data_stream_metadata=data_streams_metadata,
-            session=session,
-            rig=rig,
+    def _get_code(self) -> list[Code]:
+        """The workflow and the package that produced the session, at the commit it was acquired with."""
+        repository = git.Repo(self._repository_path)
+        if repository.working_tree_dir is None:
+            raise ValueError(f"{self._repository_path} has no working tree to read the Bonsai environment from.")
+        url = repository.remote().url
+        commit_hash = repository.head.commit.hexsha
+        bonsai = snapshot_bonsai_environment(Path(repository.working_tree_dir) / ".bonsai" / "Bonsai.config")
+
+        python = sys.version_info
+        python_version = f"{python.major}.{python.minor}.{python.micro}"
+        if python.releaselevel != "final":
+            python_version += f"-{python.releaselevel}.{python.serial}"
+
+        return [
+            Code(
+                url=url,
+                name="Aind.Physiology.Fip",
+                version=__semver__,
+                commit_hash=commit_hash,
+                language="Bonsai",
+                language_version=bonsai.get("Bonsai"),
+                run_script=Path("src/main.bonsai"),
+            ),
+            Code(
+                url=url,
+                name="aind-physiology-fip",
+                version=__semver__,
+                commit_hash=commit_hash,
+                language="Python",
+                language_version=python_version,
+            ),
+        ]
+
+    @classmethod
+    def _get_data_stream(
+        cls, rig: AindPhysioFipRig, stream: _FipDataStreamMetadata, code: list[Code]
+    ) -> acquisition.DataStream:
+        """One epoch: the patch cords acquired, and how each of their channels was excited and imaged."""
+        light_sources = cls._get_light_source_configs(rig)
+        detectors = cls._get_detector_configs(rig)
+        fibers = cls._get_recorded_fibers(stream)
+
+        return acquisition.DataStream(
+            stream_start_time=stream.start_time,
+            stream_end_time=stream.end_time,
+            modalities=[Modality.FIB],
+            code=code,
+            active_devices=[
+                *(config.device_name for config in light_sources.values()),
+                *detectors,
+                TrackedDeviceName.CUTTLEFISH,
+                *(name for roi, fiber in fibers for name in (patch_cord_name(roi), _fiber_name(fiber))),
+            ],
+            configurations=[
+                *light_sources.values(),
+                *(cls._get_patch_cord_config(roi, fiber, light_sources, detectors) for roi, fiber in fibers),
+            ],
+            connections=[
+                Connection(source_device=patch_cord_name(roi), target_device=_fiber_name(fiber))
+                for roi, fiber in fibers
+            ],
+        )
+
+    @staticmethod
+    def _get_light_source_configs(rig: AindPhysioFipRig) -> dict[LedId, configs.LightEmittingDiodeConfig]:
+        """LED settings, in the unit the rig's power is actually expressed in.
+
+        A calibrated light source's power is in microwatts. Without a calibration it is the duty
+        cycle as a fraction no greater than 1, which is recorded as a percentage.
+        """
+        light_sources = {
+            LedId.UV: rig.light_source_uv,
+            LedId.BLUE: rig.light_source_blue,
+            LedId.LIME: rig.light_source_lime,
+        }
+        result = {}
+        for led, light_source in light_sources.items():
+            if light_source.calibration is None:
+                power, unit = light_source.power * 100, PowerUnit.PERCENT
+            else:
+                power, unit = light_source.power, PowerUnit.UW
+            result[led] = configs.LightEmittingDiodeConfig(
+                device_name=LED_SPECS[led].name, power=power, power_unit=unit
+            )
+        return result
+
+    @staticmethod
+    def _get_detector_configs(rig: AindPhysioFipRig) -> dict[str, configs.DetectorConfig]:
+        """Camera settings, keyed by camera name.
+
+        Both cameras integrate for the light sources' ``delta_1``, which must therefore agree.
+        """
+        exposures = {
+            light_source.task.delta_1
+            for light_source in (rig.light_source_uv, rig.light_source_blue, rig.light_source_lime)
+        }
+        if len(exposures) != 1:
+            raise ValueError(f"Light sources disagree on the camera exposure (delta_1, us): {sorted(exposures)}")
+        exposure_ms = exposures.pop() / 1000
+
+        return {
+            camera.name: configs.DetectorConfig(
+                device_name=camera.name,
+                exposure_time=exposure_ms,
+                exposure_time_unit=TimeUnit.MS,
+                trigger_type=configs.TriggerType.INTERNAL,
+            )
+            for camera in (GREEN_ISO_CAMERA, RED_CAMERA)
+        }
+
+    @staticmethod
+    def _get_recorded_fibers(stream: _FipDataStreamMetadata) -> list[tuple[int, int]]:
+        """(ROI index, fiber number) for each ROI recorded as enabled and mapped to a fiber.
+
+        ROI N on each camera sits over patch cord N. The ROI manager edits one table for both
+        cameras, so an ROI's fiber and enabled state must agree between them.
+
+        aind-data-schema requires at least one patch cord in a fiber photometry stream, so an
+        epoch with no enabled, mapped ROI cannot be described and is rejected. That includes
+        sessions predating fiber numbers, which already have their metadata.
+        """
+        green, red = stream.regions.camera_green_iso_roi, stream.regions.camera_red_roi
+        if len(green) != len(red):
+            raise ValueError(f"{stream.id} has {len(green)} green/iso ROIs but {len(red)} red ROIs.")
+
+        fibers: list[tuple[int, int]] = []
+        for index, (green_roi, red_roi) in enumerate(zip(green, red, strict=True)):
+            if (green_roi.fiber_number, green_roi.enabled) != (red_roi.fiber_number, red_roi.enabled):
+                raise ValueError(f"ROI {index} in {stream.id} has a different fiber or enabled state on each camera.")
+            if green_roi.enabled and green_roi.fiber_number is not None:
+                fibers.append((index, green_roi.fiber_number))
+
+        fiber_numbers = [fiber for _, fiber in fibers]
+        if len(set(fiber_numbers)) != len(fiber_numbers):
+            raise ValueError(f"{stream.id} maps more than one ROI to the same fiber: {sorted(fiber_numbers)}")
+        if not fibers:
+            raise ValueError(
+                f"No enabled ROI in {stream.id} is mapped to a fiber, and aind-data-schema requires at least one "
+                "patch cord in a fiber photometry stream."
+            )
+        return fibers
+
+    @staticmethod
+    def _get_patch_cord_config(
+        roi: int,
+        fiber: int,
+        light_sources: dict[LedId, configs.LightEmittingDiodeConfig],
+        detectors: dict[str, configs.DetectorConfig],
+    ) -> configs.PatchCordConfig:
+        """The patch cord over ROI ``roi``, carrying one channel per LED and camera pairing."""
+        return configs.PatchCordConfig(
+            device_name=patch_cord_name(roi),
+            channels=[
+                configs.Channel(
+                    channel_name=f"Fiber_{fiber}_{channel.name}",
+                    detector=detectors[channel.camera.name],
+                    light_sources=[light_sources[channel.led]],
+                    variable_power=False,
+                    excitation_filters=[],
+                    emission_filters=[],
+                    emission_wavelength=channel.emission_wavelength,
+                    emission_wavelength_unit=SizeUnit.NM,
+                )
+                for channel in FIP_CHANNELS
+            ],
         )
 
     @staticmethod
@@ -213,7 +311,7 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
 
             # Primary: read from SoftwareEvents JSON-lines files
             try:
-                start_utc, end_utc = ProtoAcquisitionMapper._extract_times_from_software_events(epoch)
+                start_utc, end_utc = AindAcquisitionDataMapper._extract_times_from_software_events(epoch)
                 data_streams.append(
                     _FipDataStreamMetadata(
                         id=epoch.name,
@@ -236,7 +334,7 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
                 for stream in _candidate_streams:
                     try:
                         logger.debug(f"Checking for timing in stream: {stream}")
-                        start_utc, end_utc = ProtoAcquisitionMapper._extract_from_df(
+                        start_utc, end_utc = AindAcquisitionDataMapper._extract_from_df(
                             cast(DataFrame, this_epoch[stream].read())
                         )
                         data_streams.append(
@@ -276,8 +374,8 @@ class ProtoAcquisitionMapper(DataMapper[ProtoAcquisitionDataSchema]):
         """
         start_path = epoch / "SoftwareEvents" / "StartSessionTime.json"
         end_path = epoch / "SoftwareEvents" / "EndSessionTime.json"
-        start_time = ProtoAcquisitionMapper._read_last_software_event_datetime(start_path)
-        end_time = ProtoAcquisitionMapper._read_last_software_event_datetime(end_path)
+        start_time = AindAcquisitionDataMapper._read_last_software_event_datetime(start_path)
+        end_time = AindAcquisitionDataMapper._read_last_software_event_datetime(end_path)
         return start_time, end_time
 
     @staticmethod

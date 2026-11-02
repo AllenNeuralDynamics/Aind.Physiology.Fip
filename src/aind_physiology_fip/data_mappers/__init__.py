@@ -5,19 +5,30 @@ from pathlib import Path
 import pydantic
 import pydantic_settings
 
-from ._acquisition import ProtoAcquisitionDataSchema as ProtoAcquisitionDataSchema
-from ._acquisition import ProtoAcquisitionMapper
+from ._acquisition import AindAcquisitionDataMapper as AindAcquisitionDataMapper
 from ._instrument import AindInstrumentDataMapper as AindInstrumentDataMapper
 
 logger = logging.getLogger(__name__)
 
 INSTRUMENT_FILE_NAME = "instrument_fib.json"
+ACQUISITION_FILE_NAME = "acquisition_fib.json"
+
+# The checkout this package runs from: src/aind_physiology_fip/data_mappers/ sits three levels below it.
+_REPOSITORY_PATH = Path(__file__).resolve().parents[3]
 
 
 class DataMapperCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
     """CLI for generating AIND metadata from raw FIP data."""
 
     data_path: os.PathLike = pydantic.Field(description="Path to the session data directory.")
+    repository_path: os.PathLike = pydantic.Field(
+        default=_REPOSITORY_PATH,
+        description=(
+            "Checkout of the Aind.Physiology.Fip repository the session was acquired with, whose remote, "
+            "commit and Bonsai environment are recorded as the acquisition code. Defaults to the checkout "
+            "this package runs from."
+        ),
+    )
     clock_generator_name: str | None = pydantic.Field(
         default=None,
         description=(
@@ -38,18 +49,17 @@ class DataMapperCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
 
     def cli_cmd(self):
         logger.info("Mapping metadata directly from dataset.")
-        acquisition_mapped = ProtoAcquisitionMapper(self.data_path).map()
-        logger.info("Writing fip.json to %s", self.data_path)
-        # According to @dbirman, the name of this file MUST match the extractor, so we hardcode it here.
-        with open(Path(self.data_path) / "fip.json", "w", encoding="utf-8") as f:
-            f.write(acquisition_mapped.model_dump_json(indent=2))
-
         instrument_mapped = AindInstrumentDataMapper(
             self.data_path, self.clock_generator_name, self.objective_serial_number
         ).map()
         logger.info("Writing %s to %s", INSTRUMENT_FILE_NAME, self.data_path)
         with open(Path(self.data_path) / INSTRUMENT_FILE_NAME, "w", encoding="utf-8") as f:
             f.write(instrument_mapped.model_dump_json(indent=2))
+
+        acquisition_mapped = AindAcquisitionDataMapper(self.data_path, self.repository_path).map()
+        logger.info("Writing %s to %s", ACQUISITION_FILE_NAME, self.data_path)
+        with open(Path(self.data_path) / ACQUISITION_FILE_NAME, "w", encoding="utf-8") as f:
+            f.write(acquisition_mapped.model_dump_json(indent=2))
         logger.info("Mapping completed!")
 
 

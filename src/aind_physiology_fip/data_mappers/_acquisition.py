@@ -44,6 +44,9 @@ from aind_physiology_fip.rig import AindPhysioFipRig
 
 logger = logging.getLogger(__name__)
 
+# The checkout this package runs from: src/aind_physiology_fip/data_mappers/ sits three levels below it.
+REPOSITORY_PATH = Path(__file__).resolve().parents[3]
+
 
 class _FipDataStreamMetadata(pydantic.BaseModel):
     """Timing and regions of interest for one FIP epoch, which becomes one data stream."""
@@ -62,7 +65,7 @@ def _fiber_name(fiber_number: int) -> str:
 class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
     """Maps a FIP session directory to an aind-data-schema ``Acquisition``."""
 
-    def __init__(self, data_path: os.PathLike, repository_path: os.PathLike):
+    def __init__(self, data_path: os.PathLike, repository_path: os.PathLike = REPOSITORY_PATH):
         """Create a mapper for one session directory.
 
         Args:
@@ -70,7 +73,8 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
                 epochs.
             repository_path (os.PathLike): Checkout of the Aind.Physiology.Fip repository the
                 session was acquired with. Its remote, commit and Bonsai environment are
-                recorded as the code that produced the data.
+                recorded as the code that produced the data. Defaults to the checkout this
+                package runs from.
         """
         self._data_path = Path(data_path)
         self._repository_path = Path(repository_path)

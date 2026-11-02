@@ -214,14 +214,14 @@ uv sync --extra mappers
 uv run fip data-mappers -h
 ```
 
-Alternatively, you can use the mapping classes directly. For instance to run the mapper/extractor for acquisition data:
+Alternatively, you can use the mapping classes directly. For instance to map the acquisition:
 
 ```python
-from aind_physiology_fip.data_mappers import ProtoAcquisitionMapper
+from aind_physiology_fip.data_mappers import AindAcquisitionDataMapper
 
 data_path = "path to dataset"
-acquisition_mapped = ProtoAcquisitionMapper(data_path).map()
-with open("fip.json", "w", encoding="utf-8") as f:
+acquisition_mapped = AindAcquisitionDataMapper(data_path).map()
+with open("acquisition_fib.json", "w", encoding="utf-8") as f:
     f.write(acquisition_mapped.model_dump_json(indent=2))
 ```
 

@@ -5,6 +5,7 @@ from pathlib import Path
 import pydantic
 import pydantic_settings
 
+from ._acquisition import REPOSITORY_PATH
 from ._acquisition import AindAcquisitionDataMapper as AindAcquisitionDataMapper
 from ._instrument import AindInstrumentDataMapper as AindInstrumentDataMapper
 
@@ -13,16 +14,13 @@ logger = logging.getLogger(__name__)
 INSTRUMENT_FILE_NAME = "instrument_fib.json"
 ACQUISITION_FILE_NAME = "acquisition_fib.json"
 
-# The checkout this package runs from: src/aind_physiology_fip/data_mappers/ sits three levels below it.
-_REPOSITORY_PATH = Path(__file__).resolve().parents[3]
-
 
 class DataMapperCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
     """CLI for generating AIND metadata from raw FIP data."""
 
     data_path: os.PathLike = pydantic.Field(description="Path to the session data directory.")
     repository_path: os.PathLike = pydantic.Field(
-        default=_REPOSITORY_PATH,
+        default=REPOSITORY_PATH,
         description=(
             "Checkout of the Aind.Physiology.Fip repository the session was acquired with, whose remote, "
             "commit and Bonsai environment are recorded as the acquisition code. Defaults to the checkout "

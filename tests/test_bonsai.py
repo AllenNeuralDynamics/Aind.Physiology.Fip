@@ -7,9 +7,8 @@ from typing import Generic, TypeVar
 import pytest
 from aind_behavior_services.session import Session
 from aind_behavior_services.utils import run_bonsai_process
-from pydantic import ValidationError
-
 from aind_physiology_fip.rig import AindPhysioFipRig
+from pydantic import ValidationError
 
 sys.path.append(".")
 from examples import example  # isort:skip # pylint: disable=wrong-import-position

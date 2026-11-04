@@ -6,10 +6,9 @@ from typing import Any
 
 import pandas as pd
 from aind_behavior_services.common import Point2f
-from contraqctor.contract import DataStream
-
-from aind_physiology_fip.data_mappers import ProtoAcquisitionMapper
 from aind_physiology_fip.extra_types import FipCircle, RoiSettings
+from aind_physiology_fip_data_mappers import ProtoAcquisitionMapper
+from contraqctor.contract import DataStream
 
 
 class MockCsv(DataStream[pd.DataFrame, Any]):
@@ -90,7 +89,7 @@ def test_epoch_without_regions_is_skipped(tmp_path, caplog):
     # tests/__init__.py disables logging globally; re-enable it to assert on the warning
     logging.disable(logging.NOTSET)
     try:
-        with caplog.at_level(logging.WARNING, logger="aind_physiology_fip.data_mappers._acquisition"):
+        with caplog.at_level(logging.WARNING, logger="aind_physiology_fip_data_mappers._proto_acquisition"):
             streams = ProtoAcquisitionMapper._extract_start_end_times([good, bad])
     finally:
         logging.disable(logging.CRITICAL)

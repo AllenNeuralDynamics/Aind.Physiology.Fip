@@ -5,8 +5,6 @@ import os
 from aind_behavior_services.common import Point2f
 from aind_behavior_services.rig.harp import HarpCuttlefishfip
 from aind_behavior_services.session import Session
-
-from aind_physiology_fip.data_mappers._acquisition import ProtoAcquisitionDataSchema, _FipDataStreamMetadata
 from aind_physiology_fip.extra_types import FipCircle, RoiSettings
 from aind_physiology_fip.rig import (
     AindPhysioFipRig,
@@ -17,6 +15,7 @@ from aind_physiology_fip.rig import (
     Networking,
     Ports,
 )
+from aind_physiology_fip_data_mappers._proto_acquisition import ProtoAcquisitionDataSchema, _FipDataStreamMetadata
 
 
 def mock_session() -> Session:

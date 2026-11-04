@@ -1,6 +1,6 @@
+from aind_physiology_fip.data_qc import FipChannelSignalTestSuite
 from contraqctor.qc import ContextExportableObj, Status
 
-from aind_physiology_fip.data_qc import FipChannelSignalTestSuite
 from tests.qc_fixtures import load_stream
 
 

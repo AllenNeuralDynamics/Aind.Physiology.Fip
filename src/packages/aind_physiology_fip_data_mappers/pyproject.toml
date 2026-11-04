@@ -1,0 +1,20 @@
+[build-system]
+requires = ["uv_build>=0.8.22"]
+build-backend = "uv_build"
+
+[project]
+name = "aind-physiology-fip-data-mappers"
+description = "Internal data mappers for the AIND FIP acquisition system."
+authors = [{ name = "Bruno Cruz", email = "bruno.cruz@alleninstitute.org" }]
+license = "MIT"
+version = "0.1.0"
+requires-python = ">=3.11"
+readme = { file = "README.md", content-type = "text/markdown" }
+classifiers = ["Programming Language :: Python :: 3.11", "Operating System :: Microsoft :: Windows", "Private :: Do Not Upload"]
+dependencies = ["aind-physiology-fip[data]", "pandas", "pydantic-settings"]
+
+[project.scripts]
+fip-data-mapper = "aind_physiology_fip_data_mappers:main"
+
+[tool.uv.sources]
+aind-physiology-fip = { workspace = true }

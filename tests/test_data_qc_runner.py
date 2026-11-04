@@ -1,8 +1,7 @@
 import pytest
-from contraqctor.qc import Status
-
 from aind_physiology_fip.data_contract import dataset
 from aind_physiology_fip.data_qc import DataQcCli, _run_tests, _save_assets
+from contraqctor.qc import Status
 
 
 @pytest.fixture

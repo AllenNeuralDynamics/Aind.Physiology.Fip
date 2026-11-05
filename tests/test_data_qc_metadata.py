@@ -1,7 +1,7 @@
 import pytest
+from aind_physiology_fip.data_qc import FipChannelMetadataTestSuite
 from contraqctor.qc import Status
 
-from aind_physiology_fip.data_qc import FipChannelMetadataTestSuite
 from tests.qc_fixtures import CHANNEL_STRIDE, load_stream
 
 

@@ -12,9 +12,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from contraqctor import contract
-
 from aind_physiology_fip.data_contract import dataset
+from contraqctor import contract
 
 EXAMPLES_DIR = Path(__file__).parents[1] / "examples"
 FIXTURES_DIR = Path(__file__).parent / "fixtures"

@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 from aind_behavior_services.common import Circle, Point2f
+from aind_physiology_fip.data_qc import FipRawImageTestSuite
 from contraqctor.qc import Status
 
-from aind_physiology_fip.data_qc import FipRawImageTestSuite
 from tests.qc_fixtures import REAL_SESSION_HEAD, load_stream
 
 

@@ -200,24 +200,26 @@ For a list of available subcommands and options, run:
 
 ## Generating `aind-data-schema` metadata
 
+The AIND acquisition and instrument mapper classes are placeholders for upcoming implementations. The `fip-data-mapper` CLI exposes their intended interface and currently raises `NotImplementedError` when run. The existing `ProtoAcquisitionMapper` remains available for prototype `fip.json` generation.
+
 The repository will maintain tools to generate `aind-data-schema` compliant metadata for experiments run using the FIP system:
 
 1. Install the `mappers` optional dependencies:
 
 ```powershell
-uv sync --extra mappers
+uv sync
 ```
 
 2. Run the metadata generation tool via the command line and provide the necessary arguments
 
 ```powershell
-uv run fip data-mappers -h
+uv run fip-data-mapper --help
 ```
 
 Alternatively, you can use the mapping classes directly. For instance to run the mapper/extractor for acquisition data:
 
 ```python
-from aind_physiology_fip.data_mappers import ProtoAcquisitionMapper
+from aind_physiology_fip_data_mappers import ProtoAcquisitionMapper
 
 data_path = "path to dataset"
 acquisition_mapped = ProtoAcquisitionMapper(data_path).map()

@@ -1,76 +1,31 @@
-[build-system]
-requires = ["uv_build>=0.8.22"]
-build-backend = "uv_build"
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
+testpaths = ["tests"]
 
-[project]
-name = "aind-physiology-fip"
-description = "A repository for Fiber Photometry data acquisition"
-authors = [
-    { name = "Bruno Cruz", email = "bruno.cruz@alleninstitute.org" },
-    { name = "Kenta Hagihara", email = "kenta.hagihara@alleninstitute.org" },
-]
-license = { text = "MIT" }
-requires-python = ">=3.11"
-version = "0.4.0"
-readme = { file = "README.md", content-type = "text/markdown" }
-classifiers = [
-    "Programming Language :: Python :: 3.11",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: Microsoft :: Windows",
-]
+[tool.uv.workspace]
+members = ["src/packages/aind_physiology_fip", "src/packages/aind_physiology_fip_data_mappers"]
 
-dependencies = ["aind_behavior_services>=0.13.6"]
-
-[project.urls]
-Documentation = "https://allenneuraldynamics.github.io/Aind.Physiology.Fip/"
-Repository = "https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/"
-Issues = "https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/issues"
-Changelog = "https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/releases"
-
-[project.optional-dependencies]
-
-data = ["contraqctor < 0.6", "pydantic_settings", "opencv-python"]
+[tool.uv.sources]
+aind-physiology-fip = { workspace = true }
+aind-physiology-fip-data-mappers = { workspace = true }
 
 [dependency-groups]
+dev = ["pytest", "ruff", "codespell", "aind-physiology-fip[data]", "aind-physiology-fip-data-mappers"]
+docs = ["mkdocs", "mkdocs-material", "mkdocstrings[python]", "griffe-pydantic", "mkdocs-autorefs>=1.4.4", "griffe-typingdoc>=0.3.1", "pymdown-extensions", "aind-physiology-fip[data]"]
 
-dev = [
-    "pytest",
-    "ruff",
-    "codespell",
-    "aind-physiology-fip[data]",
-]
-
-docs = [
-    'mkdocs',
-    'mkdocs-material',
-    'mkdocstrings[python]',
-    'griffe-pydantic',
-    'mkdocs-autorefs>=1.4.4',
-    'griffe-typingdoc>=0.3.1',
-    'pymdown-extensions',
-    "aind-physiology-fip[data]",
-]
-
-[project.scripts]
-fip = "aind_physiology_fip.cli:main"
+[tool.uv]
+default-groups = ["dev"]
+required-version = ">=0.8.4"
 
 [tool.ruff]
 line-length = 120
-target-version = 'py311'
+target-version = "py311"
 
 [tool.ruff.lint]
-extend-select = ['Q', 'RUF100', 'C90', 'I']
-extend-ignore = []
+extend-select = ["Q", "RUF100", "C90", "I"]
 mccabe = { max-complexity = 14 }
-pydocstyle = { convention = 'google' }
+pydocstyle = { convention = "google" }
 
 [tool.codespell]
-skip = '.git,*.pdf,*.svg,./.bonsai,*.bonsai,*.Generated.cs,./site,uv.lock'
-ignore-words-list = 'nd'
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-
-[tool.uv]
-default-groups = ['dev']
-required-version = '>=0.8.4'
+skip = ".git,*.pdf,*.svg,./.bonsai,*.bonsai,*.Generated.cs,./site,uv.lock"
+ignore-words-list = "nd"

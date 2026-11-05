@@ -5,7 +5,6 @@ import os
 from aind_behavior_services.common import Point2f
 from aind_behavior_services.rig.harp import HarpCuttlefishfip
 from aind_behavior_services.session import Session
-
 from aind_physiology_fip.extra_types import FipCircle, RoiSettings
 from aind_physiology_fip.rig import (
     AindPhysioFipRig,

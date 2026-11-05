@@ -2,7 +2,6 @@ import matplotlib.figure
 import numpy as np
 import pandas as pd
 import pytest
-
 from aind_physiology_fip.data_qc_helpers import plot_sensor_floor
 
 

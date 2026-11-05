@@ -200,24 +200,26 @@ For a list of available subcommands and options, run:
 
 ## Generating `aind-data-schema` metadata
 
+The `fip-data-mapper` CLI maps a session to `instrument_fib.json` and `acquisition_fib.json`, written into the session directory. They are merged with the metadata of the behavior task FIP is acquired alongside when the session is uploaded.
+
 The repository will maintain tools to generate `aind-data-schema` compliant metadata for experiments run using the FIP system:
 
 1. Install the `mappers` optional dependencies:
 
 ```powershell
-uv sync --extra mappers
+uv sync
 ```
 
 2. Run the metadata generation tool via the command line and provide the necessary arguments
 
 ```powershell
-uv run fip data-mappers -h
+uv run fip-data-mapper --help
 ```
 
 Alternatively, you can use the mapping classes directly. For instance to map the acquisition:
 
 ```python
-from aind_physiology_fip.data_mappers import AindAcquisitionDataMapper
+from aind_physiology_fip_data_mappers import AindAcquisitionDataMapper
 
 data_path = "path to dataset"
 acquisition_mapped = AindAcquisitionDataMapper(data_path).map()

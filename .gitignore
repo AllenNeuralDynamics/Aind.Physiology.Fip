@@ -4,6 +4,8 @@
 bin
 obj
 Packages
+!src/packages/
+!src/packages/**
 Bonsai.exe.WebView2
 *.bin
 *.avi
@@ -97,6 +99,8 @@ ipython_config.py
 
 # venv files 
 .venv
+.uv-cache/
+.uv-cache/
 
 # C# solution files
 *.sln

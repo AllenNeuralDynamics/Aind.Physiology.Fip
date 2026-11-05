@@ -13,6 +13,31 @@ resolution-markers = [
     "python_full_version < '3.12' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
+[manifest]
+members = [
+    "aind-physiology-fip",
+    "aind-physiology-fip-data-mappers",
+]
+
+[manifest.dependency-groups]
+dev = [
+    { name = "aind-physiology-fip", extras = ["data"], editable = "src/packages/aind_physiology_fip" },
+    { name = "aind-physiology-fip-data-mappers", editable = "src/packages/aind_physiology_fip_data_mappers" },
+    { name = "codespell" },
+    { name = "pytest" },
+    { name = "ruff" },
+]
+docs = [
+    { name = "aind-physiology-fip", extras = ["data"], editable = "src/packages/aind_physiology_fip" },
+    { name = "griffe-pydantic" },
+    { name = "griffe-typingdoc", specifier = ">=0.3.1" },
+    { name = "mkdocs" },
+    { name = "mkdocs-autorefs", specifier = ">=1.4.4" },
+    { name = "mkdocs-material" },
+    { name = "mkdocstrings", extras = ["python"] },
+    { name = "pymdown-extensions" },
+]
+
 [[package]]
 name = "aind-behavior-curriculum"
 version = "0.0.42"
@@ -75,66 +100,46 @@ wheels = [
 [[package]]
 name = "aind-physiology-fip"
 version = "0.4.0"
-source = { editable = "." }
+source = { editable = "src/packages/aind_physiology_fip" }
 dependencies = [
     { name = "aind-behavior-services" },
+    { name = "pydantic-settings" },
 ]
 
 [package.optional-dependencies]
 data = [
     { name = "contraqctor" },
     { name = "opencv-python" },
-    { name = "pydantic-settings" },
-]
-mappers = [
-    { name = "aind-data-schema" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "aind-physiology-fip", extra = ["data", "mappers"] },
-    { name = "codespell" },
-    { name = "pytest" },
-    { name = "ruff" },
-]
-docs = [
-    { name = "aind-physiology-fip", extra = ["data"] },
-    { name = "griffe-pydantic" },
-    { name = "griffe-typingdoc" },
-    { name = "mkdocs" },
-    { name = "mkdocs-autorefs" },
-    { name = "mkdocs-material" },
-    { name = "mkdocstrings", extra = ["python"] },
-    { name = "pymdown-extensions" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "aind-behavior-services", specifier = ">=0.13.6" },
-    { name = "aind-data-schema", marker = "extra == 'mappers'", specifier = ">=2.9" },
     { name = "contraqctor", marker = "extra == 'data'", specifier = "<0.6" },
     { name = "opencv-python", marker = "extra == 'data'" },
-    { name = "pydantic-settings", marker = "extra == 'data'" },
+    { name = "pydantic-settings" },
 ]
-provides-extras = ["data", "mappers"]
+provides-extras = ["data"]
 
-[package.metadata.requires-dev]
-dev = [
-    { name = "aind-physiology-fip", extras = ["data"] },
-    { name = "aind-physiology-fip", extras = ["mappers"] },
-    { name = "codespell" },
-    { name = "pytest" },
-    { name = "ruff" },
+[[package]]
+name = "aind-physiology-fip-data-mappers"
+version = "0.1.0"
+source = { editable = "src/packages/aind_physiology_fip_data_mappers" }
+dependencies = [
+    { name = "aind-data-schema" },
+    { name = "aind-physiology-fip", extra = ["data"] },
+    { name = "gitpython" },
+    { name = "pandas" },
+    { name = "pydantic-settings" },
 ]
-docs = [
-    { name = "aind-physiology-fip", extras = ["data"] },
-    { name = "griffe-pydantic" },
-    { name = "griffe-typingdoc", specifier = ">=0.3.1" },
-    { name = "mkdocs" },
-    { name = "mkdocs-autorefs", specifier = ">=1.4.4" },
-    { name = "mkdocs-material" },
-    { name = "mkdocstrings", extras = ["python"] },
-    { name = "pymdown-extensions" },
+
+[package.metadata]
+requires-dist = [
+    { name = "aind-data-schema", specifier = ">=2.9" },
+    { name = "aind-physiology-fip", extras = ["data"], editable = "src/packages/aind_physiology_fip" },
+    { name = "gitpython" },
+    { name = "pandas" },
+    { name = "pydantic-settings" },
 ]
 
 [[package]]

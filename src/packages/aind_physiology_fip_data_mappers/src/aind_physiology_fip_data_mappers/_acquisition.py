@@ -24,12 +24,14 @@ from aind_data_schema.components.identifiers import Code
 from aind_data_schema.core import acquisition
 from aind_data_schema_models.modalities import Modality
 from aind_data_schema_models.units import PowerUnit, SizeUnit, TimeUnit
-from pandas import DataFrame
-
 from aind_physiology_fip import __semver__
 from aind_physiology_fip.data_contract import dataset
-from aind_physiology_fip.data_mappers._base import DataMapper
-from aind_physiology_fip.data_mappers._utils import (
+from aind_physiology_fip.extra_types import RoiSettings
+from aind_physiology_fip.rig import AindPhysioFipRig
+from pandas import DataFrame
+
+from aind_physiology_fip_data_mappers._base import DataMapper
+from aind_physiology_fip_data_mappers._utils import (
     FIP_CHANNELS,
     GREEN_ISO_CAMERA,
     LED_SPECS,
@@ -39,13 +41,11 @@ from aind_physiology_fip.data_mappers._utils import (
     patch_cord_name,
     snapshot_bonsai_environment,
 )
-from aind_physiology_fip.extra_types import RoiSettings
-from aind_physiology_fip.rig import AindPhysioFipRig
 
 logger = logging.getLogger(__name__)
 
-# The checkout this package runs from: src/aind_physiology_fip/data_mappers/ sits three levels below it.
-REPOSITORY_PATH = Path(__file__).resolve().parents[3]
+# Any path inside the checkout this package runs from; the repository root is found by searching upward.
+REPOSITORY_PATH = Path(__file__).resolve().parent
 
 
 class _FipDataStreamMetadata(pydantic.BaseModel):
@@ -65,19 +65,29 @@ def _fiber_name(fiber_number: int) -> str:
 class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
     """Maps a FIP session directory to an aind-data-schema ``Acquisition``."""
 
-    def __init__(self, data_path: os.PathLike, repository_path: os.PathLike = REPOSITORY_PATH):
+    def __init__(
+        self,
+        data_path: os.PathLike,
+        repository_path: os.PathLike = REPOSITORY_PATH,
+        session_end_time: datetime | None = None,
+    ):
         """Create a mapper for one session directory.
 
         Args:
             data_path (os.PathLike): Session directory holding the ``fib/fip_*`` acquisition
                 epochs.
-            repository_path (os.PathLike): Checkout of the Aind.Physiology.Fip repository the
-                session was acquired with. Its remote, commit and Bonsai environment are
-                recorded as the code that produced the data. Defaults to the checkout this
-                package runs from.
+            repository_path (os.PathLike): A path inside the checkout of the Aind.Physiology.Fip
+                repository the session was acquired with. Its remote, commit and Bonsai
+                environment are recorded as the code that produced the data. Defaults to the
+                checkout this package runs from.
+            session_end_time (datetime | None): When the session ended, as known to whoever
+                launched it. Recorded as the acquisition end time when given, as the behavior
+                mappers do; each data stream still ends when its epoch's data does. Left unset,
+                the acquisition ends with its last data stream.
         """
         self._data_path = Path(data_path)
         self._repository_path = Path(repository_path)
+        self._session_end_time = session_end_time
         self._mapped: acquisition.Acquisition | None = None
 
     def map(self) -> acquisition.Acquisition:
@@ -97,7 +107,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         return acquisition.Acquisition(
             subject_id=session.subject,
             acquisition_start_time=min(stream.start_time for stream in streams),
-            acquisition_end_time=max(stream.end_time for stream in streams),
+            acquisition_end_time=self._session_end_time or max(stream.end_time for stream in streams),
             experimenters=session.experimenter,
             notes=session.notes,
             instrument_id=rig.rig_name,
@@ -108,7 +118,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
 
     def _get_code(self) -> list[Code]:
         """The workflow and the package that produced the session, at the commit it was acquired with."""
-        repository = git.Repo(self._repository_path)
+        repository = git.Repo(self._repository_path, search_parent_directories=True)
         if repository.working_tree_dir is None:
             raise ValueError(f"{self._repository_path} has no working tree to read the Bonsai environment from.")
         url = repository.remote().url

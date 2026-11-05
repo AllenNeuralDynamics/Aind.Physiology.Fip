@@ -11,16 +11,15 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 from aind_behavior_services.common import Point2f
 from aind_data_schema.core import instrument
-from contraqctor.contract import DataStream
-
-from aind_physiology_fip.data_mappers import (
+from aind_physiology_fip.extra_types import FipCircle, RoiSettings
+from aind_physiology_fip_data_mappers import (
     ACQUISITION_FILE_NAME,
     INSTRUMENT_FILE_NAME,
     AindAcquisitionDataMapper,
     DataMapperCli,
 )
-from aind_physiology_fip.data_mappers._instrument import AindInstrumentDataMapper
-from aind_physiology_fip.extra_types import FipCircle, RoiSettings
+from aind_physiology_fip_data_mappers._instrument import AindInstrumentDataMapper
+from contraqctor.contract import DataStream
 
 sys.path.append(".")
 from examples.example import mock_rig
@@ -104,7 +103,7 @@ def test_epoch_without_regions_is_skipped(tmp_path, caplog):
     # tests/__init__.py disables logging globally; re-enable it to assert on the warning
     logging.disable(logging.NOTSET)
     try:
-        with caplog.at_level(logging.WARNING, logger="aind_physiology_fip.data_mappers._acquisition"):
+        with caplog.at_level(logging.WARNING, logger="aind_physiology_fip_data_mappers._acquisition"):
             streams = AindAcquisitionDataMapper._extract_start_end_times([good, bad])
     finally:
         logging.disable(logging.CRITICAL)
@@ -149,7 +148,7 @@ class TestAindInstrumentMapper(unittest.TestCase):
         """Cleanup"""
         self.temp_dir.cleanup()
 
-    @patch("aind_physiology_fip.data_mappers._instrument.AindInstrumentDataMapper._map")
+    @patch("aind_physiology_fip_data_mappers._instrument.AindInstrumentDataMapper._map")
     def test_rig_mock_map(self, mock_map):
         """Tests mock rig mapping"""
         mock_map.return_value = MagicMock()
@@ -168,15 +167,22 @@ class TestAindInstrumentMapper(unittest.TestCase):
         instrument.Instrument.model_validate_json(mapped.model_dump_json())
 
     def test_detector_reads_frame_metadata(self):
-        """Detector crop and bit depth come from the channel metadata, not the defaults"""
+        """Detector crop comes from the channel metadata, not a default"""
         self._write_frame_metadata("green", 128, 64, "U8")
         self._write_frame_metadata("iso", 128, 64, "U8")
         detectors = {d.name: d for d in self.rig_mapper.map().components if d.object_type == "Detector"}
 
         green = detectors["Green CMOS"]
-        self.assertEqual((green.crop_width, green.crop_height, green.bit_depth), (128, 64, 8))
+        self.assertEqual((green.crop_width, green.crop_height), (128, 64))
         red = detectors["Red CMOS"]
-        self.assertEqual((red.crop_width, red.crop_height, red.bit_depth), (200, 200, 16))
+        self.assertEqual((red.crop_width, red.crop_height), (200, 200))
+
+    def test_detector_bit_depth_is_the_sensors(self):
+        """Bit depth is the sensor's 10-bit ADC, not the 8- or 16-bit container the frames are saved in"""
+        self._write_frame_metadata("green", 200, 200, "U8")
+        self._write_frame_metadata("iso", 200, 200, "U8")
+        detectors = [d for d in self.rig_mapper.map().components if d.object_type == "Detector"]
+        self.assertEqual({d.bit_depth for d in detectors}, {10})
 
     def test_green_iso_metadata_must_agree(self):
         """The green/iso camera is one detector, so its two channels may not disagree"""
@@ -193,7 +199,7 @@ class TestAindInstrumentMapper(unittest.TestCase):
             self.rig_mapper.map()
         self.assertIn("green_metadata.json", str(ctx.exception))
 
-    @patch("aind_physiology_fip.data_mappers.AindAcquisitionDataMapper")
+    @patch("aind_physiology_fip_data_mappers.AindAcquisitionDataMapper")
     def test_cli_writes_instrument_and_acquisition(self, mock_acquisition_mapper):
         """The CLI writes the instrument and acquisition side by side in the session directory"""
         mock_acquisition_mapper.return_value.map.return_value.model_dump_json.return_value = "{}"
@@ -282,14 +288,12 @@ class TestAindInstrumentMapper(unittest.TestCase):
         )
         self.assertFalse(any("harp_clock_generator" in (c.source_device, c.target_device) for c in mapped.connections))
 
-    def test_fip_only_records_no_clock_generator(self):
-        """Without a behavior task there is no clock name to copy, so no clock generator is recorded"""
+    def test_clock_generator_name_defaults_to_the_behavior_tasks(self):
+        """Left unset, the clock generator takes the name the behavior tasks use for it"""
         mapped = AindInstrumentDataMapper(data_path=self.data_path).map()
-
-        self.assertFalse(any(getattr(c, "is_clock_generator", False) for c in mapped.components))
-        self.assertFalse(any(c.source_port == "ClkOut" or c.target_port == "ClkIn" for c in mapped.connections))
-        # Still a valid instrument: nothing references the absent clock generator.
-        instrument.Instrument.model_validate_json(mapped.model_dump_json())
+        clocks = [c.name for c in mapped.components if getattr(c, "is_clock_generator", False)]
+        self.assertEqual(clocks, ["harp_clock_generator"])
+        self.assertEqual(DataMapperCli(data_path=self.data_path).clock_generator_name, "harp_clock_generator")
 
     def _add_epoch(self, name: str, rig) -> Path:
         """Add another FIP epoch to the session, logging the given rig input."""

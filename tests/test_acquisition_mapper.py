@@ -2,15 +2,15 @@
 
 import json
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 import git
 import pytest
 from aind_data_schema.core import acquisition
-
 from aind_physiology_fip import __semver__
-from aind_physiology_fip.data_mappers import AindAcquisitionDataMapper, AindInstrumentDataMapper
 from aind_physiology_fip.extra_types import RoiSettings
+from aind_physiology_fip_data_mappers import AindAcquisitionDataMapper, AindInstrumentDataMapper
 
 sys.path.append(".")
 from examples.example import mock_rig, mock_roi_settings, mock_session
@@ -60,6 +60,22 @@ def test_maps_session_to_valid_acquisition(tmp_path):
     assert mapped.notes == mock_session().notes
     assert mapped.instrument_id == mock_rig().rig_name
     assert mapped.acquisition_type == ""
+
+
+def test_session_end_time_sets_the_acquisition_end(tmp_path):
+    """A supplied session end time ends the acquisition, while the stream still ends with its data"""
+    end = datetime(2025, 1, 1, 13, 5, tzinfo=UTC)
+    mapped = AindAcquisitionDataMapper(_make_session(tmp_path, mock_roi_settings()), REPOSITORY, end).map()
+
+    assert mapped.acquisition_end_time == end
+    (stream,) = mapped.data_streams
+    assert stream.stream_end_time == datetime(2025, 1, 1, 13, 0, tzinfo=UTC)
+
+
+def test_acquisition_ends_with_its_last_stream_by_default(tmp_path):
+    """Without a session end time, the acquisition ends when its last stream does"""
+    mapped = _map(_make_session(tmp_path, mock_roi_settings()))
+    assert mapped.acquisition_end_time == datetime(2025, 1, 1, 13, 0, tzinfo=UTC)
 
 
 def test_one_patch_cord_per_mapped_roi(tmp_path):

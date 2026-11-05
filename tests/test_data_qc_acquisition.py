@@ -1,7 +1,6 @@
-from contraqctor.qc import Status
-
 from aind_physiology_fip.data_contract import dataset
 from aind_physiology_fip.data_qc import FipAcquisitionTestSuite
+from contraqctor.qc import Status
 
 
 def _suite(root, **kwargs):

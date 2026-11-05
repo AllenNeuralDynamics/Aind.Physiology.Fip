@@ -6,13 +6,11 @@ import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-import numpy as np
 from aind_data_schema.components import devices
 from aind_data_schema_models import units
-from contraqctor.contract import Dataset
-
 from aind_physiology_fip.data_contract import dataset
 from aind_physiology_fip.rig import Ports
+from contraqctor.contract import Dataset
 
 # -------------------------------
 # Device constants
@@ -27,6 +25,9 @@ class TrackedDeviceName(enum.StrEnum):
     instrument, since they are the identifiers that ``Connection`` objects refer to.
     """
 
+    COMPUTER = "computer"
+    # The name the behavior tasks use for the shared WhiteRabbit, so the instruments merge into one.
+    CLOCK_GENERATOR = "harp_clock_generator"
     CUTTLEFISH = "cuTTLefishFip"
     CAMERA_GREEN_ISO = "Green CMOS"
     CAMERA_RED = "Red CMOS"
@@ -41,10 +42,10 @@ class TrackedDevicesInfo:
     # Lens
     LENS_MODEL = "AC254-080-A-ML"
 
-    # Detector. Crop size and bit depth are not tracked here: they come per epoch from the raw
-    # frame streams in the data contract, which describe the frames actually acquired.
+    # mirror constants in FipSpinnakerCapture.cs
     DETECTOR_BIN_WIDTH = 4
     DETECTOR_BIN_HEIGHT = 4
+    DETECTOR_BIT_DEPTH = 10
     DETECTOR_MODEL = "BFS-U3-20S40M"
 
     # Patch cord
@@ -220,21 +221,20 @@ RED_CAMERA = CameraSpec(TrackedDeviceName.CAMERA_RED, ("raw_red",))
 
 @dataclasses.dataclass(frozen=True)
 class FrameMetadata:
-    """Crop geometry and bit depth as actually written out for a channel."""
+    """Crop geometry as actually written out for a channel."""
 
     crop_width: int
     crop_height: int
-    bit_depth: int
 
 
 def read_frame_metadata(epoch_dataset: Dataset, stream: str) -> FrameMetadata:
-    """Crop geometry and bit depth recorded for one raw frame stream.
+    """Crop geometry recorded for one raw frame stream.
 
     Goes through the data contract rather than reading ``<channel>_metadata.json`` directly, so
     that the file name, the parsing and the validation stay defined in one place.
     """
     params = epoch_dataset[stream].read().params
-    return FrameMetadata(params.width, params.height, np.dtype(params.bit_depth).itemsize * 8)
+    return FrameMetadata(params.width, params.height)
 
 
 def camera_frame_metadata(epoch: Path, camera: CameraSpec) -> FrameMetadata:
@@ -247,9 +247,7 @@ def camera_frame_metadata(epoch: Path, camera: CameraSpec) -> FrameMetadata:
     epoch_dataset = dataset(root=epoch)
     found = {stream: read_frame_metadata(epoch_dataset, stream) for stream in camera.frame_streams}
     if len(set(found.values())) > 1:
-        detail = "; ".join(
-            f"{stream}={m.crop_width}x{m.crop_height}@{m.bit_depth}-bit" for stream, m in sorted(found.items())
-        )
+        detail = "; ".join(f"{stream}={m.crop_width}x{m.crop_height}" for stream, m in sorted(found.items()))
         raise ValueError(f"Frame metadata for {camera.name} disagrees between channels in {epoch}: {detail}")
     return next(iter(found.values()))
 

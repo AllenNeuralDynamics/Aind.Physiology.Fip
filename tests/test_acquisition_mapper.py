@@ -10,6 +10,7 @@ import pytest
 from aind_data_schema.core import acquisition
 from aind_physiology_fip import __semver__
 from aind_physiology_fip.extra_types import RoiSettings
+from aind_physiology_fip.rig import AindPhysioFipRig
 from aind_physiology_fip_data_mappers import AindAcquisitionDataMapper, AindInstrumentDataMapper
 
 sys.path.append(".")
@@ -19,11 +20,13 @@ from examples.example import mock_rig, mock_roi_settings, mock_session
 REPOSITORY = Path(__file__).resolve().parents[1]
 
 
-def _make_session(root: Path, regions: RoiSettings, epoch: str = "fip_2025-01-01T120000") -> Path:
+def _make_session(
+    root: Path, regions: RoiSettings, epoch: str = "fip_2025-01-01T120000", rig: AindPhysioFipRig | None = None
+) -> Path:
     """Write one FIP epoch: rig and session inputs, ROIs, session events and frame metadata."""
     epoch_dir = root / "fib" / epoch
     (epoch_dir / "Logs").mkdir(parents=True)
-    (epoch_dir / "Logs" / "rig_input.json").write_text(mock_rig().model_dump_json(), encoding="utf-8")
+    (epoch_dir / "Logs" / "rig_input.json").write_text((rig or mock_rig()).model_dump_json(), encoding="utf-8")
     (epoch_dir / "Logs" / "session_input.json").write_text(mock_session().model_dump_json(), encoding="utf-8")
     (epoch_dir / "regions.json").write_text(regions.model_dump_json(), encoding="utf-8")
 
@@ -101,6 +104,21 @@ def test_patch_cord_channels(tmp_path):
         "Fiber_0_Green": ("470nm LED", "Green CMOS", 520),
         "Fiber_0_Isosbestic": ("415nm LED", "Green CMOS", 520),
         "Fiber_0_Red": ("565nm LED", "Red CMOS", 590),
+    }
+
+
+def test_each_channel_is_exposed_for_its_own_leds_delta_1(tmp_path):
+    """Each LED sets the exposure of the frames it excites, so channels on one camera may differ"""
+    rig = mock_rig()
+    rig.light_source_uv.task.delta_1 = 10000
+    rig.light_source_blue.task.delta_1 = 12000
+    rig.light_source_lime.task.delta_1 = 14000
+    patch_cord = _patch_cords(_map(_make_session(tmp_path, mock_roi_settings(), rig=rig)))["Patch Cord 0"]
+
+    assert {c.channel_name: (c.detector.exposure_time, c.detector.exposure_time_unit) for c in patch_cord.channels} == {
+        "Fiber_0_Isosbestic": (10.0, "millisecond"),
+        "Fiber_0_Green": (12.0, "millisecond"),
+        "Fiber_0_Red": (14.0, "millisecond"),
     }
 
 

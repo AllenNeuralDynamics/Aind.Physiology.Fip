@@ -156,11 +156,11 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
     ) -> acquisition.DataStream:
         """One epoch: the patch cords acquired, and how each of their channels was excited and imaged."""
         light_sources = cls._get_light_source_configs(rig)
-        detectors = cls._get_detector_configs(rig)
+        exposures = cls._get_exposures(rig)
 
         # Devices every epoch uses: the LEDs, the cameras and the board that triggers them.
         active_devices = [config.device_name for config in light_sources.values()]
-        active_devices.extend(config.device_name for config in detectors.values())
+        active_devices.extend(camera.name for camera in (GREEN_ISO_CAMERA, RED_CAMERA))
         active_devices.append(TrackedDeviceName.CUTTLEFISH)
 
         configurations: list = list(light_sources.values())
@@ -170,7 +170,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         for roi, fiber in cls._get_recorded_fibers(stream):
             patch_cord, implant = patch_cord_name(roi), _fiber_name(fiber)
             active_devices.extend([patch_cord, implant])
-            configurations.append(cls._get_patch_cord_config(roi, fiber, light_sources, detectors))
+            configurations.append(cls._get_patch_cord_config(roi, fiber, light_sources, exposures))
             connections.append(Connection(source_device=patch_cord, target_device=implant))
 
         return acquisition.DataStream(
@@ -207,27 +207,16 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         return result
 
     @staticmethod
-    def _get_detector_configs(rig: AindPhysioFipRig) -> dict[str, configs.DetectorConfig]:
-        """Camera settings, keyed by camera name.
+    def _get_exposures(rig: AindPhysioFipRig) -> dict[LedId, float]:
+        """Camera exposure in milliseconds for the frames each LED excites.
 
-        Both cameras integrate for the light sources' ``delta_1``, which must therefore agree.
+        Each LED's task sets its own ``delta_1`` (us), the window in which that LED is on and the
+        camera integrates, so the green/iso camera's exposure can differ between its frames.
         """
-        exposures = {
-            light_source.task.delta_1
-            for light_source in (rig.light_source_uv, rig.light_source_blue, rig.light_source_lime)
-        }
-        if len(exposures) != 1:
-            raise ValueError(f"Light sources disagree on the camera exposure (delta_1, us): {sorted(exposures)}")
-        exposure_ms = exposures.pop() / 1000
-
         return {
-            camera.name: configs.DetectorConfig(
-                device_name=camera.name,
-                exposure_time=exposure_ms,
-                exposure_time_unit=TimeUnit.MS,
-                trigger_type=configs.TriggerType.INTERNAL,
-            )
-            for camera in (GREEN_ISO_CAMERA, RED_CAMERA)
+            LedId.UV: rig.light_source_uv.task.delta_1 / 1000,
+            LedId.BLUE: rig.light_source_blue.task.delta_1 / 1000,
+            LedId.LIME: rig.light_source_lime.task.delta_1 / 1000,
         }
 
     @staticmethod
@@ -267,15 +256,23 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         roi: int,
         fiber: int,
         light_sources: dict[LedId, configs.LightEmittingDiodeConfig],
-        detectors: dict[str, configs.DetectorConfig],
+        exposures: dict[LedId, float],
     ) -> configs.PatchCordConfig:
-        """The patch cord over ROI ``roi``, carrying one channel per LED and camera pairing."""
+        """The patch cord over ROI ``roi``, carrying one channel per LED and camera pairing.
+
+        Each channel's camera exposure is the one set by the LED that excites it.
+        """
         return configs.PatchCordConfig(
             device_name=patch_cord_name(roi),
             channels=[
                 configs.Channel(
                     channel_name=f"Fiber_{fiber}_{channel.name}",
-                    detector=detectors[channel.camera.name],
+                    detector=configs.DetectorConfig(
+                        device_name=channel.camera.name,
+                        exposure_time=exposures[channel.led],
+                        exposure_time_unit=TimeUnit.MS,
+                        trigger_type=configs.TriggerType.INTERNAL,
+                    ),
                     light_sources=[light_sources[channel.led]],
                     variable_power=False,
                     excitation_filters=[],

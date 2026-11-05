@@ -59,7 +59,7 @@ class _FipDataStreamMetadata(pydantic.BaseModel):
 
 def _fiber_name(fiber_number: int) -> str:
     """Name of an implanted fiber, as recorded in the subject's procedures."""
-    return f"Fiber {fiber_number}"
+    return f"Fiber_{fiber_number}"
 
 
 class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):

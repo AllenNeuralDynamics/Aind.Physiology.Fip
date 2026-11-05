@@ -69,7 +69,7 @@ def test_one_patch_cord_per_mapped_roi(tmp_path):
 
     assert sorted(_patch_cords(mapped)) == [f"Patch Cord {i}" for i in range(4)]
     assert {(c.source_device, c.target_device) for c in stream.connections} == {
-        (f"Patch Cord {i}", f"Fiber {i}") for i in range(4)
+        (f"Patch Cord {i}", f"Fiber_{i}") for i in range(4)
     }
 
 
@@ -166,5 +166,5 @@ def test_active_devices_exist_in_the_instrument(tmp_path):
     (stream,) = _map(root).data_streams
 
     components = {c.name for c in instrument.components}
-    missing = {d for d in stream.active_devices if not d.startswith("Fiber ")} - components
+    missing = {d for d in stream.active_devices if not d.startswith("Fiber_")} - components
     assert not missing, f"Acquisition names devices the instrument does not have: {sorted(missing)}"

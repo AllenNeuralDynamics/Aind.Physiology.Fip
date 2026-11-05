@@ -157,27 +157,30 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         """One epoch: the patch cords acquired, and how each of their channels was excited and imaged."""
         light_sources = cls._get_light_source_configs(rig)
         detectors = cls._get_detector_configs(rig)
-        fibers = cls._get_recorded_fibers(stream)
+
+        # Devices every epoch uses: the LEDs, the cameras and the board that triggers them.
+        active_devices = [config.device_name for config in light_sources.values()]
+        active_devices.extend(config.device_name for config in detectors.values())
+        active_devices.append(TrackedDeviceName.CUTTLEFISH)
+
+        configurations: list = list(light_sources.values())
+        connections = []
+
+        # Each recorded fiber adds its patch cord and the implant the patch cord connects to.
+        for roi, fiber in cls._get_recorded_fibers(stream):
+            patch_cord, implant = patch_cord_name(roi), _fiber_name(fiber)
+            active_devices.extend([patch_cord, implant])
+            configurations.append(cls._get_patch_cord_config(roi, fiber, light_sources, detectors))
+            connections.append(Connection(source_device=patch_cord, target_device=implant))
 
         return acquisition.DataStream(
             stream_start_time=stream.start_time,
             stream_end_time=stream.end_time,
             modalities=[Modality.FIB],
             code=code,
-            active_devices=[
-                *(config.device_name for config in light_sources.values()),
-                *detectors,
-                TrackedDeviceName.CUTTLEFISH,
-                *(name for roi, fiber in fibers for name in (patch_cord_name(roi), _fiber_name(fiber))),
-            ],
-            configurations=[
-                *light_sources.values(),
-                *(cls._get_patch_cord_config(roi, fiber, light_sources, detectors) for roi, fiber in fibers),
-            ],
-            connections=[
-                Connection(source_device=patch_cord_name(roi), target_device=_fiber_name(fiber))
-                for roi, fiber in fibers
-            ],
+            active_devices=active_devices,
+            configurations=configurations,
+            connections=connections,
         )
 
     @staticmethod

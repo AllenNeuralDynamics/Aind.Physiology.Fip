@@ -200,7 +200,7 @@ For a list of available subcommands and options, run:
 
 ## Generating `aind-data-schema` metadata
 
-The `fip-data-mapper` CLI maps a session to `instrument_fib.json` and `acquisition_fib.json`, written into the session directory. They are merged with the metadata of the behavior task FIP is acquired alongside when the session is uploaded.
+The `fip-data-mapper` CLI maps a session to `instrument_fib.json` and `acquisition_fib.json`, written into the session directory.
 
 The repository will maintain tools to generate `aind-data-schema` compliant metadata for experiments run using the FIP system:
 

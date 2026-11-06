@@ -2,8 +2,6 @@
 
 import dataclasses
 import enum
-import os
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from aind_data_schema.components import devices
@@ -28,7 +26,7 @@ class TrackedDeviceName(enum.StrEnum):
     COMPUTER = "computer"
     # The name the behavior tasks use for the shared WhiteRabbit, so the instruments merge into one.
     CLOCK_GENERATOR = "harp_clock_generator"
-    CUTTLEFISH = "cuTTLefishFip"
+    CUTTLEFISH_FIP = "cuTTLefishFip"
     CAMERA_GREEN_ISO = "Green CMOS"
     CAMERA_RED = "Red CMOS"
     LED_UV = "415nm LED"
@@ -294,17 +292,3 @@ FIP_CHANNELS: tuple[ChannelSpec, ...] = (
 def patch_cord_name(index: int) -> str:
     """Name of the patch cord at ``index``, which also collects ROI ``index`` on each camera."""
     return f"Patch Cord {index}"
-
-
-# -------------------------------
-# Bonsai environment
-# -------------------------------
-
-
-def snapshot_bonsai_environment(config_file: os.PathLike) -> dict[str, str]:
-    """Package ids and versions from a Bonsai configuration file.
-
-    Copied from ``clabe.data_mapper.helpers`` rather than depending on clabe for one function.
-    """
-    root = ET.parse(Path(config_file)).getroot()
-    return {package.attrib["id"]: package.attrib["version"] for package in root.findall("Packages/Package")}

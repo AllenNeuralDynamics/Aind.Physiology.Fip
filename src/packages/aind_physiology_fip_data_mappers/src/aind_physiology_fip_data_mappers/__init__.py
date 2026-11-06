@@ -6,7 +6,6 @@ from pathlib import Path
 import pydantic
 import pydantic_settings
 
-from ._acquisition import REPOSITORY_PATH
 from ._acquisition import AindAcquisitionDataMapper as AindAcquisitionDataMapper
 from ._instrument import AindInstrumentDataMapper as AindInstrumentDataMapper
 from ._utils import TrackedDeviceName
@@ -22,11 +21,11 @@ class DataMapperCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
 
     data_path: os.PathLike = pydantic.Field(description="Path to the session data directory.")
     repository_path: Path = pydantic.Field(
-        default=REPOSITORY_PATH,
+        default=Path("."),
         description=(
-            "A path inside the checkout of the Aind.Physiology.Fip repository the session was acquired "
-            "with, whose remote, commit and Bonsai environment are recorded as the acquisition code. "
-            "Defaults to the checkout this package runs from."
+            "Root of the Aind.Physiology.Fip checkout the session was acquired with, whose remote, "
+            "commit and Bonsai environment are recorded as the acquisition code. By default it will "
+            "use the current directory."
         ),
     )
     session_end_time: datetime | None = pydantic.Field(

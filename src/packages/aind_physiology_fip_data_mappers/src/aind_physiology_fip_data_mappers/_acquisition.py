@@ -10,7 +10,7 @@ Classes:
 import json
 import logging
 import os
-import sys
+import platform
 from datetime import datetime
 from pathlib import Path
 from typing import cast
@@ -28,6 +28,7 @@ from aind_physiology_fip import __semver__
 from aind_physiology_fip.data_contract import dataset
 from aind_physiology_fip.extra_types import RoiSettings
 from aind_physiology_fip.rig import AindPhysioFipRig
+from clabe.data_mapper.helpers import snapshot_bonsai_environment
 from pandas import DataFrame
 
 from aind_physiology_fip_data_mappers._base import DataMapper
@@ -39,13 +40,9 @@ from aind_physiology_fip_data_mappers._utils import (
     LedId,
     TrackedDeviceName,
     patch_cord_name,
-    snapshot_bonsai_environment,
 )
 
 logger = logging.getLogger(__name__)
-
-# Any path inside the checkout this package runs from; the repository root is found by searching upward.
-REPOSITORY_PATH = Path(__file__).resolve().parent
 
 
 class _FipDataStreamMetadata(pydantic.BaseModel):
@@ -68,7 +65,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
     def __init__(
         self,
         data_path: os.PathLike,
-        repository_path: os.PathLike = REPOSITORY_PATH,
+        repository_path: os.PathLike,
         session_end_time: datetime | None = None,
     ):
         """Create a mapper for one session directory.
@@ -76,10 +73,9 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         Args:
             data_path (os.PathLike): Session directory holding the ``fib/fip_*`` acquisition
                 epochs.
-            repository_path (os.PathLike): A path inside the checkout of the Aind.Physiology.Fip
-                repository the session was acquired with. Its remote, commit and Bonsai
-                environment are recorded as the code that produced the data. Defaults to the
-                checkout this package runs from.
+            repository_path (os.PathLike): Root of the Aind.Physiology.Fip checkout the session
+                was acquired with. Its remote, commit and Bonsai environment are recorded as the
+                code that produced the data.
             session_end_time (datetime | None): When the session ended, as known to whoever
                 launched it. Recorded as the acquisition end time when given, as the behavior
                 mappers do; each data stream still ends when its epoch's data does. Left unset,
@@ -112,23 +108,20 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
             notes=session.notes,
             instrument_id=rig.rig_name,
             # Left blank on purpose: the behavior task FIP runs alongside supplies it.
+            # TODO: Revisit if aind-data-schema allows composing acquisition_type across modalities
+            # (https://github.com/AllenNeuralDynamics/aind-data-schema/issues/1624).
             acquisition_type="",
             data_streams=[self._get_data_stream(rig, stream, code) for stream in streams],
         )
 
     def _get_code(self) -> list[Code]:
         """The workflow and the package that produced the session, at the commit it was acquired with."""
-        repository = git.Repo(self._repository_path, search_parent_directories=True)
+        repository = git.Repo(self._repository_path)
         if repository.working_tree_dir is None:
             raise ValueError(f"{self._repository_path} has no working tree to read the Bonsai environment from.")
         url = repository.remote().url
         commit_hash = repository.head.commit.hexsha
         bonsai = snapshot_bonsai_environment(Path(repository.working_tree_dir) / ".bonsai" / "Bonsai.config")
-
-        python = sys.version_info
-        python_version = f"{python.major}.{python.minor}.{python.micro}"
-        if python.releaselevel != "final":
-            python_version += f"-{python.releaselevel}.{python.serial}"
 
         return [
             Code(
@@ -146,7 +139,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
                 version=__semver__,
                 commit_hash=commit_hash,
                 language="Python",
-                language_version=python_version,
+                language_version=platform.python_version(),
             ),
         ]
 
@@ -161,7 +154,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         # Devices every epoch uses: the LEDs, the cameras and the board that triggers them.
         active_devices = [config.device_name for config in light_sources.values()]
         active_devices.extend(camera.name for camera in (GREEN_ISO_CAMERA, RED_CAMERA))
-        active_devices.append(TrackedDeviceName.CUTTLEFISH)
+        active_devices.append(TrackedDeviceName.CUTTLEFISH_FIP)
 
         configurations: list = list(light_sources.values())
         connections = []
@@ -197,6 +190,8 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         }
         result = {}
         for led, light_source in light_sources.items():
+            # TODO: The power can now be changed during the session, so the rig input only holds its
+            # starting value. Record the power actually used once the acquisition saves it.
             if light_source.calibration is None:
                 power, unit = light_source.power * 100, PowerUnit.PERCENT
             else:

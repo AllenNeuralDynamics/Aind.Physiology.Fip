@@ -11,7 +11,14 @@ version = "0.1.0"
 requires-python = ">=3.11"
 readme = { file = "README.md", content-type = "text/markdown" }
 classifiers = ["Programming Language :: Python :: 3.11", "Operating System :: Microsoft :: Windows", "Private :: Do Not Upload"]
-dependencies = ["aind-physiology-fip[data]", "aind-data-schema>=2.9", "gitpython", "pandas", "pydantic-settings"]
+dependencies = [
+    "aind-physiology-fip[data]",
+    "aind-data-schema>=2.9",
+    "gitpython",
+    "pandas",
+    "pydantic-settings",
+    "aind-clabe>=0.13",
+]
 
 [project.scripts]
 fip-data-mapper = "aind_physiology_fip_data_mappers:main"

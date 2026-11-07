@@ -52,7 +52,7 @@ class _FipDataStreamMetadata(pydantic.BaseModel):
     start_time: pydantic.AwareDatetime
     end_time: pydantic.AwareDatetime
     regions: RoiSettings
-    light_source_output: LightSourceOutput | None = None
+    light_source_output: LightSourceOutput
 
 
 def _fiber_name(fiber_number: int) -> str:
@@ -178,25 +178,16 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         )
 
     @staticmethod
-    def _get_light_source_configs(
-        output: LightSourceOutput | None,
-    ) -> dict[LedId, configs.LightEmittingDiodeConfig]:
+    def _get_light_source_configs(output: LightSourceOutput) -> dict[LedId, configs.LightEmittingDiodeConfig]:
         """LED settings, from the power the ``LightSourceOutput`` software event logged for each light source.
 
         A calibrated light source's power is in microwatts. Without a calibration it is the duty
-        cycle as a fraction no greater than 1, which is recorded as a percentage. An epoch that
-        logged no output has its LEDs recorded without a power rather than with a made-up one.
+        cycle as a fraction no greater than 1, which is recorded as a percentage.
         """
-        entries = (
-            {LedId.UV: output.uv, LedId.BLUE: output.blue, LedId.LIME: output.lime}
-            if output is not None
-            else dict.fromkeys(LED_SPECS)
-        )
+        entries = {LedId.UV: output.uv, LedId.BLUE: output.blue, LedId.LIME: output.lime}
         result = {}
         for led, entry in entries.items():
-            if entry is None:
-                power, unit = None, None
-            elif entry.is_calibrated:
+            if entry.is_calibrated:
                 power, unit = entry.power, PowerUnit.UW
             else:
                 power, unit = entry.power * 100, PowerUnit.PERCENT
@@ -450,27 +441,27 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         return event["data"]
 
     @staticmethod
-    def _extract_light_source_output(epoch: Path) -> LightSourceOutput | None:
+    def _extract_light_source_output(epoch: Path) -> LightSourceOutput:
         """
         Extract the power of each light source from ``SoftwareEvents/LightSourceOutput.json``.
 
-        Uses the last entry, which is the output in effect at the end of the epoch. Epochs recorded
-        before the event existed have no such file; they are mapped without light source power.
+        Uses the last entry, which is the output in effect at the end of the epoch.
 
         Args:
             epoch (Path): Path to the FIP epoch directory.
 
         Returns:
-            LightSourceOutput | None: The logged output, or ``None`` if it is missing or invalid.
+            LightSourceOutput: The logged output.
+
+        Raises:
+            ValueError: If the event is missing, empty or invalid. Without it the power the light
+                sources ran at is unknown, and an acquisition must not record a guess.
         """
+        path = epoch / "SoftwareEvents" / "LightSourceOutput.json"
         try:
-            data = AindAcquisitionDataMapper._read_last_software_event_data(
-                epoch / "SoftwareEvents" / "LightSourceOutput.json"
-            )
-            return LightSourceOutput.model_validate(data)
+            return LightSourceOutput.model_validate(AindAcquisitionDataMapper._read_last_software_event_data(path))
         except (OSError, ValueError) as e:
-            logger.warning(f"Light source output unavailable at {epoch}, recording LEDs without power: {e}")
-            return None
+            raise ValueError(f"Cannot read the light source output of epoch {epoch}: {e}") from e
 
     @staticmethod
     def _extract_from_df(df: DataFrame) -> tuple[datetime, datetime]:

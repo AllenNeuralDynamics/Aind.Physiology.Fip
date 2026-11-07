@@ -59,6 +59,10 @@ def _make_epoch(root: Path, name: str, regions: RoiSettings | None) -> Path:
         ("EndSessionTime.json", "2025-07-18T19:03:21+00:00"),
     ):
         (epoch / "SoftwareEvents" / file).write_text(json.dumps({"data": ts}) + "\n", encoding="utf-8")
+    output = {"power": 10.0, "is_calibrated": True}
+    (epoch / "SoftwareEvents" / "LightSourceOutput.json").write_text(
+        json.dumps({"data": {"blue": output, "uv": output, "lime": output}}) + "\n", encoding="utf-8"
+    )
     if regions is not None:
         (epoch / "regions.json").write_text(regions.model_dump_json(), encoding="utf-8")
     return epoch

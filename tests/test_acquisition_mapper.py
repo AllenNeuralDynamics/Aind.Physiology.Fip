@@ -161,12 +161,16 @@ def test_led_power_is_the_last_logged_output(tmp_path):
     assert leds["470nm LED"].power == 20.0
 
 
-def test_epoch_without_light_source_output_has_leds_without_power(tmp_path):
-    """Sessions that predate the event still map, with the LEDs recorded without a power instead of a guessed one"""
-    leds = _leds(_map(_make_session(tmp_path, mock_roi_settings(), light_source_output=[])))
+def test_epoch_without_light_source_output_is_rejected(tmp_path):
+    """Without the event the power the LEDs ran at is unknown, so the epoch is rejected instead of guessed"""
+    with pytest.raises(ValueError, match="light source output"):
+        _map(_make_session(tmp_path, mock_roi_settings(), light_source_output=[]))
 
-    assert set(leds) == {"415nm LED", "470nm LED", "565nm LED"}
-    assert all(led.power is None and led.power_unit is None for led in leds.values())
+
+def test_invalid_light_source_output_is_rejected(tmp_path):
+    """An output that does not describe every light source is rejected"""
+    with pytest.raises(ValueError, match="light source output"):
+        _map(_make_session(tmp_path, mock_roi_settings(), light_source_output=[{"blue": LIGHT_SOURCE_OUTPUT["blue"]}]))
 
 
 def test_disabled_roi_is_not_recorded(tmp_path):

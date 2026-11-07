@@ -8,7 +8,7 @@ description = "A repository for Fiber Photometry data acquisition"
 authors = [{ name = "Bruno Cruz", email = "bruno.cruz@alleninstitute.org" }, { name = "Kenta Hagihara", email = "kenta.hagihara@alleninstitute.org" }]
 license = "MIT"
 requires-python = ">=3.11"
-version = "0.5.0rc1"
+version = "0.5.0rc2"
 readme = { file = "README.md", content-type = "text/markdown" }
 classifiers = ["Programming Language :: Python :: 3.11", "License :: OSI Approved :: MIT License", "Operating System :: Microsoft :: Windows"]
 dependencies = ["aind_behavior_services>=0.13.6", "pydantic-settings"]

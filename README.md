@@ -82,10 +82,7 @@ Other `task` fields that shape the waveform:
 * `pwm_frequency`: PWM frequency (Hz) of the light source output (minimum 10000).
 * `events_enabled` and `mute_output`: whether trigger events are emitted, and whether outputs are silenced while timing is preserved.
 
-LED intensity is set separately from timing, through the PWM duty cycle (0-1) of each light source:
-
-* If the light source has no `calibration`, `power` is used directly as the duty cycle and must be between 0 and 1.
-* If `calibration` is provided, `power` is expressed in µW and converted to a duty cycle using the `power_lut` look-up table (duty cycle -> power).
+LED intensity is set separately from timing, through the PWM duty cycle (0-1) of each light source. The rig is assumed to be calibrated: `calibration` provides the `power_lut` look-up table (duty cycle -> power in µW), and the experiment power is set in the task logic (`blue_power`, `uv_power` and `lime_power`) rather than in the rig.
 
 ## Using the acquisition system
 
@@ -200,8 +197,7 @@ For a list of available subcommands and options, run:
 
 ## Generating `aind-data-schema` metadata
 
-The AIND acquisition and instrument mapper classes are placeholders for upcoming implementations. The `fip-data-mapper` CLI exposes their intended interface and currently raises `NotImplementedError` when run. The existing `ProtoAcquisitionMapper` remains available for prototype `fip.json` generation.
-
+The AIND acquisition and instrument mapper classes are placeholders for upcoming implementations. The `fip-data-mapper` CLI exposes their intended interface and currently raises `NotImplementedError` when run.
 The repository will maintain tools to generate `aind-data-schema` compliant metadata for experiments run using the FIP system:
 
 1. Install the `mappers` optional dependencies:
@@ -216,15 +212,16 @@ uv sync
 uv run fip-data-mapper --help
 ```
 
-Alternatively, you can use the mapping classes directly. For instance to run the mapper/extractor for acquisition data:
+Alternatively, you can use the mapping classes directly. For instance to run the mapper for instrument data:
 
 ```python
-from aind_physiology_fip_data_mappers import ProtoAcquisitionMapper
+from pathlib import Path
 
-data_path = "path to dataset"
-acquisition_mapped = ProtoAcquisitionMapper(data_path).map()
-with open("fip.json", "w", encoding="utf-8") as f:
-    f.write(acquisition_mapped.model_dump_json(indent=2))
+from aind_physiology_fip_data_mappers import AindInstrumentDataMapper
+
+instrument_mapped = AindInstrumentDataMapper(data_path=Path("path to dataset")).map()
+with open("instrument_fib.json", "w", encoding="utf-8") as f:
+    f.write(instrument_mapped.model_dump_json(indent=2))
 ```
 
 ## Regenerating schemas

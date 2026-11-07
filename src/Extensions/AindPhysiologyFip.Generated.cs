@@ -317,6 +317,328 @@ namespace AindPhysiologyFip
     }
 
 
+    /// <summary>
+    /// Task logic for the AIND FIP photometry system.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.9.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Task logic for the AIND FIP photometry system.")]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    [Bonsai.CombinatorAttribute(MethodName="Generate")]
+    public partial class AindPhysioFipTaskLogic
+    {
+    
+        private string _name;
+    
+        private string _description;
+    
+        private AindPhysioFipTaskParameters _taskParameters;
+    
+        private string _version;
+    
+        private string _stageName;
+    
+        public AindPhysioFipTaskLogic()
+        {
+            _name = "AindPhysioFip";
+            _description = "";
+            _version = "0.4.0";
+        }
+    
+        protected AindPhysioFipTaskLogic(AindPhysioFipTaskLogic other)
+        {
+            _name = other._name;
+            _description = other._description;
+            _taskParameters = other._taskParameters;
+            _version = other._version;
+            _stageName = other._stageName;
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("name")]
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                _name = value;
+            }
+        }
+    
+        /// <summary>
+        /// Description of the task.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("description")]
+        [System.ComponentModel.DescriptionAttribute("Description of the task.")]
+        public string Description
+        {
+            get
+            {
+                return _description;
+            }
+            set
+            {
+                _description = value;
+            }
+        }
+    
+        /// <summary>
+        /// Parameters of the task
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("task_parameters")]
+        [System.ComponentModel.DescriptionAttribute("Parameters of the task")]
+        public AindPhysioFipTaskParameters TaskParameters
+        {
+            get
+            {
+                return _taskParameters;
+            }
+            set
+            {
+                _taskParameters = value;
+            }
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("version")]
+        public string Version
+        {
+            get
+            {
+                return _version;
+            }
+            set
+            {
+                _version = value;
+            }
+        }
+    
+        /// <summary>
+        /// Optional stage name the `Task` object instance represents.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("stage_name")]
+        [System.ComponentModel.DescriptionAttribute("Optional stage name the `Task` object instance represents.")]
+        public string StageName
+        {
+            get
+            {
+                return _stageName;
+            }
+            set
+            {
+                _stageName = value;
+            }
+        }
+    
+        public System.IObservable<AindPhysioFipTaskLogic> Generate()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new AindPhysioFipTaskLogic(this)));
+        }
+    
+        public System.IObservable<AindPhysioFipTaskLogic> Generate<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new AindPhysioFipTaskLogic(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("Name = " + _name + ", ");
+            stringBuilder.Append("Description = " + _description + ", ");
+            stringBuilder.Append("TaskParameters = " + _taskParameters + ", ");
+            stringBuilder.Append("Version = " + _version + ", ");
+            stringBuilder.Append("StageName = " + _stageName);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    /// <summary>
+    /// Parameters of the FIP task, mirroring what the UI lets the user change.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.9.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Parameters of the FIP task, mirroring what the UI lets the user change.")]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    [Bonsai.CombinatorAttribute(MethodName="Generate")]
+    public partial class AindPhysioFipTaskParameters
+    {
+    
+        private double? _rngSeed;
+    
+        private string _aindBehaviorServicesPkgVersion;
+    
+        private System.Collections.Generic.List<Measurement> _measurements;
+    
+        private double? _bluePower;
+    
+        private double? _uvPower;
+    
+        private double? _limePower;
+    
+        public AindPhysioFipTaskParameters()
+        {
+            _aindBehaviorServicesPkgVersion = "0.13.8";
+            _measurements = new System.Collections.Generic.List<Measurement>();
+        }
+    
+        protected AindPhysioFipTaskParameters(AindPhysioFipTaskParameters other)
+        {
+            _rngSeed = other._rngSeed;
+            _aindBehaviorServicesPkgVersion = other._aindBehaviorServicesPkgVersion;
+            _measurements = other._measurements;
+            _bluePower = other._bluePower;
+            _uvPower = other._uvPower;
+            _limePower = other._limePower;
+        }
+    
+        /// <summary>
+        /// Seed of the random number generator
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("rng_seed")]
+        [System.ComponentModel.DescriptionAttribute("Seed of the random number generator")]
+        public double? RngSeed
+        {
+            get
+            {
+                return _rngSeed;
+            }
+            set
+            {
+                _rngSeed = value;
+            }
+        }
+    
+        [Newtonsoft.Json.JsonPropertyAttribute("aind_behavior_services_pkg_version")]
+        public string AindBehaviorServicesPkgVersion
+        {
+            get
+            {
+                return _aindBehaviorServicesPkgVersion;
+            }
+            set
+            {
+                _aindBehaviorServicesPkgVersion = value;
+            }
+        }
+    
+        /// <summary>
+        /// Measurements used in the experiment.
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("measurements")]
+        [System.ComponentModel.DescriptionAttribute("Measurements used in the experiment.")]
+        public System.Collections.Generic.List<Measurement> Measurements
+        {
+            get
+            {
+                return _measurements;
+            }
+            set
+            {
+                _measurements = value;
+            }
+        }
+    
+        /// <summary>
+        /// Power of the blue light source in uW.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("blue_power")]
+        [System.ComponentModel.DescriptionAttribute("Power of the blue light source in uW.")]
+        public double? BluePower
+        {
+            get
+            {
+                return _bluePower;
+            }
+            set
+            {
+                _bluePower = value;
+            }
+        }
+    
+        /// <summary>
+        /// Power of the UV light source in uW.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("uv_power")]
+        [System.ComponentModel.DescriptionAttribute("Power of the UV light source in uW.")]
+        public double? UvPower
+        {
+            get
+            {
+                return _uvPower;
+            }
+            set
+            {
+                _uvPower = value;
+            }
+        }
+    
+        /// <summary>
+        /// Power of the lime light source in uW.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("lime_power")]
+        [System.ComponentModel.DescriptionAttribute("Power of the lime light source in uW.")]
+        public double? LimePower
+        {
+            get
+            {
+                return _limePower;
+            }
+            set
+            {
+                _limePower = value;
+            }
+        }
+    
+        public System.IObservable<AindPhysioFipTaskParameters> Generate()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new AindPhysioFipTaskParameters(this)));
+        }
+    
+        public System.IObservable<AindPhysioFipTaskParameters> Generate<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new AindPhysioFipTaskParameters(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("RngSeed = " + _rngSeed + ", ");
+            stringBuilder.Append("AindBehaviorServicesPkgVersion = " + _aindBehaviorServicesPkgVersion + ", ");
+            stringBuilder.Append("Measurements = " + _measurements + ", ");
+            stringBuilder.Append("BluePower = " + _bluePower + ", ");
+            stringBuilder.Append("UvPower = " + _uvPower + ", ");
+            stringBuilder.Append("LimePower = " + _limePower);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.9.0.0 (Newtonsoft.Json v13.0.0.0)")]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     [Bonsai.CombinatorAttribute(MethodName="Generate")]
@@ -344,6 +666,99 @@ namespace AindPhysiologyFip
         protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
         {
             return false;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    /// <summary>
+    /// Represents a circle defined by its center point and radius.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.9.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Represents a circle defined by its center point and radius.")]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    [Bonsai.CombinatorAttribute(MethodName="Generate")]
+    public partial class Circle
+    {
+    
+        private Point2f _center;
+    
+        private double _radius;
+    
+        public Circle()
+        {
+            _center = new Point2f();
+            _radius = 1D;
+        }
+    
+        protected Circle(Circle other)
+        {
+            _center = other._center;
+            _radius = other._radius;
+        }
+    
+        /// <summary>
+        /// Center of the circle (px)
+        /// </summary>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("center")]
+        [System.ComponentModel.DescriptionAttribute("Center of the circle (px)")]
+        public Point2f Center
+        {
+            get
+            {
+                return _center;
+            }
+            set
+            {
+                _center = value;
+            }
+        }
+    
+        /// <summary>
+        /// Radius of the circle (px)
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("radius")]
+        [System.ComponentModel.DescriptionAttribute("Radius of the circle (px)")]
+        public double Radius
+        {
+            get
+            {
+                return _radius;
+            }
+            set
+            {
+                _radius = value;
+            }
+        }
+    
+        public System.IObservable<Circle> Generate()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new Circle(this)));
+        }
+    
+        public System.IObservable<Circle> Generate<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new Circle(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("Center = " + _center + ", ");
+            stringBuilder.Append("Radius = " + _radius);
+            return true;
         }
     
         public override string ToString()
@@ -516,145 +931,65 @@ namespace AindPhysiologyFip
 
 
     /// <summary>
-    /// Describes a circle in the FIP system with associated ROI, fiber, and optional name.
+    /// Describes a circle in the FIP system together with the measurement (fiber, ROI, name) it belongs to.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.9.0.0 (Newtonsoft.Json v13.0.0.0)")]
-    [System.ComponentModel.DescriptionAttribute("Describes a circle in the FIP system with associated ROI, fiber, and optional nam" +
-        "e.")]
+    [System.ComponentModel.DescriptionAttribute("Describes a circle in the FIP system together with the measurement (fiber, ROI, n" +
+        "ame) it belongs to.")]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
     [Bonsai.CombinatorAttribute(MethodName="Generate")]
     public partial class FipCircle
     {
     
-        private Point2f _center;
+        private Circle _circle;
     
-        private double _radius;
-    
-        private int? _roiNumber;
-    
-        private int? _fiberNumber;
-    
-        private string _name;
-    
-        private bool _enabled;
+        private Measurement _measurement;
     
         public FipCircle()
         {
-            _center = new Point2f();
-            _radius = 1D;
-            _enabled = true;
+            _circle = new Circle();
+            _measurement = new Measurement();
         }
     
         protected FipCircle(FipCircle other)
         {
-            _center = other._center;
-            _radius = other._radius;
-            _roiNumber = other._roiNumber;
-            _fiberNumber = other._fiberNumber;
-            _name = other._name;
-            _enabled = other._enabled;
+            _circle = other._circle;
+            _measurement = other._measurement;
         }
     
         /// <summary>
-        /// Center of the circle (px)
+        /// Geometry of the circle.
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        [Newtonsoft.Json.JsonPropertyAttribute("center")]
-        [System.ComponentModel.DescriptionAttribute("Center of the circle (px)")]
-        public Point2f Center
+        [Newtonsoft.Json.JsonPropertyAttribute("circle", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Geometry of the circle.")]
+        public Circle Circle
         {
             get
             {
-                return _center;
+                return _circle;
             }
             set
             {
-                _center = value;
+                _circle = value;
             }
         }
     
         /// <summary>
-        /// Radius of the circle (px)
+        /// Measurement (fiber, ROI, name, enabled) associated with the circle.
         /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("radius")]
-        [System.ComponentModel.DescriptionAttribute("Radius of the circle (px)")]
-        public double Radius
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("measurement", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Measurement (fiber, ROI, name, enabled) associated with the circle.")]
+        public Measurement Measurement
         {
             get
             {
-                return _radius;
+                return _measurement;
             }
             set
             {
-                _radius = value;
-            }
-        }
-    
-        /// <summary>
-        /// ROI number associated with the circle
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("roi_number")]
-        [System.ComponentModel.DescriptionAttribute("ROI number associated with the circle")]
-        public int? RoiNumber
-        {
-            get
-            {
-                return _roiNumber;
-            }
-            set
-            {
-                _roiNumber = value;
-            }
-        }
-    
-        /// <summary>
-        /// Fiber number associated with the circle
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("fiber_number")]
-        [System.ComponentModel.DescriptionAttribute("Fiber number associated with the circle")]
-        public int? FiberNumber
-        {
-            get
-            {
-                return _fiberNumber;
-            }
-            set
-            {
-                _fiberNumber = value;
-            }
-        }
-    
-        /// <summary>
-        /// Name associated with the circle
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("name")]
-        [System.ComponentModel.DescriptionAttribute("Name associated with the circle")]
-        public string Name
-        {
-            get
-            {
-                return _name;
-            }
-            set
-            {
-                _name = value;
-            }
-        }
-    
-        /// <summary>
-        /// Indicates whether the circle is enabled
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("enabled")]
-        [System.ComponentModel.DescriptionAttribute("Indicates whether the circle is enabled")]
-        public bool Enabled
-        {
-            get
-            {
-                return _enabled;
-            }
-            set
-            {
-                _enabled = value;
+                _measurement = value;
             }
         }
     
@@ -670,12 +1005,8 @@ namespace AindPhysiologyFip
     
         protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
         {
-            stringBuilder.Append("Center = " + _center + ", ");
-            stringBuilder.Append("Radius = " + _radius + ", ");
-            stringBuilder.Append("RoiNumber = " + _roiNumber + ", ");
-            stringBuilder.Append("FiberNumber = " + _fiberNumber + ", ");
-            stringBuilder.Append("Name = " + _name + ", ");
-            stringBuilder.Append("Enabled = " + _enabled);
+            stringBuilder.Append("Circle = " + _circle + ", ");
+            stringBuilder.Append("Measurement = " + _measurement);
             return true;
         }
     
@@ -1098,14 +1429,11 @@ namespace AindPhysiologyFip
     
         private LightSourceCalibration _calibration;
     
-        private double _power;
-    
         private FipTask _task;
     
         public LightSource()
         {
             _deviceType = "LightSource";
-            _power = 0D;
             _task = new FipTask();
         }
     
@@ -1113,7 +1441,6 @@ namespace AindPhysiologyFip
         {
             _deviceType = other._deviceType;
             _calibration = other._calibration;
-            _power = other._power;
             _task = other._task;
         }
     
@@ -1131,12 +1458,11 @@ namespace AindPhysiologyFip
         }
     
         /// <summary>
-        /// Calibration for the LightSource. If left empty, 'power' will be used as duty-cycle (0-100).
+        /// Calibration for the LightSource, converting duty cycle to power (uW).
         /// </summary>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
         [Newtonsoft.Json.JsonPropertyAttribute("calibration")]
-        [System.ComponentModel.DescriptionAttribute("Calibration for the LightSource. If left empty, \'power\' will be used as duty-cycl" +
-            "e (0-100).")]
+        [System.ComponentModel.DescriptionAttribute("Calibration for the LightSource, converting duty cycle to power (uW).")]
         public LightSourceCalibration Calibration
         {
             get
@@ -1146,23 +1472,6 @@ namespace AindPhysiologyFip
             set
             {
                 _calibration = value;
-            }
-        }
-    
-        /// <summary>
-        /// Power (uW)
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("power")]
-        [System.ComponentModel.DescriptionAttribute("Power (uW)")]
-        public double Power
-        {
-            get
-            {
-                return _power;
-            }
-            set
-            {
-                _power = value;
             }
         }
     
@@ -1198,7 +1507,6 @@ namespace AindPhysiologyFip
         {
             stringBuilder.Append("DeviceType = " + _deviceType + ", ");
             stringBuilder.Append("Calibration = " + _calibration + ", ");
-            stringBuilder.Append("Power = " + _power + ", ");
             stringBuilder.Append("Task = " + _task);
             return true;
         }
@@ -1271,6 +1579,139 @@ namespace AindPhysiologyFip
         protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
         {
             stringBuilder.Append("PowerLut = " + _powerLut);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
+    /// <summary>
+    /// Description of a single fiber.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.9.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [System.ComponentModel.DescriptionAttribute("Description of a single fiber.")]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    [Bonsai.CombinatorAttribute(MethodName="Generate")]
+    public partial class Measurement
+    {
+    
+        private int _fiberNumber;
+    
+        private int _roiNumber;
+    
+        private string _name;
+    
+        private bool _enabled;
+    
+        public Measurement()
+        {
+            _enabled = true;
+        }
+    
+        protected Measurement(Measurement other)
+        {
+            _fiberNumber = other._fiberNumber;
+            _roiNumber = other._roiNumber;
+            _name = other._name;
+            _enabled = other._enabled;
+        }
+    
+        /// <summary>
+        /// Fiber number.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("fiber_number", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Fiber number.")]
+        public int FiberNumber
+        {
+            get
+            {
+                return _fiberNumber;
+            }
+            set
+            {
+                _fiberNumber = value;
+            }
+        }
+    
+        /// <summary>
+        /// ROI number associated with the fiber.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("roi_number", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("ROI number associated with the fiber.")]
+        public int RoiNumber
+        {
+            get
+            {
+                return _roiNumber;
+            }
+            set
+            {
+                _roiNumber = value;
+            }
+        }
+    
+        /// <summary>
+        /// Name associated with the ROI. E.g.: target brain area or structure.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("name")]
+        [System.ComponentModel.DescriptionAttribute("Name associated with the ROI. E.g.: target brain area or structure.")]
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                _name = value;
+            }
+        }
+    
+        /// <summary>
+        /// Whether the fiber is enabled.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("enabled")]
+        [System.ComponentModel.DescriptionAttribute("Whether the fiber is enabled.")]
+        public bool Enabled
+        {
+            get
+            {
+                return _enabled;
+            }
+            set
+            {
+                _enabled = value;
+            }
+        }
+    
+        public System.IObservable<Measurement> Generate()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new Measurement(this)));
+        }
+    
+        public System.IObservable<Measurement> Generate<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new Measurement(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("FiberNumber = " + _fiberNumber + ", ");
+            stringBuilder.Append("RoiNumber = " + _roiNumber + ", ");
+            stringBuilder.Append("Name = " + _name + ", ");
+            stringBuilder.Append("Enabled = " + _enabled);
             return true;
         }
     
@@ -1511,9 +1952,9 @@ namespace AindPhysiologyFip
     public partial class RoiSettings
     {
     
-        private FipCircle _cameraGreenIsoBackground;
+        private Circle _cameraGreenIsoBackground;
     
-        private FipCircle _cameraRedBackground;
+        private Circle _cameraRedBackground;
     
         private System.Collections.Generic.List<FipCircle> _cameraGreenIsoRoi;
     
@@ -1521,8 +1962,8 @@ namespace AindPhysiologyFip
     
         public RoiSettings()
         {
-            _cameraGreenIsoBackground = new FipCircle();
-            _cameraRedBackground = new FipCircle();
+            _cameraGreenIsoBackground = new Circle();
+            _cameraRedBackground = new Circle();
             _cameraGreenIsoRoi = new System.Collections.Generic.List<FipCircle>();
             _cameraRedRoi = new System.Collections.Generic.List<FipCircle>();
         }
@@ -1541,7 +1982,7 @@ namespace AindPhysiologyFip
         [System.Xml.Serialization.XmlIgnoreAttribute()]
         [Newtonsoft.Json.JsonPropertyAttribute("camera_green_iso_background", Required=Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DescriptionAttribute("ROI to compute the background for the green/iso camera channel")]
-        public FipCircle CameraGreenIsoBackground
+        public Circle CameraGreenIsoBackground
         {
             get
             {
@@ -1559,7 +2000,7 @@ namespace AindPhysiologyFip
         [System.Xml.Serialization.XmlIgnoreAttribute()]
         [Newtonsoft.Json.JsonPropertyAttribute("camera_red_background", Required=Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DescriptionAttribute("ROI to compute the background for the red camera channel")]
-        public FipCircle CameraRedBackground
+        public Circle CameraRedBackground
         {
             get
             {
@@ -2043,9 +2484,24 @@ namespace AindPhysiologyFip
             return Process<AindPhysioFipRig>(source);
         }
 
+        public System.IObservable<string> Process(System.IObservable<AindPhysioFipTaskLogic> source)
+        {
+            return Process<AindPhysioFipTaskLogic>(source);
+        }
+
+        public System.IObservable<string> Process(System.IObservable<AindPhysioFipTaskParameters> source)
+        {
+            return Process<AindPhysioFipTaskParameters>(source);
+        }
+
         public System.IObservable<string> Process(System.IObservable<BaseModel> source)
         {
             return Process<BaseModel>(source);
+        }
+
+        public System.IObservable<string> Process(System.IObservable<Circle> source)
+        {
+            return Process<Circle>(source);
         }
 
         public System.IObservable<string> Process(System.IObservable<FipCamera> source)
@@ -2076,6 +2532,11 @@ namespace AindPhysiologyFip
         public System.IObservable<string> Process(System.IObservable<LightSourceCalibration> source)
         {
             return Process<LightSourceCalibration>(source);
+        }
+
+        public System.IObservable<string> Process(System.IObservable<Measurement> source)
+        {
+            return Process<Measurement>(source);
         }
 
         public System.IObservable<string> Process(System.IObservable<Networking> source)
@@ -2113,13 +2574,17 @@ namespace AindPhysiologyFip
     [System.ComponentModel.DefaultPropertyAttribute("Type")]
     [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Transform)]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<AindPhysioFipRig>))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<AindPhysioFipTaskLogic>))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<AindPhysioFipTaskParameters>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<BaseModel>))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Circle>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipCamera>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipCircle>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<FipTask>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<HarpCuttlefishfip>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSource>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSourceCalibration>))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Measurement>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Networking>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Point2f>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<RoiSettings>))]

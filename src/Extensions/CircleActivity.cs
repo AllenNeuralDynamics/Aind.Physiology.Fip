@@ -30,8 +30,8 @@ namespace FipExtensions
             for (int i = 0; i < nSegments; i++)
             {
                 var angle = 2 * Math.PI * i / nSegments;
-                var x = FipCircle.Center.X + FipCircle.Radius * Math.Cos(angle);
-                var y = FipCircle.Center.Y + FipCircle.Radius * Math.Sin(angle);
+                var x = FipCircle.Circle.Center.X + FipCircle.Circle.Radius * Math.Cos(angle);
+                var y = FipCircle.Circle.Center.Y + FipCircle.Circle.Radius * Math.Sin(angle);
                 polygon[i] = new Point((int)x, (int)y);
             }
             return polygon;

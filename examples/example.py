@@ -2,10 +2,8 @@ import argparse
 import datetime
 import os
 
-from aind_behavior_services.common import Point2f
 from aind_behavior_services.rig.harp import HarpCuttlefishfip
 from aind_behavior_services.session import Session
-from aind_physiology_fip.extra_types import FipCircle, RoiSettings
 from aind_physiology_fip.rig import (
     AindPhysioFipRig,
     FipCamera,
@@ -15,7 +13,6 @@ from aind_physiology_fip.rig import (
     Networking,
     Ports,
 )
-from aind_physiology_fip_data_mappers._proto_acquisition import ProtoAcquisitionDataSchema, _FipDataStreamMetadata
 
 
 def mock_session() -> Session:
@@ -31,25 +28,6 @@ def mock_session() -> Session:
     )
 
 
-def mock_roi_settings() -> RoiSettings:
-    """Generates a mock RoiSettings model with four ROIs per camera"""
-
-    def make_rois() -> list[FipCircle]:
-        centers = [(x, y) for x in (50, 150) for y in (50, 150)]
-        return [
-            FipCircle(center=Point2f(x=x, y=y), radius=20, roi_number=i, fiber_number=i)
-            for i, (x, y) in enumerate(centers)
-        ]
-
-    background = FipCircle(center=Point2f(x=10, y=10), radius=10, name="Background")
-    return RoiSettings(
-        camera_green_iso_background=background,
-        camera_red_background=background,
-        camera_green_iso_roi=make_rois(),
-        camera_red_roi=make_rois(),
-    )
-
-
 def mock_rig() -> AindPhysioFipRig:
     mock_calibration = LightSourceCalibration(power_lut={0: 0, 0.1: 10, 0.2: 20})
 
@@ -60,7 +38,6 @@ def mock_rig() -> AindPhysioFipRig:
         camera_green_iso=FipCamera(serial_number="000000"),
         camera_red=FipCamera(serial_number="000001"),
         light_source_blue=LightSource(
-            power=10,
             calibration=mock_calibration,
             task=FipTask(
                 camera_port=Ports.IO0,  # GreenCamera + 470nm
@@ -68,7 +45,6 @@ def mock_rig() -> AindPhysioFipRig:
             ),
         ),
         light_source_lime=LightSource(
-            power=20,
             calibration=mock_calibration,
             task=FipTask(
                 camera_port=Ports.IO1,  # RedCamera + 560nm
@@ -76,7 +52,6 @@ def mock_rig() -> AindPhysioFipRig:
             ),
         ),
         light_source_uv=LightSource(
-            power=0.1,
             calibration=None,
             task=FipTask(
                 camera_port=Ports.IO0,  # GreenCamera + 410nm
@@ -87,24 +62,6 @@ def mock_rig() -> AindPhysioFipRig:
         cuttlefish_fip=HarpCuttlefishfip(
             port_name="COM1",
         ),
-    )
-
-
-def make_mapped() -> ProtoAcquisitionDataSchema:
-    session = mock_session()
-    now = session.date
-    now_local = now.astimezone()
-    return ProtoAcquisitionDataSchema(
-        data_stream_metadata=[
-            _FipDataStreamMetadata(
-                id=f"fip_{now_local.strftime('%Y-%m-%dT%H%M%S')}",
-                start_time=now_local,
-                end_time=now_local + datetime.timedelta(hours=1),
-                regions=mock_roi_settings(),
-            )
-        ],
-        session=session,
-        rig=mock_rig(),
     )
 
 
@@ -119,11 +76,10 @@ def main():
 
     example_session = mock_session()
     example_rig = mock_rig()
-    example_mapped = make_mapped()
 
     os.makedirs(os.path.dirname(args.path_seed), exist_ok=True)
 
-    for model in [example_session, example_rig, example_mapped]:
+    for model in [example_session, example_rig]:
         with open(args.path_seed.format(schema=model.__class__.__name__), "w", encoding="utf-8") as f:
             f.write(model.model_dump_json(indent=2))
 

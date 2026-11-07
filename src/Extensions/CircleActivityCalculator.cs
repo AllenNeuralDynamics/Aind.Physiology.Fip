@@ -130,7 +130,7 @@ namespace FipExtensions
         {
             if (settings == null) return null;
 
-            AindPhysiologyFip.FipCircle background;
+            AindPhysiologyFip.Circle background;
             List<AindPhysiologyFip.FipCircle> rois;
             switch (cameraSource)
             {
@@ -148,7 +148,10 @@ namespace FipExtensions
             }
 
             var ordered = new List<FipCircle>();
-            if (background != null) ordered.Add(background);
+            if (background != null)
+            {
+                ordered.Add(new FipCircle { Circle = background, Measurement = new Measurement { Name = "Background" } });
+            }
             if (rois != null) ordered.AddRange(rois);
             return ordered.ToArray();
         }
@@ -157,8 +160,8 @@ namespace FipExtensions
         {
             return new Bonsai.Vision.Circle
             {
-                Center = new OpenCV.Net.Point2f((float)circle.Center.X, (float)circle.Center.Y),
-                Radius = (float)circle.Radius
+                Center = new OpenCV.Net.Point2f((float)circle.Circle.Center.X, (float)circle.Circle.Center.Y),
+                Radius = (float)circle.Circle.Radius
             };
         }
 

@@ -8,8 +8,6 @@ import pydantic_settings
 
 from ._acquisition import AindAcquisitionDataMapper as AindAcquisitionDataMapper
 from ._instrument import AindInstrumentDataMapper as AindInstrumentDataMapper
-from ._proto_acquisition import ProtoAcquisitionDataSchema as ProtoAcquisitionDataSchema
-from ._proto_acquisition import ProtoAcquisitionMapper as ProtoAcquisitionMapper
 from ._utils import TrackedDeviceName
 
 logger = logging.getLogger(__name__)

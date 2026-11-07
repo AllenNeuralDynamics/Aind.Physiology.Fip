@@ -33,9 +33,8 @@ public class CreateTaskFromLightSource
                 interpolator = MakeInterpolators(unityLut);
             }
 
-            // Interpolate the power:
-            var power = value.Power;
-            var calibratedDutyCycle = interpolator.Item2.Interpolate(power);
+            // The experiment power is no longer part of the rig; it starts at 0 and is set from the UI.
+            var calibratedDutyCycle = 0.0;
             return new CalibratedLightSource(value, interpolator.Item1, interpolator.Item2, calibratedDutyCycle);
             }
         );

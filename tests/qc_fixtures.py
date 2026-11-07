@@ -48,7 +48,8 @@ def _channel_frame(rng: np.random.Generator, spec: SessionSpec, rois: dict, came
     img = rng.normal(spec.floor, 1.0, (FRAME_SIZE, FRAME_SIZE))
     y, x = np.ogrid[:FRAME_SIZE, :FRAME_SIZE]
     for c in rois[f"camera_{camera}_roi"]:
-        mask = (x - c["center"]["x"]) ** 2 + (y - c["center"]["y"]) ** 2 <= c["radius"] ** 2
+        circle = c["circle"]
+        mask = (x - circle["center"]["x"]) ** 2 + (y - circle["center"]["y"]) ** 2 <= circle["radius"] ** 2
         img[mask] = ROI_INTENSITY * (1 + rng.normal(0, spec.roi_noise, mask.sum()))
     if spec.blank_frames:
         img[:] = 0

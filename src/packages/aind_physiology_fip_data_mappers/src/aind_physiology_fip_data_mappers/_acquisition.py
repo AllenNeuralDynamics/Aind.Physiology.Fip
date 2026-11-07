@@ -13,7 +13,7 @@ import os
 import platform
 from datetime import datetime
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import git
 import pydantic
@@ -26,7 +26,7 @@ from aind_data_schema_models.modalities import Modality
 from aind_data_schema_models.units import PowerUnit, SizeUnit, TimeUnit
 from aind_physiology_fip import __semver__
 from aind_physiology_fip.data_contract import dataset
-from aind_physiology_fip.extra_types import RoiSettings
+from aind_physiology_fip.extra_types import LightSourceOutput, RoiSettings
 from aind_physiology_fip.rig import AindPhysioFipRig
 from clabe.data_mapper.helpers import snapshot_bonsai_environment
 from pandas import DataFrame
@@ -52,6 +52,7 @@ class _FipDataStreamMetadata(pydantic.BaseModel):
     start_time: pydantic.AwareDatetime
     end_time: pydantic.AwareDatetime
     regions: RoiSettings
+    light_source_output: LightSourceOutput | None = None
 
 
 def _fiber_name(fiber_number: int) -> str:
@@ -148,7 +149,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         cls, rig: AindPhysioFipRig, stream: _FipDataStreamMetadata, code: list[Code]
     ) -> acquisition.DataStream:
         """One epoch: the patch cords acquired, and how each of their channels was excited and imaged."""
-        light_sources = cls._get_light_source_configs(rig)
+        light_sources = cls._get_light_source_configs(stream.light_source_output)
         exposures = cls._get_exposures(rig)
 
         # Devices every epoch uses: the LEDs, the cameras and the board that triggers them.
@@ -177,25 +178,28 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         )
 
     @staticmethod
-    def _get_light_source_configs(rig: AindPhysioFipRig) -> dict[LedId, configs.LightEmittingDiodeConfig]:
-        """LED settings, in the unit the rig's power is actually expressed in.
+    def _get_light_source_configs(
+        output: LightSourceOutput | None,
+    ) -> dict[LedId, configs.LightEmittingDiodeConfig]:
+        """LED settings, from the power the ``LightSourceOutput`` software event logged for each light source.
 
         A calibrated light source's power is in microwatts. Without a calibration it is the duty
-        cycle as a fraction no greater than 1, which is recorded as a percentage.
+        cycle as a fraction no greater than 1, which is recorded as a percentage. An epoch that
+        logged no output has its LEDs recorded without a power rather than with a made-up one.
         """
-        light_sources = {
-            LedId.UV: rig.light_source_uv,
-            LedId.BLUE: rig.light_source_blue,
-            LedId.LIME: rig.light_source_lime,
-        }
+        entries = (
+            {LedId.UV: output.uv, LedId.BLUE: output.blue, LedId.LIME: output.lime}
+            if output is not None
+            else dict.fromkeys(LED_SPECS)
+        )
         result = {}
-        for led, light_source in light_sources.items():
-            # TODO: The power can now be changed during the session, so the rig input only holds its
-            # starting value. Record the power actually used once the acquisition saves it.
-            if light_source.calibration is None:
-                power, unit = light_source.power * 100, PowerUnit.PERCENT
+        for led, entry in entries.items():
+            if entry is None:
+                power, unit = None, None
+            elif entry.is_calibrated:
+                power, unit = entry.power, PowerUnit.UW
             else:
-                power, unit = light_source.power, PowerUnit.UW
+                power, unit = entry.power * 100, PowerUnit.PERCENT
             result[led] = configs.LightEmittingDiodeConfig(
                 device_name=LED_SPECS[led].name, power=power, power_unit=unit
             )
@@ -231,10 +235,13 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
 
         fibers: list[tuple[int, int]] = []
         for index, (green_roi, red_roi) in enumerate(zip(green, red, strict=True)):
-            if (green_roi.fiber_number, green_roi.enabled) != (red_roi.fiber_number, red_roi.enabled):
+            if (green_roi.measurement.fiber_number, green_roi.measurement.enabled) != (
+                red_roi.measurement.fiber_number,
+                red_roi.measurement.enabled,
+            ):
                 raise ValueError(f"ROI {index} in {stream.id} has a different fiber or enabled state on each camera.")
-            if green_roi.enabled and green_roi.fiber_number is not None:
-                fibers.append((index, green_roi.fiber_number))
+            if green_roi.measurement.enabled and green_roi.measurement.fiber_number is not None:
+                fibers.append((index, green_roi.measurement.fiber_number))
 
         fiber_numbers = [fiber for _, fiber in fibers]
         if len(set(fiber_numbers)) != len(fiber_numbers):
@@ -318,6 +325,8 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
                 logger.warning(f"Failed to read regions.json at {epoch}, skipping epoch: {e}")
                 continue
 
+            light_source_output = AindAcquisitionDataMapper._extract_light_source_output(epoch)
+
             # Primary: read from SoftwareEvents JSON-lines files
             try:
                 start_utc, end_utc = AindAcquisitionDataMapper._extract_times_from_software_events(epoch)
@@ -327,6 +336,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
                         start_time=start_utc,
                         end_time=end_utc,
                         regions=regions,
+                        light_source_output=light_source_output,
                     )
                 )
                 continue
@@ -352,6 +362,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
                                 start_time=start_utc,
                                 end_time=end_utc,
                                 regions=regions,
+                                light_source_output=light_source_output,
                             )
                         )
                         break  # One stream is enough to establish epoch timing
@@ -406,6 +417,23 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
             ValueError: If the file contains no valid entries or the ``data``
                 field is absent.
         """
+        return datetime.fromisoformat(AindAcquisitionDataMapper._read_last_software_event_data(path))
+
+    @staticmethod
+    def _read_last_software_event_data(path: Path) -> Any:
+        """
+        Return the ``data`` field of the last entry of a software-events JSON-lines file.
+
+        Args:
+            path (Path): Path to the JSON-lines file.
+
+        Returns:
+            Any: The ``data`` field of the last non-empty line.
+
+        Raises:
+            FileNotFoundError: If the file does not exist.
+            ValueError: If the file contains no entries or the ``data`` field is absent.
+        """
         if not path.exists():
             raise FileNotFoundError(f"Software events file not found: {path}")
         last_line: str | None = None
@@ -419,7 +447,30 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         event = json.loads(last_line)
         if "data" not in event:
             raise ValueError(f"Missing 'data' field in last entry of {path}")
-        return datetime.fromisoformat(event["data"])
+        return event["data"]
+
+    @staticmethod
+    def _extract_light_source_output(epoch: Path) -> LightSourceOutput | None:
+        """
+        Extract the power of each light source from ``SoftwareEvents/LightSourceOutput.json``.
+
+        Uses the last entry, which is the output in effect at the end of the epoch. Epochs recorded
+        before the event existed have no such file; they are mapped without light source power.
+
+        Args:
+            epoch (Path): Path to the FIP epoch directory.
+
+        Returns:
+            LightSourceOutput | None: The logged output, or ``None`` if it is missing or invalid.
+        """
+        try:
+            data = AindAcquisitionDataMapper._read_last_software_event_data(
+                epoch / "SoftwareEvents" / "LightSourceOutput.json"
+            )
+            return LightSourceOutput.model_validate(data)
+        except (OSError, ValueError) as e:
+            logger.warning(f"Light source output unavailable at {epoch}, recording LEDs without power: {e}")
+            return None
 
     @staticmethod
     def _extract_from_df(df: DataFrame) -> tuple[datetime, datetime]:

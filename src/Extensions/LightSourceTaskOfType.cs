@@ -9,23 +9,23 @@ using Bonsai;
 using Bonsai.Expressions;
 
 /// <summary>
-/// Represents an operator that filters an <see cref="ITriggerLaserTask"/> sequence down to only
+/// Represents an operator that filters an <see cref="ITriggerLightSourceTask"/> sequence down to only
 /// the elements of the selected concrete type, casting each surviving element to that type.
 /// </summary>
 [DefaultProperty("Type")]
-[Description("Filters an ITriggerLaserTask sequence down to only the elements of the selected concrete type (e.g. ContinuousLaserTask), casting each surviving element to that type. Equivalent to Rx's OfType<T>().")]
+[Description("Filters an ITriggerLightSourceTask sequence down to only the elements of the selected concrete type (e.g. ContinuousLightSourceTask), casting each surviving element to that type. Equivalent to Rx's OfType<T>().")]
 [WorkflowElementCategory(ElementCategory.Combinator)]
-[XmlInclude(typeof(TypeMapping<ContinuousLaserTask>))]
-[XmlInclude(typeof(TypeMapping<FipModeLaserTask>))]
-[XmlInclude(typeof(TypeMapping<OffLaserTask>))]
-public class LaserTaskOfType : SingleArgumentExpressionBuilder
+[XmlInclude(typeof(TypeMapping<ContinuousLightSourceTask>))]
+[XmlInclude(typeof(TypeMapping<FipModeLightSourceTask>))]
+[XmlInclude(typeof(TypeMapping<OffLightSourceTask>))]
+public class LightSourceTaskOfType : SingleArgumentExpressionBuilder
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="LaserTaskOfType"/> class.
+    /// Initializes a new instance of the <see cref="LightSourceTaskOfType"/> class.
     /// </summary>
-    public LaserTaskOfType()
+    public LightSourceTaskOfType()
     {
-        Type = new TypeMapping<ContinuousLaserTask>();
+        Type = new TypeMapping<ContinuousLightSourceTask>();
     }
 
     /// <summary>
@@ -40,13 +40,13 @@ public class LaserTaskOfType : SingleArgumentExpressionBuilder
         var typeMapping = (TypeMapping)Type;
         var returnType = typeMapping.GetType().GetGenericArguments()[0];
         return Expression.Call(
-            typeof(LaserTaskOfType),
+            typeof(LightSourceTaskOfType),
             "Process",
             new System.Type[] { returnType },
             Enumerable.Single(arguments));
     }
 
-    private static IObservable<TResult> Process<TResult>(IObservable<ITriggerLaserTask> source) where TResult : ITriggerLaserTask
+    private static IObservable<TResult> Process<TResult>(IObservable<ITriggerLightSourceTask> source) where TResult : ITriggerLightSourceTask
     {
         return source.Where(task => task is TResult).Select(task => (TResult)task);
     }

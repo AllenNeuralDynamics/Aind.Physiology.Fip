@@ -229,6 +229,11 @@ def dataset(root: os.PathLike) -> Dataset:
                         description="An event emitted whenever a hardware QA check warning is emitted during the session.",
                         reader_params=SoftwareEvents.make_params(path=root / "SoftwareEvents/HardwareQA.json"),
                     ),
+                    SoftwareEvents(
+                        name="LightSourceOutput",
+                        description="Stores the power of each light source (blue, uv, lime) used during the acquisition, and whether it is calibrated (power in uW) or driven by raw duty cycle (power is the duty cycle fraction, 0-1).",
+                        reader_params=SoftwareEvents.make_params(path=root / "SoftwareEvents/LightSourceOutput.json"),
+                    ),
                 ],
             ),
         ],

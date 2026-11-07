@@ -1,14 +1,14 @@
 using FipExtensions;
 
 /// <summary>
-/// Represents a request to trigger a laser task. This is a marker interface: the driving mode
-/// is the concrete implementing type itself (<see cref="ContinuousLaserTask"/>,
-/// <see cref="FipModeLaserTask"/>, <see cref="OffLaserTask"/>), not a separate enum/property.
+/// Represents a request to trigger a light source task. This is a marker interface: the driving mode
+/// is the concrete implementing type itself (<see cref="ContinuousLightSourceTask"/>,
+/// <see cref="FipModeLightSourceTask"/>, <see cref="OffLightSourceTask"/>), not a separate enum/property.
 /// Concrete implementations carry whatever additional settings that mode requires; use
-/// <see cref="LaserTaskOfType{TResult}"/> downstream to filter/cast a mixed sequence of these
+/// <see cref="LightSourceTaskOfType{TResult}"/> downstream to filter/cast a mixed sequence of these
 /// back down to a specific concrete type.
 /// </summary>
-public interface ITriggerLaserTask
+public interface ITriggerLightSourceTask
 {
 }
 
@@ -16,7 +16,7 @@ public interface ITriggerLaserTask
 /// Represents a request to continuously drive a single Fip camera channel's light source at a
 /// fixed duty cycle, independent of the Fip acquisition cycle.
 /// </summary>
-public class ContinuousLaserTask : ITriggerLaserTask
+public class ContinuousLightSourceTask : ITriggerLightSourceTask
 {
     /// <summary>
     /// Gets or sets the camera channel whose light source should be driven.
@@ -29,17 +29,17 @@ public class ContinuousLaserTask : ITriggerLaserTask
     public float Power { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ContinuousLaserTask"/> class.
+    /// Initializes a new instance of the <see cref="ContinuousLightSourceTask"/> class.
     /// </summary>
-    public ContinuousLaserTask()
+    public ContinuousLightSourceTask()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ContinuousLaserTask"/> class with the
+    /// Initializes a new instance of the <see cref="ContinuousLightSourceTask"/> class with the
     /// specified channel and duty cycle.
     /// </summary>
-    public ContinuousLaserTask(FipCameraSource channel, float power)
+    public ContinuousLightSourceTask(FipCameraSource channel, float power)
     {
         Channel = channel;
         Power = power;
@@ -56,7 +56,7 @@ public class ContinuousLaserTask : ITriggerLaserTask
 /// Represents a request to drive light sources following the normal Fip acquisition cycle.
 /// Carries no additional settings.
 /// </summary>
-public class FipModeLaserTask : ITriggerLaserTask
+public class FipModeLightSourceTask : ITriggerLightSourceTask
 {
 }
 
@@ -64,6 +64,6 @@ public class FipModeLaserTask : ITriggerLaserTask
 /// Represents a request to stop driving all light sources. Carries no additional settings,
 /// since stopping applies to every channel at once.
 /// </summary>
-public class OffLaserTask : ITriggerLaserTask
+public class OffLightSourceTask : ITriggerLightSourceTask
 {
 }

@@ -601,7 +601,7 @@
               </Combinator>
             </Expression>
             <Expression xsi:type="rx:AsyncSubject">
-              <Name>CalibratedLasers</Name>
+              <Name>CalibratedLightSources</Name>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>

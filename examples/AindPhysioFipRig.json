@@ -27,7 +27,6 @@
   "light_source_uv": {
     "device_type": "LightSource",
     "calibration": null,
-    "power": 0.1,
     "task": {
       "delta_1": 15650,
       "delta_2": 666,
@@ -49,7 +48,6 @@
         "0.2": 20.0
       }
     },
-    "power": 10.0,
     "task": {
       "delta_1": 15650,
       "delta_2": 666,
@@ -71,7 +69,6 @@
         "0.2": 20.0
       }
     },
-    "power": 20.0,
     "task": {
       "delta_1": 15650,
       "delta_2": 666,

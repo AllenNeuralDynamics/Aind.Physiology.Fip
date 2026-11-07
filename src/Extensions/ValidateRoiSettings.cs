@@ -25,10 +25,10 @@ public class ValidateRoiSettings
                 problems.Add(string.Format("ROI count mismatch: Green/Iso has {0} ROIs but Red has {1}.", greenIsoRois.Count, redRois.Count));
             }
 
-            CheckNumbers("Green/Iso", "ROI number", greenIsoRois.Select(roi => roi.RoiNumber), problems);
-            CheckNumbers("Green/Iso", "fiber number", greenIsoRois.Select(roi => roi.FiberNumber), problems);
-            CheckNumbers("Red", "ROI number", redRois.Select(roi => roi.RoiNumber), problems);
-            CheckNumbers("Red", "fiber number", redRois.Select(roi => roi.FiberNumber), problems);
+            CheckNumbers("Green/Iso", "ROI number", greenIsoRois.Select(roi => (int?)roi.Measurement.RoiNumber), problems);
+            CheckNumbers("Green/Iso", "fiber number", greenIsoRois.Select(roi => (int?)roi.Measurement.FiberNumber), problems);
+            CheckNumbers("Red", "ROI number", redRois.Select(roi => (int?)roi.Measurement.RoiNumber), problems);
+            CheckNumbers("Red", "fiber number", redRois.Select(roi => (int?)roi.Measurement.FiberNumber), problems);
 
             if (problems.Count == 0)
             {

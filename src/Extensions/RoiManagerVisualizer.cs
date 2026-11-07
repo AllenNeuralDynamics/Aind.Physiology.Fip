@@ -34,7 +34,9 @@ using OpenTK.Graphics.OpenGL4;
 /// row removes it from every camera. Emits the current <see cref="AindPhysiologyFip.RoiSettings"/>
 /// whenever anything changes. "Save ROI"/"Load ROI"/"Reset ROI" each require confirming an
 /// inline popup; Save/Load only persist circle positions (not fiber/name/enabled), to/from
-/// <see cref="LocalRoiDefaultPath"/>. At startup the ROI positions are loaded from
+/// <see cref="LocalRoiDefaultPath"/>. When <see cref="TaskLogic"/> is set, its measurements
+/// populate the table (see <see cref="TaskLogic"/> for how mismatched ROI counts are handled).
+/// At startup the ROI positions are loaded from
 /// <see cref="LocalRoiDefaultPath"/> if it is set; if that fails, a warning is shown and the
 /// Reset ROI defaults are used.
 /// </remarks>
@@ -60,6 +62,17 @@ public class RoiManagerVisualizer
     [FileNameFilter("JSON|*.json|All Files|*.*")]
     [Editor("Bonsai.Design.OpenFileNameEditor, Bonsai.Design", DesignTypes.UITypeEditor)]
     public string LocalRoiDefaultPath { get { return localRoiDefaultPath; } set { localRoiDefaultPath = value; } }
+
+    /// <summary>
+    /// Gets or sets the task logic whose measurements populate the ROI table (fiber number, name
+    /// and enabled flag of ROI <c>roi_number</c>). Measurements without a positioned ROI add one
+    /// to the canvas, with a warning, for the user to place; ROIs without a measurement are
+    /// disabled. When null, the table is edited locally as before. Not serialized: assign via
+    /// PropertyMapping rather than the property grid.
+    /// </summary>
+    [XmlIgnore]
+    [Description("The task logic whose measurements populate the ROI table. Measurements without a positioned ROI are added to the canvas (with a warning) for the user to place; ROIs without a measurement are disabled. Set via PropertyMapping, not wired as a Process argument.")]
+    public AindPhysioFipTaskLogic TaskLogic { get; set; }
 
     static readonly FipCameraSource[] cameraOrder = { FipCameraSource.Iso, FipCameraSource.Green, FipCameraSource.Red };
 
@@ -94,6 +107,9 @@ public class RoiManagerVisualizer
         public int FiberNumber;
         public string Name;
         public bool Enabled = true;
+        // True for an ROI position with no measurement in the task logic: it is forced disabled
+        // and can't be edited, only deleted.
+        public bool Extra;
     }
 
     class RoiCircleSet
@@ -187,6 +203,8 @@ public class RoiManagerVisualizer
         {
             if (other == target || other.FiberNumber != value) continue;
             other.FiberNumber = previous;
+            // Extra Rois stay disabled, so only the number moves when one is involved.
+            if (other.Extra || target.Extra) continue;
             var name = other.Name;
             other.Name = target.Name;
             target.Name = name;
@@ -219,6 +237,11 @@ public class RoiManagerVisualizer
 
     static PickerCircle FromFipCircle(FipCircle c, PickerCircle fallback)
     {
+        return c == null ? fallback : FromBackgroundCircle(c.Circle, fallback);
+    }
+
+    static PickerCircle FromBackgroundCircle(AindPhysiologyFip.Circle c, PickerCircle fallback)
+    {
         if (c == null || c.Center == null) return fallback;
         return MakeCircle((float)c.Center.X, (float)c.Center.Y, (float)c.Radius);
     }
@@ -231,8 +254,8 @@ public class RoiManagerVisualizer
         var count = RoiCount(settings);
         if (count == 0) count = defaultRoiCount;
 
-        state.GreenIso.Background = FromFipCircle(settings.CameraGreenIsoBackground, DefaultBackground());
-        state.Red.Background = FromFipCircle(settings.CameraRedBackground, DefaultBackground());
+        state.GreenIso.Background = FromBackgroundCircle(settings.CameraGreenIsoBackground, DefaultBackground());
+        state.Red.Background = FromBackgroundCircle(settings.CameraRedBackground, DefaultBackground());
         state.GreenIso.Rois = Enumerable.Range(0, count)
             .Select(i => FromFipCircle(ElementAtOrNull(settings.CameraGreenIsoRoi, i), DefaultRoiCircle(i)))
             .ToList();
@@ -242,18 +265,28 @@ public class RoiManagerVisualizer
         return count;
     }
 
-    static FipCircle ToGeometryCircle(PickerCircle c)
+    static AindPhysiologyFip.Circle ToBackgroundCircle(PickerCircle c)
     {
-        return new FipCircle { Center = new AindPhysiologyFip.Point2f { X = c.X, Y = c.Y }, Radius = c.Radius };
+        return new AindPhysiologyFip.Circle { Center = new AindPhysiologyFip.Point2f { X = c.X, Y = c.Y }, Radius = c.Radius };
+    }
+
+    // Fiber and ROI numbers are required, so geometry-only circles default to the 1:1 mapping.
+    static FipCircle ToGeometryCircle(PickerCircle c, int index)
+    {
+        return new FipCircle
+        {
+            Circle = ToBackgroundCircle(c),
+            Measurement = new Measurement { RoiNumber = index, FiberNumber = index }
+        };
     }
 
     static FipCircle ToRoiCircle(PickerCircle c, RoiMeta meta, int index)
     {
-        var circle = ToGeometryCircle(c);
-        circle.RoiNumber = index;
-        circle.FiberNumber = meta.FiberNumber;
-        circle.Name = meta.Name;
-        circle.Enabled = meta.Enabled;
+        var circle = ToGeometryCircle(c, index);
+        circle.Measurement.RoiNumber = index;
+        circle.Measurement.FiberNumber = meta.FiberNumber;
+        circle.Measurement.Name = meta.Name;
+        circle.Measurement.Enabled = meta.Enabled;
         return circle;
     }
 
@@ -266,9 +299,9 @@ public class RoiManagerVisualizer
     {
         return new RoiSettings
         {
-            CameraGreenIsoBackground = ToGeometryCircle(state.GreenIso.Background),
+            CameraGreenIsoBackground = ToBackgroundCircle(state.GreenIso.Background),
             CameraGreenIsoRoi = ToRoiCircles(state.GreenIso, state.Meta),
-            CameraRedBackground = ToGeometryCircle(state.Red.Background),
+            CameraRedBackground = ToBackgroundCircle(state.Red.Background),
             CameraRedRoi = ToRoiCircles(state.Red, state.Meta),
         };
     }
@@ -278,10 +311,10 @@ public class RoiManagerVisualizer
     {
         return new RoiSettings
         {
-            CameraGreenIsoBackground = ToGeometryCircle(state.GreenIso.Background),
-            CameraGreenIsoRoi = state.GreenIso.Rois.Select(ToGeometryCircle).ToList(),
-            CameraRedBackground = ToGeometryCircle(state.Red.Background),
-            CameraRedRoi = state.Red.Rois.Select(ToGeometryCircle).ToList(),
+            CameraGreenIsoBackground = ToBackgroundCircle(state.GreenIso.Background),
+            CameraGreenIsoRoi = state.GreenIso.Rois.Select((c, i) => ToGeometryCircle(c, i)).ToList(),
+            CameraRedBackground = ToBackgroundCircle(state.Red.Background),
+            CameraRedRoi = state.Red.Rois.Select((c, i) => ToGeometryCircle(c, i)).ToList(),
         };
     }
 
@@ -297,6 +330,67 @@ public class RoiManagerVisualizer
         state.GreenIso.Rois.Add(ImageCenterCircle(slots, s => s.Camera != FipCameraSource.Red));
         state.Red.Rois.Add(ImageCenterCircle(slots, s => s.Camera == FipCameraSource.Red));
         state.Meta.Add(new RoiMeta { FiberNumber = NextFreeFiber(state.Meta) });
+    }
+
+    // Populates the Roi metadata from the task logic's measurements (row i takes the measurement
+    // with roi_number i). Measurements beyond the positioned Rois add Rois near the image center
+    // and raise a warning; Rois without a measurement are disabled. Returns true if the state
+    // may have changed. Does nothing when there is no task logic.
+    bool SyncWithTaskLogic(RoiState state, List<ImageSlot> slots, AindPhysioFipTaskLogic taskLogic)
+    {
+        if (taskLogic == null || taskLogic.TaskParameters == null || taskLogic.TaskParameters.Measurements == null) return false;
+
+        var byRoi = new Dictionary<int, Measurement>();
+        foreach (var measurement in taskLogic.TaskParameters.Measurements) byRoi[measurement.RoiNumber] = measurement;
+        var required = byRoi.Count == 0 ? 0 : byRoi.Keys.Max() + 1;
+
+        var missing = new List<int>();
+        var added = 0;
+        while (state.Meta.Count < required)
+        {
+            var index = state.Meta.Count;
+            AddRoi(state, slots);
+            // Spread the new circles out so they don't stack on top of each other.
+            state.GreenIso.Rois[index].X += added * 2.5f * defaultRadius;
+            state.Red.Rois[index].X += added * 2.5f * defaultRadius;
+            if (byRoi.ContainsKey(index)) missing.Add(index);
+            added++;
+        }
+
+        var usedFibers = new HashSet<int>(byRoi.Values.Select(m => m.FiberNumber));
+        for (int i = 0; i < state.Meta.Count; i++)
+        {
+            var meta = state.Meta[i];
+            Measurement measurement;
+            if (byRoi.TryGetValue(i, out measurement))
+            {
+                meta.FiberNumber = measurement.FiberNumber;
+                meta.Name = measurement.Name;
+                meta.Enabled = measurement.Enabled;
+                meta.Extra = false;
+            }
+            else
+            {
+                meta.Enabled = false;
+                meta.Extra = true;
+            }
+        }
+        // Extra Rois take fiber numbers no measurement uses, so numbers stay unique.
+        foreach (var meta in state.Meta.Where(m => m.Extra))
+        {
+            var fiber = 0;
+            while (usedFibers.Contains(fiber)) fiber++;
+            meta.FiberNumber = fiber;
+            usedFibers.Add(fiber);
+        }
+
+        if (missing.Count > 0)
+        {
+            var message = "The task defines ROI(s) " + string.Join(", ", missing.Select(i => i.ToString(CultureInfo.InvariantCulture))) +
+                " that have no saved position.\n\nThey were added to the canvas - please place them before starting.";
+            warningMessage = warningMessage == null ? message : warningMessage + "\n\n" + message;
+        }
+        return true;
     }
 
     static void RemoveRoi(RoiState state, int index)
@@ -327,6 +421,7 @@ public class RoiManagerVisualizer
 
             var imageLock = new object();
             var seeded = false;
+            AindPhysioFipTaskLogic syncedTaskLogic = null;
             var innerSubs = new CompositeDisposable();
             // Which circle key (bg/roi0../roi3) was hovered/dragged last frame, across ALL
             // columns; used to color that circle green everywhere this frame ("yoked" feedback).
@@ -380,6 +475,14 @@ public class RoiManagerVisualizer
                         }
                         seeded = true;
                         changed = true;
+                    }
+
+                    // A new task logic instance repopulates the table from its measurements.
+                    var taskLogic = TaskLogic;
+                    if (!ReferenceEquals(taskLogic, syncedTaskLogic))
+                    {
+                        syncedTaskLogic = taskLogic;
+                        changed |= SyncWithTaskLogic(state, slots, taskLogic);
                     }
 
                     foreach (var slot in slots) UpdateTexture(slot, imageLock);
@@ -476,6 +579,7 @@ public class RoiManagerVisualizer
             string error;
             if (TryLoadFromDisk(state, out error))
             {
+                SyncWithTaskLogic(state, slots, TaskLogic);
                 selectedKeys.Clear();
                 changed = true;
             }
@@ -489,6 +593,7 @@ public class RoiManagerVisualizer
         if (ConfirmPopup("ConfirmResetRoi##RoiManager", "Reset to the default ROI configuration?"))
         {
             ResetToDefault(state);
+            SyncWithTaskLogic(state, slots, TaskLogic);
             selectedKeys.Clear();
             changed = true;
         }
@@ -923,6 +1028,7 @@ public class RoiManagerVisualizer
         else RenderColorSwatch(disabledCircleColor, disabledCircleColor);
 
         ImGui.BeginDisabled(!enabled);
+        ImGui.BeginDisabled(meta.Extra);
         ImGui.TableNextColumn();
         changed |= UniqueFiberInput("##fiberNumber_" + key, state.Meta, meta);
 
@@ -938,6 +1044,7 @@ public class RoiManagerVisualizer
 
         ImGui.TableNextColumn();
         if (ImGui.Checkbox("##roiEnabled_" + key, ref meta.Enabled)) changed = true;
+        ImGui.EndDisabled();
 
         ImGui.TableNextColumn();
         if (ImGui.Button("x##roiDelete_" + key)) requestDelete = true;

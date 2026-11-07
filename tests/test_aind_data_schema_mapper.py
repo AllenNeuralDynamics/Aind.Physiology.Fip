@@ -9,9 +9,10 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
-from aind_behavior_services.common import Point2f
+from aind_behavior_services.common import Circle, Point2f
 from aind_data_schema.core import instrument
 from aind_physiology_fip.extra_types import FipCircle, RoiSettings
+from aind_physiology_fip.task_logic import Measurement
 from aind_physiology_fip_data_mappers import (
     ACQUISITION_FILE_NAME,
     INSTRUMENT_FILE_NAME,
@@ -33,8 +34,13 @@ class MockCsv(DataStream[pd.DataFrame, Any]):
 
 
 def _make_regions(**overrides: Any) -> RoiSettings:
-    background = FipCircle(center=Point2f(x=10, y=10), radius=10)
-    rois = [FipCircle(center=Point2f(x=50, y=50), radius=20, roi_number=0, fiber_number=0)]
+    background = Circle(center=Point2f(x=10, y=10), radius=10)
+    rois = [
+        FipCircle(
+            circle=Circle(center=Point2f(x=50, y=50), radius=20),
+            measurement=Measurement(roi_number=0, fiber_number=0),
+        )
+    ]
     fields: dict[str, Any] = {
         "camera_green_iso_background": background,
         "camera_red_background": background,
@@ -84,7 +90,12 @@ def test_time_extraction_default():
 def test_regions_are_extracted_from_regions_json(tmp_path):
     """An epoch's id, regions and start/end times are extracted from regions.json and the session events."""
     regions = _make_regions(
-        camera_green_iso_roi=[FipCircle(center=Point2f(x=10, y=20), radius=5, roi_number=0, fiber_number=1, name="NAc")]
+        camera_green_iso_roi=[
+            FipCircle(
+                circle=Circle(center=Point2f(x=10, y=20), radius=5),
+                measurement=Measurement(roi_number=0, fiber_number=1, name="NAc"),
+            )
+        ]
     )
     epoch = _make_epoch(tmp_path, "fip_epoch", regions)
     streams = AindAcquisitionDataMapper._extract_start_end_times([epoch])

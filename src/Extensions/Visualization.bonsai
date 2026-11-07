@@ -53,6 +53,14 @@
                       <Property Name="LocalRoiDefaultPath" />
                     </PropertyMappings>
                   </Expression>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>TaskSchema</Name>
+                  </Expression>
+                  <Expression xsi:type="PropertyMapping">
+                    <PropertyMappings>
+                      <Property Name="TaskLogic" />
+                    </PropertyMappings>
+                  </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="p1:RoiManagerVisualizer">
                       <p1:Visible>true</p1:Visible>
@@ -68,14 +76,16 @@
                 <Edges>
                   <Edge From="0" To="1" Label="Source1" />
                   <Edge From="1" To="2" Label="Source1" />
-                  <Edge From="3" To="10" Label="Source1" />
-                  <Edge From="4" To="10" Label="Source2" />
+                  <Edge From="3" To="12" Label="Source1" />
+                  <Edge From="4" To="12" Label="Source2" />
                   <Edge From="5" To="6" Label="Source1" />
                   <Edge From="6" To="7" Label="Source1" />
-                  <Edge From="7" To="10" Label="Source3" />
+                  <Edge From="7" To="12" Label="Source3" />
                   <Edge From="8" To="9" Label="Source1" />
-                  <Edge From="9" To="10" Label="Source4" />
+                  <Edge From="9" To="12" Label="Source4" />
                   <Edge From="10" To="11" Label="Source1" />
+                  <Edge From="11" To="12" Label="Source5" />
+                  <Edge From="12" To="13" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -124,7 +134,7 @@
             </Expression>
             <Expression xsi:type="VisualizerMapping" />
             <Expression xsi:type="rx:Defer">
-              <Name>LaserCalibration</Name>
+              <Name>LightSourceCalibration</Name>
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="imvizui:ImGuiVisualizerBuilder" />
@@ -149,7 +159,7 @@
                     <Name>tab</Name>
                   </Expression>
                   <Expression xsi:type="rx:Defer">
-                    <Name>ExperimentLaser</Name>
+                    <Name>ExperimentLightSource</Name>
                     <Workflow>
                       <Nodes>
                         <Expression xsi:type="SubscribeSubject">
@@ -162,31 +172,41 @@
                           <imgui:Flags>None</imgui:Flags>
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
-                          <Name>CalibratedLasers</Name>
+                          <Name>CalibratedLightSources</Name>
                         </Expression>
                         <Expression xsi:type="PropertyMapping">
                           <PropertyMappings>
                             <Property Name="LightSources" />
                           </PropertyMappings>
                         </Expression>
+                        <Expression xsi:type="SubscribeSubject">
+                          <Name>TaskSchema</Name>
+                        </Expression>
+                        <Expression xsi:type="PropertyMapping">
+                          <PropertyMappings>
+                            <Property Name="TaskLogic" />
+                          </PropertyMappings>
+                        </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="p1:FipExperimentPowerVisualizer">
                             <p1:Visible>true</p1:Visible>
-                            <p1:Enabled>false</p1:Enabled>
+                            <p1:Enabled>true</p1:Enabled>
                             <p1:FontSize>26</p1:FontSize>
                             <p1:AutoFontSize>true</p1:AutoFontSize>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
-                          <Name>CalibratedLasers</Name>
+                          <Name>CalibratedLightSources</Name>
                         </Expression>
                       </Nodes>
                       <Edges>
                         <Edge From="0" To="1" Label="Source1" />
-                        <Edge From="1" To="4" Label="Source1" />
+                        <Edge From="1" To="6" Label="Source1" />
                         <Edge From="2" To="3" Label="Source1" />
-                        <Edge From="3" To="4" Label="Source2" />
+                        <Edge From="3" To="6" Label="Source2" />
                         <Edge From="4" To="5" Label="Source1" />
+                        <Edge From="5" To="6" Label="Source3" />
+                        <Edge From="6" To="7" Label="Source1" />
                       </Edges>
                     </Workflow>
                   </Expression>
@@ -204,7 +224,7 @@
                           <imgui:Flags>None</imgui:Flags>
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
-                          <Name>CalibratedLasers</Name>
+                          <Name>CalibratedLightSources</Name>
                         </Expression>
                         <Expression xsi:type="PropertyMapping">
                           <PropertyMappings>

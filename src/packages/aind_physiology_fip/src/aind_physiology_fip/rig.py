@@ -1,10 +1,10 @@
 from enum import IntFlag
-from typing import Annotated, Literal, Self
+from typing import Annotated, Literal
 
 from aind_behavior_services import rig
 from aind_behavior_services.common import Point2f
 from aind_behavior_services.rig import harp
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
 from . import __semver__
 
@@ -88,19 +88,12 @@ class LightSource(rig.Device):
     """Light source device configuration with power control and timing tasks."""
 
     device_type: Literal["LightSource"] = "LightSource"
-    power: float = Field(default=0, ge=0, description="Power (uW)")
     calibration: LightSourceCalibration | None = Field(
         default=None,
         title="Calibration",
-        description="Calibration for the LightSource. If left empty, 'power' will be used as duty-cycle (0-100).",
+        description="Calibration for the LightSource, converting duty cycle to power (uW).",
     )
     task: FipTask = Field(title="Task", description="Task for the light source")
-
-    @model_validator(mode="after")
-    def _validate_power(self) -> Self:
-        if self.calibration is None and (self.power < 0 or self.power > 1):
-            raise ValueError("Power must be between 0 and 1 when no calibration is provided.")
-        return self
 
 
 class AindPhysioFipRig(rig.Rig):

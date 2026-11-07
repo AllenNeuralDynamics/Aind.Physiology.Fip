@@ -19,9 +19,20 @@ from examples.example import mock_rig, mock_roi_settings, mock_session
 # The tests record this checkout's own remote and commit as the acquisition code.
 REPOSITORY = Path(__file__).resolve().parents[1]
 
+# What the workflow's LightSourceOutput software event logs: calibrated sources in uW, uncalibrated ones as a duty cycle.
+LIGHT_SOURCE_OUTPUT = {
+    "blue": {"power": 12.5, "is_calibrated": True},
+    "uv": {"power": 0.25, "is_calibrated": False},
+    "lime": {"power": 30.0, "is_calibrated": True},
+}
+
 
 def _make_session(
-    root: Path, regions: RoiSettings, epoch: str = "fip_2025-01-01T120000", rig: AindPhysioFipRig | None = None
+    root: Path,
+    regions: RoiSettings,
+    epoch: str = "fip_2025-01-01T120000",
+    rig: AindPhysioFipRig | None = None,
+    light_source_output: list[dict] | None = None,
 ) -> Path:
     """Write one FIP epoch: rig and session inputs, ROIs, session events and frame metadata."""
     epoch_dir = root / "fib" / epoch
@@ -36,6 +47,12 @@ def _make_session(
         ("EndSessionTime.json", "2025-01-01T13:00:00+00:00"),
     ):
         (epoch_dir / "SoftwareEvents" / name).write_text(json.dumps({"data": timestamp}) + "\n", encoding="utf-8")
+
+    # One entry per logged output; an empty list leaves the event unwritten, as in sessions that predate it.
+    outputs = [LIGHT_SOURCE_OUTPUT] if light_source_output is None else light_source_output
+    if outputs:
+        lines = "".join(json.dumps({"timestamp": 1000.0 + i, "data": data}) + "\n" for i, data in enumerate(outputs))
+        (epoch_dir / "SoftwareEvents" / "LightSourceOutput.json").write_text(lines, encoding="utf-8")
 
     for channel in ("green", "iso", "red"):
         (epoch_dir / f"{channel}_metadata.json").write_text(
@@ -122,28 +139,41 @@ def test_each_channel_is_exposed_for_its_own_leds_delta_1(tmp_path):
     }
 
 
-def test_led_power_is_recorded_in_its_actual_unit(tmp_path):
-    """A calibrated LED's power is in microwatts; an uncalibrated one's is a duty cycle, recorded as percent"""
-    rig = mock_rig()
-    (stream,) = _map(_make_session(tmp_path, mock_roi_settings())).data_streams
-    leds = {c.device_name: c for c in stream.configurations if c.object_type == "Light emitting diode config"}
+def _leds(mapped: acquisition.Acquisition) -> dict[str, object]:
+    (stream,) = mapped.data_streams
+    return {c.device_name: c for c in stream.configurations if c.object_type == "Light emitting diode config"}
 
-    for name, light_source in (
-        ("415nm LED", rig.light_source_uv),
-        ("470nm LED", rig.light_source_blue),
-        ("565nm LED", rig.light_source_lime),
-    ):
-        if light_source.calibration is None:
-            assert (leds[name].power, leds[name].power_unit) == (pytest.approx(light_source.power * 100), "percent")
-        else:
-            assert (leds[name].power, leds[name].power_unit) == (light_source.power, "microwatt")
+
+def test_led_power_comes_from_the_light_source_output_event(tmp_path):
+    """A calibrated LED's power is in microwatts; an uncalibrated one's is a duty cycle, recorded as percent"""
+    leds = _leds(_map(_make_session(tmp_path, mock_roi_settings())))
+
+    assert (leds["470nm LED"].power, leds["470nm LED"].power_unit) == (12.5, "microwatt")
+    assert (leds["415nm LED"].power, leds["415nm LED"].power_unit) == (pytest.approx(25.0), "percent")
+    assert (leds["565nm LED"].power, leds["565nm LED"].power_unit) == (30.0, "microwatt")
+
+
+def test_led_power_is_the_last_logged_output(tmp_path):
+    """The power can change during an epoch, so the last logged output is the one recorded"""
+    later = {**LIGHT_SOURCE_OUTPUT, "blue": {"power": 20.0, "is_calibrated": True}}
+    leds = _leds(_map(_make_session(tmp_path, mock_roi_settings(), light_source_output=[LIGHT_SOURCE_OUTPUT, later])))
+
+    assert leds["470nm LED"].power == 20.0
+
+
+def test_epoch_without_light_source_output_has_leds_without_power(tmp_path):
+    """Sessions that predate the event still map, with the LEDs recorded without a power instead of a guessed one"""
+    leds = _leds(_map(_make_session(tmp_path, mock_roi_settings(), light_source_output=[])))
+
+    assert set(leds) == {"415nm LED", "470nm LED", "565nm LED"}
+    assert all(led.power is None and led.power_unit is None for led in leds.values())
 
 
 def test_disabled_roi_is_not_recorded(tmp_path):
     """An ROI the operator disabled gets no patch cord"""
     regions = mock_roi_settings()
-    regions.camera_green_iso_roi[1].enabled = False
-    regions.camera_red_roi[1].enabled = False
+    regions.camera_green_iso_roi[1].measurement.enabled = False
+    regions.camera_red_roi[1].measurement.enabled = False
 
     assert sorted(_patch_cords(_map(_make_session(tmp_path, regions)))) == [
         "Patch Cord 0",
@@ -153,10 +183,10 @@ def test_disabled_roi_is_not_recorded(tmp_path):
 
 
 def test_epoch_without_a_mapped_fiber_is_rejected(tmp_path):
-    """A fiber photometry stream needs a patch cord, so ROIs with no fiber, as in older sessions, are rejected"""
+    """A fiber photometry stream needs a patch cord, so an epoch whose ROIs are all disabled is rejected"""
     regions = mock_roi_settings()
     for roi in (*regions.camera_green_iso_roi, *regions.camera_red_roi):
-        roi.fiber_number = None
+        roi.measurement.enabled = False
 
     with pytest.raises(ValueError, match="mapped to a fiber"):
         _map(_make_session(tmp_path, regions))
@@ -165,7 +195,7 @@ def test_epoch_without_a_mapped_fiber_is_rejected(tmp_path):
 def test_cameras_must_agree_on_an_rois_fiber(tmp_path):
     """ROI N describes one patch cord seen by both cameras, so its fiber cannot differ between them"""
     regions = mock_roi_settings()
-    regions.camera_red_roi[0].fiber_number = 9
+    regions.camera_red_roi[0].measurement.fiber_number = 9
 
     with pytest.raises(ValueError, match="ROI 0"):
         _map(_make_session(tmp_path, regions))
@@ -175,7 +205,7 @@ def test_two_rois_cannot_share_a_fiber(tmp_path):
     """Two patch cords cannot both be connected to one implanted fiber"""
     regions = mock_roi_settings()
     for rois in (regions.camera_green_iso_roi, regions.camera_red_roi):
-        rois[1].fiber_number = 0
+        rois[1].measurement.fiber_number = 0
 
     with pytest.raises(ValueError, match="same fiber"):
         _map(_make_session(tmp_path, regions))

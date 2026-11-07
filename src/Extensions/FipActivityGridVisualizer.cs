@@ -57,7 +57,7 @@ public class FipActivityGridVisualizer
     {
         if (index == 0) return "Background";
         var name = "ROI " + (index - 1).ToString();
-        if (circle != null && circle.FiberNumber.HasValue) name += " : F" + circle.FiberNumber.Value.ToString();
+        if (circle != null && circle.Measurement != null) name += " : F" + circle.Measurement.FiberNumber.ToString();
         return name;
     }
 

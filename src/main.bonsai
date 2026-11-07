@@ -5,7 +5,6 @@
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:p2="clr-namespace:System.Reactive;assembly=System.Reactive.Core"
                  xmlns:sys="clr-namespace:System;assembly=mscorlib"
-                 xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
                  xmlns:p3="clr-namespace:AllenNeuralDynamics.AindBehaviorServices.DataTypes;assembly=AllenNeuralDynamics.AindBehaviorServices"
                  xmlns:p4="clr-namespace:AllenNeuralDynamics.VersionControl;assembly=AllenNeuralDynamics.VersionControl"
                  xmlns:ui="clr-namespace:Bonsai.Design;assembly=Bonsai.Design"
@@ -16,10 +15,12 @@
       <Expression xsi:type="ExternalizedMapping">
         <Property Name="RigPath" />
         <Property Name="SessionPath" />
+        <Property Name="TaskPath" />
       </Expression>
       <Expression xsi:type="IncludeWorkflow" Path="Extensions\ReadSchemas.bonsai">
         <RigPath>../local/AindPhysioFipRig.json</RigPath>
         <SessionPath>../local/Session.json</SessionPath>
+        <TaskPath xsi:nil="true" />
       </Expression>
       <Expression xsi:type="GroupWorkflow">
         <Name>DeserializeSchemas</Name>
@@ -43,12 +44,23 @@
             <Expression xsi:type="rx:AsyncSubject">
               <Name>RigSchema</Name>
             </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>RawTaskSchema</Name>
+            </Expression>
+            <Expression xsi:type="p1:DeserializeFromJson">
+              <p1:Type xsi:type="TypeMapping" TypeArguments="p1:AindPhysioFipTaskLogic" />
+            </Expression>
+            <Expression xsi:type="rx:AsyncSubject">
+              <Name>TaskSchema</Name>
+            </Expression>
           </Nodes>
           <Edges>
             <Edge From="0" To="1" Label="Source1" />
             <Edge From="1" To="2" Label="Source1" />
             <Edge From="3" To="4" Label="Source1" />
             <Edge From="4" To="5" Label="Source1" />
+            <Edge From="6" To="7" Label="Source1" />
+            <Edge From="7" To="8" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>

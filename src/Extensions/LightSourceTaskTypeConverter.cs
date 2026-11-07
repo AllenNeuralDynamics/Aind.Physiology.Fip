@@ -7,12 +7,12 @@ using System.Reflection;
 using System.Xml.Serialization;
 
 /// <summary>
-/// Provides a type converter that lets <see cref="CreateLaserTask"/>'s property grid pick which
-/// concrete <see cref="ITriggerLaserTask"/> to build, listing whichever types are declared via
+/// Provides a type converter that lets <see cref="CreateLightSourceTask"/>'s property grid pick which
+/// concrete <see cref="ITriggerLightSourceTask"/> to build, listing whichever types are declared via
 /// <c>[XmlInclude]</c> on the property's owning type. Mirrors bonsai-rx/harp's internal
 /// CombinatorTypeConverter (used by CreateMessageBuilder).
 /// </summary>
-class LaserTaskTypeConverter : TypeConverter
+class LightSourceTaskTypeConverter : TypeConverter
 {
     internal static IEnumerable<Type> GetInstanceTypes(ITypeDescriptorContext context)
     {

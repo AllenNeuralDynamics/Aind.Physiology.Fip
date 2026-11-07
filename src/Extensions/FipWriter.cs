@@ -145,7 +145,7 @@ namespace FipExtensions
                 for (int i = 1; i < nRegions; i++)
                 {
                     var circle = input.Value[i].FipCircle;
-                    if (circle != null && !circle.Enabled) continue;
+                    if (circle != null && circle.Measurement != null && !circle.Measurement.Enabled) continue;
                     rois.Add(new KeyValuePair<int, int>(i, i - 1));
                 }
 

@@ -10,27 +10,27 @@ using FipExtensions;
 using Hexa.NET.ImGui;
 
 /// <summary>
-/// Represents an operator that renders the laser calibration control for the Fip camera
+/// Represents an operator that renders the light source calibration control for the Fip camera
 /// channels found in <see cref="LightSources"/>: a table with a color-filled light source cell, a
 /// 0-1 power slider with a real-unit readout, the power currently applied, the experiment power
 /// for comparison, a "Set CW" button and an On/Off state driven by <see cref="State"/>; "Off",
 /// "Fip Mode" and "Reset" buttons sit to the right of that table. Source1 = Frame subject.
 /// </summary>
 /// <remarks>
-/// "Set CW" emits a <see cref="ContinuousLaserTask"/> for that channel only and only affects
+/// "Set CW" emits a <see cref="ContinuousLightSourceTask"/> for that channel only and only affects
 /// the live preview slider/readout, not what an experiment will use (see
 /// <see cref="FipExperimentPowerVisualizer"/> for that). "Off"/"Fip Mode" emit a single
-/// <see cref="OffLaserTask"/>/<see cref="FipModeLaserTask"/>, since neither carries per-channel
+/// <see cref="OffLightSourceTask"/>/<see cref="FipModeLightSourceTask"/>, since neither carries per-channel
 /// data. "Reset" only restores every slider to the rig-config duty cycle and emits nothing.
 /// <see cref="State"/> should be fed (via PropertyMapping, from a feedback/readback subject)
-/// with whichever task is actually running, since only one <see cref="ITriggerLaserTask"/> can
+/// with whichever task is actually running, since only one <see cref="ITriggerLightSourceTask"/> can
 /// be active at a time; buttons/rows highlight themselves based on that, not their own click
-/// history. Use <see cref="LaserTaskOfType{TResult}"/> downstream to split this operator's mixed
+/// history. Use <see cref="LightSourceTaskOfType{TResult}"/> downstream to split this operator's mixed
 /// output back into a specific concrete type.
 /// </remarks>
 [Combinator]
 [WorkflowElementCategory(ElementCategory.Combinator)]
-[Description("Renders the laser calibration control: per light source a color-filled cell, 0-1 power slider, real-unit readout, current (applied) power, experiment power, Set CW button and On/Off state; plus Off / Fip Mode / Reset buttons to the right of the table. Set CW emits a ContinuousLaserTask for that channel and only affects the live preview. Off/Fip Mode emit a single OffLaserTask/FipModeLaserTask. Reset restores all sliders to the rig-config values without emitting anything. State should be fed the currently-running ITriggerLaserTask so the active mode/channel can be highlighted. Source1 = Frame subject; LightSources/State are set via PropertyMapping, not wired as Process arguments. Set Enabled to false to stop drawing the control.")]
+[Description("Renders the light source calibration control: per light source a color-filled cell, 0-1 power slider, real-unit readout, current (applied) power, experiment power, Set CW button and On/Off state; plus Off / Fip Mode / Reset buttons to the right of the table. Set CW emits a ContinuousLightSourceTask for that channel and only affects the live preview. Off/Fip Mode emit a single OffLightSourceTask/FipModeLightSourceTask. Reset restores all sliders to the rig-config values without emitting anything. State should be fed the currently-running ITriggerLightSourceTask so the active mode/channel can be highlighted. Source1 = Frame subject; LightSources/State are set via PropertyMapping, not wired as Process arguments. Set Enabled to false to stop drawing the control.")]
 public class FipCameraPowerControlVisualizer
 {
     private bool visible = true;
@@ -60,20 +60,20 @@ public class FipCameraPowerControlVisualizer
     public Dictionary<FipCameraSource, CalibratedLightSource> LightSources { get; set; }
 
     /// <summary>
-    /// Gets or sets the currently-running laser task, used to decide what to highlight as
+    /// Gets or sets the currently-running light source task, used to decide what to highlight as
     /// active. Not serialized: assign via PropertyMapping. Leave null if no feedback is available.
     /// </summary>
     [XmlIgnore]
-    public ITriggerLaserTask State { get; set; }
+    public ITriggerLightSourceTask State { get; set; }
 
     private class RowState
     {
         public float Power;
     }
 
-    public IObservable<ITriggerLaserTask> Process<TTickSource>(IObservable<TTickSource> frames)
+    public IObservable<ITriggerLightSourceTask> Process<TTickSource>(IObservable<TTickSource> frames)
     {
-        return Observable.Create<ITriggerLaserTask>(observer =>
+        return Observable.Create<ITriggerLightSourceTask>(observer =>
         {
             var rows = new Dictionary<FipCameraSource, RowState>();
 
@@ -87,7 +87,7 @@ public class FipCameraPowerControlVisualizer
 
                     var snapshot = LightSources ?? emptyLightSources;
                     var currentState = State;
-                    var activeContinuous = currentState as ContinuousLaserTask;
+                    var activeContinuous = currentState as ContinuousLightSourceTask;
 
                     // Seed newly-seen rows from the calibrated duty cycle; existing rows are
                     // left alone so we don't fight the user's slider drag.
@@ -118,9 +118,9 @@ public class FipCameraPowerControlVisualizer
     static void Draw(
         Dictionary<FipCameraSource, CalibratedLightSource> snapshot,
         Dictionary<FipCameraSource, RowState> rows,
-        ITriggerLaserTask currentState,
-        ContinuousLaserTask activeContinuous,
-        IObserver<ITriggerLaserTask> observer,
+        ITriggerLightSourceTask currentState,
+        ContinuousLightSourceTask activeContinuous,
+        IObserver<ITriggerLightSourceTask> observer,
         float renderFontSize)
     {
         // ImGuiStylePtr.ItemSpacing isn't supported by Bonsai's script-extensions
@@ -172,7 +172,7 @@ public class FipCameraPowerControlVisualizer
                 {
                     FipPowerUi.CenteredText(FipPowerUi.FormatPower(lightSource, activeContinuous.Power), FipPowerUi.ActiveColor);
                 }
-                else if (currentState is FipModeLaserTask && lightSource != null)
+                else if (currentState is FipModeLightSourceTask && lightSource != null)
                 {
                     FipPowerUi.CenteredText(lightSource.CalibratedPower.ToString("F1") + " µW", FipPowerUi.ActiveColor);
                 }
@@ -189,7 +189,7 @@ public class FipCameraPowerControlVisualizer
                 ImGui.PushStyleColor(ImGuiCol.Button, isActiveChannel ? FipPowerUi.ActiveColor : FipPowerUi.InactiveColor);
                 if (ImGui.Button("Set CW" + idSuffix, new Vector2(ImGui.GetContentRegionAvail().X, Math.Max(0f, FipPowerUi.RowHeight - 8f))))
                 {
-                    observer.OnNext(new ContinuousLaserTask(channel, row.Power));
+                    observer.OnNext(new ContinuousLightSourceTask(channel, row.Power));
                 }
                 ImGui.PopStyleColor();
 
@@ -215,15 +215,15 @@ public class FipCameraPowerControlVisualizer
         // buttons via their own State checks, not to show a state of its own.
         if (ImGui.Button("Off##FipCameraPowerControl", buttonSize))
         {
-            observer.OnNext(new OffLaserTask());
+            observer.OnNext(new OffLightSourceTask());
         }
 
-        var isFipMode = currentState is FipModeLaserTask;
+        var isFipMode = currentState is FipModeLightSourceTask;
         var fipModeLabel = isFipMode ? "Fip Mode (Active)##FipCameraPowerControl" : "Fip Mode##FipCameraPowerControl";
         ImGui.PushStyleColor(ImGuiCol.Button, isFipMode ? FipPowerUi.ActiveColor : FipPowerUi.InactiveColor);
         if (ImGui.Button(fipModeLabel, buttonSize))
         {
-            observer.OnNext(new FipModeLaserTask());
+            observer.OnNext(new FipModeLightSourceTask());
         }
         ImGui.PopStyleColor();
 

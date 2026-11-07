@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Xml.Serialization;
+using AindPhysiologyFip;
 using Bonsai;
 using FipExtensions;
 using Hexa.NET.ImGui;
@@ -21,7 +22,8 @@ using Hexa.NET.ImGui;
 /// range the light source can reach. Each committed edit (Enter, focus loss or slider release) emits a new
 /// dictionary with every channel's <see cref="CalibratedLightSource"/>, the edited one rebuilt
 /// with the resulting duty cycle. Nothing is emitted until the user edits something. Assigning a
-/// new <see cref="LightSources"/> instance discards pending edits and reloads the rows from it.
+/// new <see cref="LightSources"/> or <see cref="TaskLogic"/> instance discards pending edits and
+/// reloads the rows, with each channel's power defaulting to the task logic's value (0 if unset).
 /// </remarks>
 [Combinator]
 [WorkflowElementCategory(ElementCategory.Combinator)]
@@ -54,6 +56,54 @@ public class FipExperimentPowerVisualizer
     [XmlIgnore]
     public Dictionary<FipCameraSource, CalibratedLightSource> LightSources { get; set; }
 
+    /// <summary>
+    /// Gets or sets the task logic that provides the default power of each channel (Green = blue
+    /// light, Iso = UV light, Red = lime light). A channel the task logic doesn't set, or a null
+    /// task logic, defaults to 0. Not serialized: assign via PropertyMapping rather than the
+    /// property grid.
+    /// </summary>
+    [XmlIgnore]
+    [Description("The task logic providing the default power (uW) of each channel: Green = Power.Blue, Iso = Power.Uv, Red = Power.Lime. Unset powers, or a null task logic, default to 0. Set via PropertyMapping, not wired as a Process argument.")]
+    public AindPhysioFipTaskLogic TaskLogic { get; set; }
+
+    static double? TaskPower(FipCameraSource channel, AindPhysioFipTaskLogic taskLogic)
+    {
+        if (taskLogic == null || taskLogic.TaskParameters == null || taskLogic.TaskParameters.Power == null) return null;
+        var power = taskLogic.TaskParameters.Power;
+        switch (channel)
+        {
+            case FipCameraSource.Green: return power.Blue;
+            case FipCameraSource.Iso: return power.Uv;
+            case FipCameraSource.Red: return power.Lime;
+            default: return null;
+        }
+    }
+
+    // Rebuilds every channel with the task logic's power (0 when unset), clamped to what the
+    // light source can reach, converted to a duty cycle through its calibration.
+    static Dictionary<FipCameraSource, CalibratedLightSource> ApplyTaskPowers(
+        Dictionary<FipCameraSource, CalibratedLightSource> lightSources, AindPhysioFipTaskLogic taskLogic)
+    {
+        var result = new Dictionary<FipCameraSource, CalibratedLightSource>();
+        foreach (var pair in lightSources)
+        {
+            var lightSource = pair.Value;
+            if (lightSource == null)
+            {
+                result[pair.Key] = null;
+                continue;
+            }
+
+            var low = lightSource.DutyCycleToPower.Interpolate(0);
+            var high = lightSource.DutyCycleToPower.Interpolate(1);
+            var power = Math.Max(Math.Min(low, high), Math.Min(Math.Max(low, high), TaskPower(pair.Key, taskLogic) ?? 0));
+            result[pair.Key] = new CalibratedLightSource(
+                lightSource.LightSource, lightSource.DutyCycleToPower, lightSource.PowerToDutyCycle,
+                lightSource.PowerToDutyCycle.Interpolate(power));
+        }
+        return result;
+    }
+
     // Pending (uncommitted) values of a row being edited. Power is in display units
     // (microwatts, or percent when uncalibrated).
     private class EditState
@@ -67,6 +117,7 @@ public class FipExperimentPowerVisualizer
         return Observable.Create<Dictionary<FipCameraSource, CalibratedLightSource>>(observer =>
         {
             Dictionary<FipCameraSource, CalibratedLightSource> source = null;
+            AindPhysioFipTaskLogic appliedTaskLogic = null;
             Dictionary<FipCameraSource, CalibratedLightSource> current = emptyLightSources;
             var edits = new Dictionary<FipCameraSource, EditState>();
 
@@ -78,12 +129,15 @@ public class FipExperimentPowerVisualizer
 
                     if (!Visible) return;
 
-                    // A new input instance resets the edit state to what it contains.
+                    // A new input or task logic instance resets the edit state to the task logic's
+                    // default powers (0 without one) applied to the input's light sources.
                     var input = LightSources ?? emptyLightSources;
-                    if (!ReferenceEquals(input, source))
+                    var taskLogic = TaskLogic;
+                    if (!ReferenceEquals(input, source) || !ReferenceEquals(taskLogic, appliedTaskLogic))
                     {
                         source = input;
-                        current = input;
+                        appliedTaskLogic = taskLogic;
+                        current = ApplyTaskPowers(input, taskLogic);
                         edits.Clear();
                     }
 

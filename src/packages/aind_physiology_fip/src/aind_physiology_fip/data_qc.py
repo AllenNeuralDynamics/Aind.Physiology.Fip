@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pydantic
 import pydantic_settings
+from aind_behavior_services.common import Circle
 from contraqctor import contract
 from contraqctor.qc import ContextExportableObj, Runner, Suite
 from contraqctor.qc.contract import ContractTestSuite
@@ -191,7 +192,7 @@ class FipRawImageTestSuite(Suite):
         self,
         binary_raw_data: FipRawFrame,
         color_channel: contract.csv.Csv,
-        background_region: FipCircle,
+        background_region: Circle,
         regions: list[FipCircle],
         *,
         cv_threshold: float = 0.05,
@@ -217,7 +218,7 @@ class FipRawImageTestSuite(Suite):
             )
 
     @staticmethod
-    def _get_pixels_in_circle(array: np.ndarray, circle: FipCircle) -> tuple[np.ndarray, np.ndarray]:
+    def _get_pixels_in_circle(array: np.ndarray, circle: Circle) -> tuple[np.ndarray, np.ndarray]:
         h, w = array.shape[:2]
         y, x = np.ogrid[:h, :w]
         mask = (x - circle.center.x) ** 2 + (y - circle.center.y) ** 2 <= circle.radius**2
@@ -236,7 +237,7 @@ class FipRawImageTestSuite(Suite):
 
     @staticmethod
     def _render_roi(
-        image: np.ndarray, circle: FipCircle, text: str, color: tuple[int, int, int] = (255, 0, 0), thickness: int = 1
+        image: np.ndarray, circle: Circle, text: str, color: tuple[int, int, int] = (255, 0, 0), thickness: int = 1
     ) -> np.ndarray:
         """Render a circle on the image."""
         image = cv2.circle(image, (int(circle.center.x), int(circle.center.y)), int(circle.radius), color, thickness)
@@ -272,9 +273,9 @@ class FipRawImageTestSuite(Suite):
         render_image = self._render_roi(render_image, self.background_region, "B")
 
         for i, r in enumerate(self.regions):
-            pixels_inside, _ = self._get_pixels_in_circle(reference_image, r)
+            pixels_inside, _ = self._get_pixels_in_circle(reference_image, r.circle)
             cv = self._coefficient_of_variation(pixels_inside)
-            render_image = self._render_roi(render_image, r, f"{i}")
+            render_image = self._render_roi(render_image, r.circle, f"{i}")
 
             metrics[f"roi_{i}_cv"] = cv
 

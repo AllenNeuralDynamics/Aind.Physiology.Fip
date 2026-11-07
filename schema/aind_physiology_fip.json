@@ -90,9 +90,121 @@
       "title": "AindPhysioFipRig",
       "type": "object"
     },
+    "AindPhysioFipTaskLogic": {
+      "additionalProperties": false,
+      "description": "Task logic for the AIND FIP photometry system.",
+      "properties": {
+        "name": {
+          "const": "AindPhysioFip",
+          "default": "AindPhysioFip",
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "description": "Description of the task.",
+          "title": "Description",
+          "type": "string"
+        },
+        "task_parameters": {
+          "$ref": "#/$defs/AindPhysioFipTaskParameters",
+          "description": "Parameters of the task"
+        },
+        "version": {
+          "const": "0.4.0",
+          "default": "0.4.0",
+          "title": "Version",
+          "type": "string"
+        },
+        "stage_name": {
+          "default": null,
+          "description": "Optional stage name the `Task` object instance represents.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stage Name"
+        }
+      },
+      "title": "AindPhysioFipTaskLogic",
+      "type": "object"
+    },
+    "AindPhysioFipTaskParameters": {
+      "additionalProperties": true,
+      "description": "Parameters of the FIP task, mirroring what the UI lets the user change.",
+      "properties": {
+        "rng_seed": {
+          "default": null,
+          "description": "Seed of the random number generator",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rng Seed"
+        },
+        "aind_behavior_services_pkg_version": {
+          "default": "0.13.8",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "title": "aind_behavior_services package version",
+          "type": "string"
+        },
+        "measurements": {
+          "description": "Measurements used in the experiment.",
+          "items": {
+            "$ref": "#/$defs/Measurement"
+          },
+          "title": "Measurements",
+          "type": "array"
+        },
+        "power": {
+          "default": null,
+          "description": "Power of the light sources.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/LightSourcesPower"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "title": "AindPhysioFipTaskParameters",
+      "type": "object"
+    },
     "BaseModel": {
       "properties": {},
       "title": "BaseModel",
+      "type": "object"
+    },
+    "Circle": {
+      "description": "Represents a circle defined by its center point and radius.",
+      "properties": {
+        "center": {
+          "$ref": "#/$defs/Point2f",
+          "default": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "description": "Center of the circle (px)"
+        },
+        "radius": {
+          "default": 1,
+          "description": "Radius of the circle (px)",
+          "minimum": 0,
+          "title": "Radius",
+          "type": "number"
+        }
+      },
+      "title": "Circle",
       "type": "object"
     },
     "FipCamera": {
@@ -144,71 +256,21 @@
       "type": "object"
     },
     "FipCircle": {
-      "description": "Describes a circle in the FIP system with associated ROI, fiber, and optional name.",
+      "description": "Describes a circle in the FIP system together with the measurement (fiber, ROI, name) it belongs to.",
       "properties": {
-        "center": {
-          "$ref": "#/$defs/Point2f",
-          "default": {
-            "x": 0.0,
-            "y": 0.0
-          },
-          "description": "Center of the circle (px)"
+        "circle": {
+          "$ref": "#/$defs/Circle",
+          "description": "Geometry of the circle."
         },
-        "radius": {
-          "default": 1,
-          "description": "Radius of the circle (px)",
-          "minimum": 0,
-          "title": "Radius",
-          "type": "number"
-        },
-        "roi_number": {
-          "default": null,
-          "description": "ROI number associated with the circle",
-          "oneOf": [
-            {
-              "minimum": 0,
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Roi Number"
-        },
-        "fiber_number": {
-          "default": null,
-          "description": "Fiber number associated with the circle",
-          "oneOf": [
-            {
-              "minimum": 0,
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Fiber Number"
-        },
-        "name": {
-          "default": null,
-          "description": "Name associated with the circle",
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Name"
-        },
-        "enabled": {
-          "default": true,
-          "description": "Indicates whether the circle is enabled",
-          "title": "Enabled",
-          "type": "boolean"
+        "measurement": {
+          "$ref": "#/$defs/Measurement",
+          "description": "Measurement (fiber, ROI, name, enabled) associated with the circle."
         }
       },
+      "required": [
+        "circle",
+        "measurement"
+      ],
       "title": "FipCircle",
       "type": "object"
     },
@@ -340,7 +402,7 @@
         },
         "calibration": {
           "default": null,
-          "description": "Calibration for the LightSource. If left empty, 'power' will be used as duty-cycle (0-100).",
+          "description": "Calibration for the LightSource, converting duty cycle to power (uW).",
           "oneOf": [
             {
               "$ref": "#/$defs/LightSourceCalibration"
@@ -350,13 +412,6 @@
             }
           ],
           "title": "Calibration"
-        },
-        "power": {
-          "default": 0,
-          "description": "Power (uW)",
-          "minimum": 0,
-          "title": "Power",
-          "type": "number"
         },
         "task": {
           "$ref": "#/$defs/FipTask",
@@ -388,6 +443,77 @@
         "power_lut"
       ],
       "title": "LightSourceCalibration",
+      "type": "object"
+    },
+    "LightSourcesPower": {
+      "properties": {
+        "blue": {
+          "description": "Power of the blue light source in uW.",
+          "minimum": 0,
+          "title": "Blue",
+          "type": "number"
+        },
+        "uv": {
+          "description": "Power of the UV light source in uW.",
+          "minimum": 0,
+          "title": "Uv",
+          "type": "number"
+        },
+        "lime": {
+          "description": "Power of the lime light source in uW.",
+          "minimum": 0,
+          "title": "Lime",
+          "type": "number"
+        }
+      },
+      "required": [
+        "blue",
+        "uv",
+        "lime"
+      ],
+      "title": "LightSourcesPower",
+      "type": "object"
+    },
+    "Measurement": {
+      "description": "Description of a single fiber.",
+      "properties": {
+        "fiber_number": {
+          "description": "Fiber number.",
+          "minimum": 0,
+          "title": "Fiber Number",
+          "type": "integer"
+        },
+        "roi_number": {
+          "description": "ROI number associated with the fiber.",
+          "minimum": 0,
+          "title": "Roi Number",
+          "type": "integer"
+        },
+        "name": {
+          "default": null,
+          "description": "Name associated with the ROI. E.g.: target brain area or structure.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Name"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Whether the fiber is enabled.",
+          "title": "Enabled",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "fiber_number",
+        "roi_number"
+      ],
+      "title": "Measurement",
       "type": "object"
     },
     "Networking": {
@@ -463,11 +589,11 @@
       "description": "Region of Interest (ROI) settings for camera channels in the FIP system.",
       "properties": {
         "camera_green_iso_background": {
-          "$ref": "#/$defs/FipCircle",
+          "$ref": "#/$defs/Circle",
           "description": "ROI to compute the background for the green/iso camera channel"
         },
         "camera_red_background": {
-          "$ref": "#/$defs/FipCircle",
+          "$ref": "#/$defs/Circle",
           "description": "ROI to compute the background for the red camera channel"
         },
         "camera_green_iso_roi": {

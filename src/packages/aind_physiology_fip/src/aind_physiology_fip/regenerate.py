@@ -7,6 +7,7 @@ from aind_behavior_services.session import Session
 
 from aind_physiology_fip import rig
 from aind_physiology_fip.extra_types import FipCircle, RoiSettings
+from aind_physiology_fip.task_logic import AindPhysioFipTaskLogic
 
 SCHEMA_ROOT = Path("./schema/")
 EXTENSIONS_ROOT = Path("./src/Extensions/")
@@ -18,6 +19,7 @@ def main():
         rig.AindPhysioFipRig,
         FipCircle,
         RoiSettings,
+        AindPhysioFipTaskLogic,
         Session,
     ]
 

@@ -9,30 +9,30 @@ using Bonsai;
 using Bonsai.Expressions;
 
 /// <summary>
-/// Represents an operator that creates an <see cref="ITriggerLaserTask"/> of a type selected
-/// from the property grid (<see cref="ContinuousLaserTask"/>, <see cref="FipModeLaserTask"/>, or
-/// <see cref="OffLaserTask"/>), exposing that type's own properties (e.g. Channel/Power for
-/// ContinuousLaserTask) directly on this node rather than nested under a sub-object. With no
+/// Represents an operator that creates an <see cref="ITriggerLightSourceTask"/> of a type selected
+/// from the property grid (<see cref="ContinuousLightSourceTask"/>, <see cref="FipModeLightSourceTask"/>, or
+/// <see cref="OffLightSourceTask"/>), exposing that type's own properties (e.g. Channel/Power for
+/// ContinuousLightSourceTask) directly on this node rather than nested under a sub-object. With no
 /// source wired, emits the configured task once on subscribe; with a source wired, re-emits it
 /// once for every notification from that source (e.g. wire a button's output to re-trigger it).
 /// </summary>
 [DefaultProperty("Payload")]
-[Description("Creates an ITriggerLaserTask of the selected type (ContinuousLaserTask, FipModeLaserTask, or OffLaserTask). With no source wired, emits it once on subscribe; with a source wired, re-emits it once per source notification.")]
+[Description("Creates an ITriggerLightSourceTask of the selected type (ContinuousLightSourceTask, FipModeLightSourceTask, or OffLightSourceTask). With no source wired, emits it once on subscribe; with a source wired, re-emits it once per source notification.")]
 [WorkflowElementCategory(ElementCategory.Source)]
-[XmlInclude(typeof(ContinuousLaserTask))]
-[XmlInclude(typeof(FipModeLaserTask))]
-[XmlInclude(typeof(OffLaserTask))]
-public class CreateLaserTask : ExpressionBuilder, ICustomTypeDescriptor
+[XmlInclude(typeof(ContinuousLightSourceTask))]
+[XmlInclude(typeof(FipModeLightSourceTask))]
+[XmlInclude(typeof(OffLightSourceTask))]
+public class CreateLightSourceTask : ExpressionBuilder, ICustomTypeDescriptor
 {
     static readonly Range<int> argumentRange = Range.Create(0, 1);
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CreateLaserTask"/> class, defaulting to
-    /// <see cref="OffLaserTask"/>.
+    /// Initializes a new instance of the <see cref="CreateLightSourceTask"/> class, defaulting to
+    /// <see cref="OffLightSourceTask"/>.
     /// </summary>
-    public CreateLaserTask()
+    public CreateLightSourceTask()
     {
-        Operator = new OffLaserTask();
+        Operator = new OffLightSourceTask();
     }
 
     /// <inheritdoc/>
@@ -44,7 +44,7 @@ public class CreateLaserTask : ExpressionBuilder, ICustomTypeDescriptor
     object Operator { get; set; }
 
     /// <summary>
-    /// Gets or sets the concrete <see cref="ITriggerLaserTask"/> instance to build, selected by
+    /// Gets or sets the concrete <see cref="ITriggerLightSourceTask"/> instance to build, selected by
     /// type from the property grid. Not meant to be wired as a workflow property directly; its
     /// own properties (once a type is selected) are what should be externalized/mapped instead.
     /// </summary>
@@ -52,8 +52,8 @@ public class CreateLaserTask : ExpressionBuilder, ICustomTypeDescriptor
     [Externalizable(false)]
     [RefreshProperties(RefreshProperties.All)]
     [Category("Design")]
-    [Description("Specifies the type of laser task to create.")]
-    [TypeConverter(typeof(LaserTaskTypeConverter))]
+    [Description("Specifies the type of light source task to create.")]
+    [TypeConverter(typeof(LightSourceTaskTypeConverter))]
     public object Payload
     {
         get { return Operator; }
@@ -64,8 +64,8 @@ public class CreateLaserTask : ExpressionBuilder, ICustomTypeDescriptor
     public override Expression Build(IEnumerable<Expression> arguments)
     {
         var source = arguments.FirstOrDefault();
-        var payload = Expression.Constant(Payload, typeof(ITriggerLaserTask));
-        var combinator = Expression.Constant(this, typeof(CreateLaserTask));
+        var payload = Expression.Constant(Payload, typeof(ITriggerLightSourceTask));
+        var combinator = Expression.Constant(this, typeof(CreateLightSourceTask));
 
         if (source == null)
         {
@@ -78,12 +78,12 @@ public class CreateLaserTask : ExpressionBuilder, ICustomTypeDescriptor
         }
     }
 
-    IObservable<ITriggerLaserTask> Process(ITriggerLaserTask payload)
+    IObservable<ITriggerLightSourceTask> Process(ITriggerLightSourceTask payload)
     {
         return Observable.Defer(delegate { return Observable.Return(payload); });
     }
 
-    IObservable<ITriggerLaserTask> Process<TSource>(IObservable<TSource> source, ITriggerLaserTask payload)
+    IObservable<ITriggerLightSourceTask> Process<TSource>(IObservable<TSource> source, ITriggerLightSourceTask payload)
     {
         return source.Select(delegate(TSource _) { return payload; });
     }

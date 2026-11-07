@@ -85,7 +85,8 @@ class FipChannelMetadataTestSuite(Suite):
 class FipChannelSignalTestSuite(Suite):
     """Quality control tests for FIP signal for a given color channel."""
 
-    _reg_exp_ = r"Fiber_\d+"
+    # ROI_N is the column name; Keep Fiber_ for backward compatibility.
+    _reg_exp_ = r"(?:ROI|Fiber)_\d+"
 
     def __init__(
         self,

@@ -36,7 +36,7 @@ def test_run_tests_runs_every_qc_suite_per_channel(results):
 
 def test_run_tests_flags_injected_fault(session_factory):
     """A NaN injected into the signal surfaces as a failed test_has_nans."""
-    results = _run_tests(dataset(session_factory(nan_at=("Fiber_0", 5))))
+    results = _run_tests(dataset(session_factory(nan_at=("ROI_0", 5))))
     failed = {r.test_name for r in results["green"] if r.status == Status.FAILED}
     assert "test_has_nans" in failed
 

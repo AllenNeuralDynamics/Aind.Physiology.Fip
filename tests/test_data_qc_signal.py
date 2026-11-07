@@ -35,13 +35,13 @@ def test_has_nans_passes_on_clean_data(session_factory):
 
 def test_has_nans_counts_nans(session_factory):
     """A single injected NaN fails and is counted in the message."""
-    result = _suite(session_factory(nan_at=("Fiber_1", 10))).test_has_nans()
+    result = _suite(session_factory(nan_at=("ROI_1", 10))).test_has_nans()
     assert result.status == Status.FAILED
     assert "1 NaNs" in result.message
 
 
 def test_sudden_changes_reports_every_fiber_and_ignores_other_columns(session_factory):
-    """One result per Fiber_N column; Background and camera columns are not checked."""
+    """One result per ROI_N column; Background and camera columns are not checked."""
     results = list(_suite(session_factory(n_fibers=3)).test_sudden_changes())
     assert len(results) == 3
     assert all(r.status == Status.PASSED for r in results)
@@ -49,19 +49,19 @@ def test_sudden_changes_reports_every_fiber_and_ignores_other_columns(session_fa
 
 def test_sudden_changes_flags_only_the_affected_fiber(session_factory):
     """A spike in one fiber fails only that fiber."""
-    results = list(_suite(session_factory(spike_at=("Fiber_2", 50, 5000.0))).test_sudden_changes())
-    status_by_fiber = {f"Fiber_{i}": r.status for i, r in enumerate(results)}
+    results = list(_suite(session_factory(spike_at=("ROI_2", 50, 5000.0))).test_sudden_changes())
+    status_by_fiber = {f"ROI_{i}": r.status for i, r in enumerate(results)}
     assert status_by_fiber == {
-        "Fiber_0": Status.PASSED,
-        "Fiber_1": Status.PASSED,
-        "Fiber_2": Status.FAILED,
-        "Fiber_3": Status.PASSED,
+        "ROI_0": Status.PASSED,
+        "ROI_1": Status.PASSED,
+        "ROI_2": Status.FAILED,
+        "ROI_3": Status.PASSED,
     }
 
 
 def test_sudden_changes_respects_configured_limit(session_factory):
     """A spike passes under a high limit and fails under a low one."""
     # A single-sample spike of 1500 produces two ~1500 steps (up and down)
-    root = session_factory(spike_at=("Fiber_2", 50, 1500.0))
+    root = session_factory(spike_at=("ROI_2", 50, 1500.0))
     assert all(r.status == Status.PASSED for r in _suite(root, sudden_change_limit=2000).test_sudden_changes())
     assert any(r.status == Status.FAILED for r in _suite(root, sudden_change_limit=1000).test_sudden_changes())

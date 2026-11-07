@@ -2,7 +2,7 @@
 
 The layout and column names mirror a real acquisition (see ``tests/fixtures/real_session_head``):
 every channel csv is indexed by ``ReferenceTime`` (seconds) and has ``CameraFrameNumber``,
-``CameraFrameTime`` (ns), ``Background`` and ``Fiber_<n>`` columns.
+``CameraFrameTime`` (ns), ``Background`` and ``ROI_<n>`` columns.
 """
 
 import dataclasses
@@ -75,7 +75,7 @@ def _channel_df(
         }
     )
     for k in range(spec.n_fibers):
-        df[f"Fiber_{k}"] = rng.normal(ROI_INTENSITY, 5.0, n_rows)
+        df[f"ROI_{k}"] = rng.normal(ROI_INTENSITY, 5.0, n_rows)
     if not inject_faults:
         return df
     if spec.spike_at is not None and spec.spike_at[0] in df.columns:

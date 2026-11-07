@@ -74,18 +74,16 @@
                 <Property Name="PortName" />
               </PropertyMappings>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="p3:Device">
-                  <harp:OperationMode>Active</harp:OperationMode>
-                  <harp:OperationLed>On</harp:OperationLed>
-                  <harp:DumpRegisters>true</harp:DumpRegisters>
-                  <harp:VisualIndicators>Off</harp:VisualIndicators>
-                  <harp:Heartbeat>Enabled</harp:Heartbeat>
-                  <harp:IgnoreErrors>false</harp:IgnoreErrors>
-                  <harp:PortName>COMx</harp:PortName>
-                </Combinator>
-              </Builder>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="p3:Device">
+                <harp:OperationMode>Active</harp:OperationMode>
+                <harp:OperationLed>On</harp:OperationLed>
+                <harp:DumpRegisters>true</harp:DumpRegisters>
+                <harp:VisualIndicators>Off</harp:VisualIndicators>
+                <harp:Heartbeat>Enabled</harp:Heartbeat>
+                <harp:IgnoreErrors>false</harp:IgnoreErrors>
+                <harp:PortName>COMx</harp:PortName>
+              </Combinator>
             </Expression>
             <Expression xsi:type="rx:PublishSubject">
               <Name>CuttlefishFipEvents</Name>

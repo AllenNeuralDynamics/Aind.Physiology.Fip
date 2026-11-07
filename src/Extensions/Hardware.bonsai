@@ -600,7 +600,7 @@
                 <rx:Count>1</rx:Count>
               </Combinator>
             </Expression>
-            <Expression xsi:type="rx:AsyncSubject">
+            <Expression xsi:type="rx:BehaviorSubject">
               <Name>CalibratedLightSources</Name>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />

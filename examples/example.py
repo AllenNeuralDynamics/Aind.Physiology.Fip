@@ -2,8 +2,10 @@ import argparse
 import datetime
 import os
 
+from aind_behavior_services.common import Circle, Point2f
 from aind_behavior_services.rig.harp import HarpCuttlefishfip
 from aind_behavior_services.session import Session
+from aind_physiology_fip.extra_types import FipCircle, RoiSettings
 from aind_physiology_fip.rig import (
     AindPhysioFipRig,
     FipCamera,
@@ -13,6 +15,7 @@ from aind_physiology_fip.rig import (
     Networking,
     Ports,
 )
+from aind_physiology_fip.task_logic import Measurement
 
 
 def mock_session() -> Session:
@@ -25,6 +28,28 @@ def mock_session() -> Session:
         allow_dirty_repo=True,
         skip_hardware_validation=False,
         experimenter=["Foo", "Bar"],
+    )
+
+
+def mock_roi_settings() -> RoiSettings:
+    """Generates a mock RoiSettings model with four ROIs per camera"""
+
+    def make_rois() -> list[FipCircle]:
+        centers = [(x, y) for x in (50, 150) for y in (50, 150)]
+        return [
+            FipCircle(
+                circle=Circle(center=Point2f(x=x, y=y), radius=20),
+                measurement=Measurement(roi_number=i, fiber_number=i),
+            )
+            for i, (x, y) in enumerate(centers)
+        ]
+
+    background = Circle(center=Point2f(x=10, y=10), radius=10)
+    return RoiSettings(
+        camera_green_iso_background=background,
+        camera_red_background=background,
+        camera_green_iso_roi=make_rois(),
+        camera_red_roi=make_rois(),
     )
 
 

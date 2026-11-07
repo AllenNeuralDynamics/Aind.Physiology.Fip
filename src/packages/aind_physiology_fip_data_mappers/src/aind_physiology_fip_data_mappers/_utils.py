@@ -26,7 +26,7 @@ class TrackedDeviceName(enum.StrEnum):
     COMPUTER = "computer"
     # The name the behavior tasks use for the shared WhiteRabbit, so the instruments merge into one.
     CLOCK_GENERATOR = "harp_clock_generator"
-    CUTTLEFISH = "cuTTLefishFip"
+    CUTTLEFISH_FIP = "cuTTLefishFip"
     CAMERA_GREEN_ISO = "Green CMOS"
     CAMERA_RED = "Red CMOS"
     LED_UV = "415nm LED"
@@ -262,3 +262,33 @@ def port_names(ports: Ports) -> list[str]:
     own connection. ``Ports.NONE`` yields nothing.
     """
     return [line.name for line in Ports if line.value and line in ports]
+
+
+# -------------------------------
+# Photometry channels
+# -------------------------------
+
+
+@dataclasses.dataclass(frozen=True)
+class ChannelSpec:
+    """One photometry channel: the LED that excites it and the camera that records its emission.
+
+    Every patch cord carries all three channels, since each fiber is excited by every LED in turn.
+    """
+
+    name: str
+    led: LedId
+    camera: CameraSpec
+    emission_wavelength: int
+
+
+FIP_CHANNELS: tuple[ChannelSpec, ...] = (
+    ChannelSpec("Green", LedId.BLUE, GREEN_ISO_CAMERA, 520),
+    ChannelSpec("Isosbestic", LedId.UV, GREEN_ISO_CAMERA, 520),
+    ChannelSpec("Red", LedId.LIME, RED_CAMERA, 590),
+)
+
+
+def patch_cord_name(index: int) -> str:
+    """Name of the patch cord at ``index``, which also collects ROI ``index`` on each camera."""
+    return f"Patch Cord {index}"

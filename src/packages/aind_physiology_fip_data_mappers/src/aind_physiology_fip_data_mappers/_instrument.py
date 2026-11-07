@@ -388,7 +388,7 @@ class AindInstrumentDataMapper:
     def _get_cuttlefish_device(rig: AindPhysioFipRig) -> devices.HarpDevice:
         """Gets the cuttlefish device"""
         return devices.HarpDevice(
-            name=TrackedDeviceName.CUTTLEFISH,
+            name=TrackedDeviceName.CUTTLEFISH_FIP,
             serial_number=rig.cuttlefish_fip.serial_number,
             harp_device_type=devices.HarpDeviceType.CUTTLEFISHFIP,
             manufacturer=devices.Organization.OEPS,

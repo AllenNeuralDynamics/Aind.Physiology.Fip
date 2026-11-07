@@ -197,7 +197,8 @@ For a list of available subcommands and options, run:
 
 ## Generating `aind-data-schema` metadata
 
-The AIND acquisition and instrument mapper classes are placeholders for upcoming implementations. The `fip-data-mapper` CLI exposes their intended interface and currently raises `NotImplementedError` when run.
+The `fip-data-mapper` CLI maps a session to `instrument_fib.json` and `acquisition_fib.json`, written into the session directory.
+
 The repository will maintain tools to generate `aind-data-schema` compliant metadata for experiments run using the FIP system:
 
 1. Install the `mappers` optional dependencies:
@@ -212,16 +213,15 @@ uv sync
 uv run fip-data-mapper --help
 ```
 
-Alternatively, you can use the mapping classes directly. For instance to run the mapper for instrument data:
+Alternatively, you can use the mapping classes directly. For instance to map the acquisition:
 
 ```python
-from pathlib import Path
+from aind_physiology_fip_data_mappers import AindAcquisitionDataMapper
 
-from aind_physiology_fip_data_mappers import AindInstrumentDataMapper
-
-instrument_mapped = AindInstrumentDataMapper(data_path=Path("path to dataset")).map()
-with open("instrument_fib.json", "w", encoding="utf-8") as f:
-    f.write(instrument_mapped.model_dump_json(indent=2))
+data_path = "path to dataset"
+acquisition_mapped = AindAcquisitionDataMapper(data_path).map()
+with open("acquisition_fib.json", "w", encoding="utf-8") as f:
+    f.write(acquisition_mapped.model_dump_json(indent=2))
 ```
 
 ## Regenerating schemas

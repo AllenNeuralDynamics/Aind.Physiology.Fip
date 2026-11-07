@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v9.0.0
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
 
@@ -43,7 +43,7 @@ jobs:
         run: uv run codespell --check-filenames
 
       - name: Setup .NET Core SDK
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 8.x
 
@@ -61,7 +61,7 @@ jobs:
         run: uv run fip regenerate
 
       - name: Build
-        run: uv build
+        run: uv build --all-packages
 
       - name: Check for uncommitted changes
         shell: bash
@@ -90,7 +90,7 @@ jobs:
           fetch-depth: 0
           ref: main
 
-      - uses: astral-sh/setup-uv@v9.0.0
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
 
@@ -102,11 +102,13 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "Setting version to: $version"
 
+      # The repository root is a uv workspace without a project of its own, so the released
+      # package must be named explicitly.
       - name: Validate version tag format
-        run: uv version ${{ steps.get_version.outputs.version }} --dry-run
+        run: uv version --package aind-physiology-fip ${{ steps.get_version.outputs.version }} --dry-run
 
       - name: Set version
-        run: uv version ${{ steps.get_version.outputs.version }}
+        run: uv version --package aind-physiology-fip ${{ steps.get_version.outputs.version }}
 
       - name: Regenerate schemas
         run: uv run fip regenerate
@@ -115,7 +117,7 @@ jobs:
         run: uv run ./examples/example.py --path-seed "./examples/{schema}.json"
 
       - name: Build
-        run: uv build
+        run: uv build --package aind-physiology-fip
 
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v7
@@ -151,12 +153,12 @@ jobs:
     if: github.event_name == 'release' && !github.event.release.prerelease
     steps:
       - name: Download wheels artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/
 
-      - uses: astral-sh/setup-uv@v9.0.0
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
 
@@ -188,7 +190,7 @@ jobs:
           ref: main
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
 

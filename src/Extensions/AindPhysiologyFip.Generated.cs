@@ -45,7 +45,7 @@ namespace AindPhysiologyFip
     
         public AindPhysioFipRig()
         {
-            _aindBehaviorServicesPkgVersion = "0.13.8";
+            _aindBehaviorServicesPkgVersion = "0.13.9";
             _version = "0.4.0";
             _cameraGreenIso = new FipCamera();
             _cameraRed = new FipCamera();
@@ -486,7 +486,7 @@ namespace AindPhysiologyFip
     
         public AindPhysioFipTaskParameters()
         {
-            _aindBehaviorServicesPkgVersion = "0.13.8";
+            _aindBehaviorServicesPkgVersion = "0.13.9";
             _measurements = new System.Collections.Generic.List<Measurement>();
         }
     
@@ -2178,8 +2178,8 @@ namespace AindPhysiologyFip
     
         public Session()
         {
-            _aindBehaviorServicesPkgVersion = "0.13.8";
-            _version = "0.13.8";
+            _aindBehaviorServicesPkgVersion = "0.13.9";
+            _version = "0.13.9";
             _experimenter = new System.Collections.Generic.List<string>();
             _allowDirtyRepo = false;
             _skipHardwareValidation = false;

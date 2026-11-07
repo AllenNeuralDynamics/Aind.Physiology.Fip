@@ -150,7 +150,7 @@ namespace FipExtensions
                 }
 
                 regionOrder = new[] { 0 }.Concat(rois.Select(roi => roi.Key)).ToArray();
-                columns.AddRange(rois.Select(roi => "Fiber_" + roi.Value.ToString(CultureInfo.InvariantCulture)));
+                columns.AddRange(rois.Select(roi => "ROI_" + roi.Value.ToString(CultureInfo.InvariantCulture)));
                 var header = string.Join(",", columns);
                 writer.WriteLine(header);
                 return writer;

@@ -152,6 +152,16 @@ To run the acquisition workflow using the CLI, use the following command:
 
 Additional flags can be passed to automatically start the workflow (`--start`) or run in headless mode (`--no-editor`) as stated in the Bonsai CLI documentation.
 
+#### Photobleaching
+
+`./src/photobleaching.bonsai` keeps the blue light source on continuously at full power (PWM duty cycle 1), for example for hours to photobleach a fiber. It only takes the rig configuration as input, does not trigger the cameras and does not save data. Its window shows the time spent bleaching, when it is scheduled to stop, and a `Stop` button, which turns the light source off and closes the workflow.
+
+```bash
+"./.bonsai/bonsai.exe" "./src/photobleaching.bonsai" --no-editor -p RigPath="../path/to/rig.json"
+```
+
+The workflow also stops on its own, as if `Stop` were pressed, the next time the local clock reads `StopTime` after the light source turns on (by default 08:00, e.g. `-p StopTime=07:30:00`). A run started after `StopTime` stops at that time the next day.
+
 #### Acquiring data
 
 Once the workflow is running, a UI will pop up and users can start acquisition by clicking `Start`. The system will then begin to acquire data from the cameras and store it in the specified session directory. Once the session is ready to stop, users can click `Stop` in the UI. The system will then save the session data and stop/close the workflow.

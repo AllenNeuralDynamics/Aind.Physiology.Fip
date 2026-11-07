@@ -164,50 +164,17 @@
           "title": "Measurements",
           "type": "array"
         },
-        "blue_power": {
+        "power": {
           "default": null,
-          "description": "Power of the blue light source in uW.",
+          "description": "Power of the light sources.",
           "oneOf": [
             {
-              "description": "Power (uW)",
-              "minimum": 0,
-              "type": "number"
+              "$ref": "#/$defs/LightSourcesPower"
             },
             {
               "type": "null"
             }
-          ],
-          "title": "Blue Power"
-        },
-        "uv_power": {
-          "default": null,
-          "description": "Power of the UV light source in uW.",
-          "oneOf": [
-            {
-              "description": "Power (uW)",
-              "minimum": 0,
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Uv Power"
-        },
-        "lime_power": {
-          "default": null,
-          "description": "Power of the lime light source in uW.",
-          "oneOf": [
-            {
-              "description": "Power (uW)",
-              "minimum": 0,
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Lime Power"
+          ]
         }
       },
       "title": "AindPhysioFipTaskParameters",
@@ -476,6 +443,35 @@
         "power_lut"
       ],
       "title": "LightSourceCalibration",
+      "type": "object"
+    },
+    "LightSourcesPower": {
+      "properties": {
+        "blue": {
+          "description": "Power of the blue light source in uW.",
+          "minimum": 0,
+          "title": "Blue",
+          "type": "number"
+        },
+        "uv": {
+          "description": "Power of the UV light source in uW.",
+          "minimum": 0,
+          "title": "Uv",
+          "type": "number"
+        },
+        "lime": {
+          "description": "Power of the lime light source in uW.",
+          "minimum": 0,
+          "title": "Lime",
+          "type": "number"
+        }
+      },
+      "required": [
+        "blue",
+        "uv",
+        "lime"
+      ],
+      "title": "LightSourcesPower",
       "type": "object"
     },
     "Measurement": {

@@ -134,7 +134,7 @@
             </Expression>
             <Expression xsi:type="VisualizerMapping" />
             <Expression xsi:type="rx:Defer">
-              <Name>LaserCalibration</Name>
+              <Name>LightSourceCalibration</Name>
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="imvizui:ImGuiVisualizerBuilder" />
@@ -159,7 +159,7 @@
                     <Name>tab</Name>
                   </Expression>
                   <Expression xsi:type="rx:Defer">
-                    <Name>ExperimentLaser</Name>
+                    <Name>ExperimentLightSource</Name>
                     <Workflow>
                       <Nodes>
                         <Expression xsi:type="SubscribeSubject">
@@ -172,7 +172,7 @@
                           <imgui:Flags>None</imgui:Flags>
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
-                          <Name>CalibratedLasers</Name>
+                          <Name>CalibratedLightSources</Name>
                         </Expression>
                         <Expression xsi:type="PropertyMapping">
                           <PropertyMappings>
@@ -190,13 +190,13 @@
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="p1:FipExperimentPowerVisualizer">
                             <p1:Visible>true</p1:Visible>
-                            <p1:Enabled>false</p1:Enabled>
+                            <p1:Enabled>true</p1:Enabled>
                             <p1:FontSize>26</p1:FontSize>
                             <p1:AutoFontSize>true</p1:AutoFontSize>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
-                          <Name>CalibratedLasers</Name>
+                          <Name>CalibratedLightSources</Name>
                         </Expression>
                       </Nodes>
                       <Edges>
@@ -224,7 +224,7 @@
                           <imgui:Flags>None</imgui:Flags>
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
-                          <Name>CalibratedLasers</Name>
+                          <Name>CalibratedLightSources</Name>
                         </Expression>
                         <Expression xsi:type="PropertyMapping">
                           <PropertyMappings>

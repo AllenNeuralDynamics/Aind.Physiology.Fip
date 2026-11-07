@@ -3,17 +3,17 @@
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:scr="clr-namespace:Bonsai.Scripting.Expressions;assembly=Bonsai.Scripting.Expressions"
-                 xmlns:p1="clr-namespace:AindPhysiologyFip;assembly=Extensions"
-                 xmlns:p2="clr-namespace:System.Reactive;assembly=System.Reactive.Core"
+                 xmlns:p1="clr-namespace:;assembly=Extensions"
+                 xmlns:p2="clr-namespace:AindPhysiologyFip;assembly=Extensions"
+                 xmlns:p3="clr-namespace:System.Reactive;assembly=System.Reactive.Core"
                  xmlns:sys="clr-namespace:System;assembly=mscorlib"
-                 xmlns:p3="clr-namespace:AllenNeuralDynamics.AindBehaviorServices.DataTypes;assembly=AllenNeuralDynamics.AindBehaviorServices"
-                 xmlns:p4="clr-namespace:AllenNeuralDynamics.VersionControl;assembly=AllenNeuralDynamics.VersionControl"
+                 xmlns:p4="clr-namespace:AllenNeuralDynamics.AindBehaviorServices.DataTypes;assembly=AllenNeuralDynamics.AindBehaviorServices"
+                 xmlns:p5="clr-namespace:AllenNeuralDynamics.VersionControl;assembly=AllenNeuralDynamics.VersionControl"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
                  xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
-                 xmlns:p5="clr-namespace:FipExtensions;assembly=Extensions"
-                 xmlns:p6="clr-namespace:AllenNeuralDynamics.CuttlefishFip;assembly=AllenNeuralDynamics.CuttlefishFip"
+                 xmlns:p6="clr-namespace:FipExtensions;assembly=Extensions"
+                 xmlns:p7="clr-namespace:AllenNeuralDynamics.CuttlefishFip;assembly=AllenNeuralDynamics.CuttlefishFip"
                  xmlns:harp="clr-namespace:Bonsai.Harp;assembly=Bonsai.Harp"
-                 xmlns:p7="clr-namespace:;assembly=Extensions"
                  xmlns:ui="clr-namespace:Bonsai.Design;assembly=Bonsai.Design"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
@@ -36,6 +36,21 @@
       <Expression xsi:type="IncludeWorkflow" Path="Extensions\ReadSchemas.bonsai">
         <RigPath>C:\git\AllenNeuralDynamics\Aind.Physiology.Fip\local\AindPhysioFipRig.json</RigPath>
         <SessionPath>C:\git\AllenNeuralDynamics\Aind.Physiology.Fip\local\Session.json</SessionPath>
+        <TaskPath xsi:nil="true" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="p1:ReadAllTextOrTaskDefault" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:Take">
+          <rx:Count>1</rx:Count>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="p2:DeserializeFromJson">
+        <p2:Type xsi:type="TypeMapping" TypeArguments="p2:AindPhysioFipTaskLogic" />
+      </Expression>
+      <Expression xsi:type="rx:AsyncSubject">
+        <Name>TaskSchema</Name>
       </Expression>
       <Expression xsi:type="GroupWorkflow">
         <Name>DeserializeSchemas</Name>
@@ -44,8 +59,8 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>RawSessionSchema</Name>
             </Expression>
-            <Expression xsi:type="p1:DeserializeFromJson">
-              <p1:Type xsi:type="TypeMapping" TypeArguments="p1:Session" />
+            <Expression xsi:type="p2:DeserializeFromJson">
+              <p2:Type xsi:type="TypeMapping" TypeArguments="p2:Session" />
             </Expression>
             <Expression xsi:type="rx:AsyncSubject">
               <Name>SessionSchema</Name>
@@ -53,8 +68,8 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>RawRigSchema</Name>
             </Expression>
-            <Expression xsi:type="p1:DeserializeFromJson">
-              <p1:Type xsi:type="TypeMapping" TypeArguments="p1:AindPhysioFipRig" />
+            <Expression xsi:type="p2:DeserializeFromJson">
+              <p2:Type xsi:type="TypeMapping" TypeArguments="p2:AindPhysioFipRig" />
             </Expression>
             <Expression xsi:type="rx:AsyncSubject">
               <Name>RigSchema</Name>
@@ -72,30 +87,30 @@
         <Name>Init</Name>
         <Workflow>
           <Nodes>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:Unit">
               <rx:Name>StartExperimentShortcut</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:Unit">
               <rx:Name>EndExperiment</rx:Name>
             </Expression>
             <Expression xsi:type="rx:BehaviorSubject" TypeArguments="sys:String">
               <rx:Name>Annotations</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:Unit">
               <rx:Name>StartExperiment</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p1:RoiSettings">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:RoiSettings">
               <rx:Name>CurrentCombinedRoi</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:SoftwareEvent">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p4:SoftwareEvent">
               <rx:Name>SoftwareEvent</rx:Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:Unit">
               <rx:Name>StartLogging</rx:Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="p4:CreateRepository">
-                <p4:Path>../.</p4:Path>
+              <Combinator xsi:type="p5:CreateRepository">
+                <p5:Path>../.</p5:Path>
               </Combinator>
             </Expression>
             <Expression xsi:type="rx:AsyncSubject">
@@ -143,7 +158,7 @@
             <Expression xsi:type="rx:BehaviorSubject">
               <Name>ExperimentState</Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:Unit">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p3:Unit">
               <rx:Name>ClearTasks</rx:Name>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -179,7 +194,7 @@
             <Expression xsi:type="rx:AsyncSubject">
               <Name>BackgroundFramesCount</Name>
             </Expression>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p1:RoiSettings">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p2:RoiSettings">
               <rx:Name>CurrentRoiSettings</rx:Name>
             </Expression>
           </Nodes>
@@ -264,11 +279,11 @@
                     <Combinator xsi:type="rx:Zip" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p5:ToFipFrame">
-                      <p5:CameraSource>GreenIso</p5:CameraSource>
+                    <Combinator xsi:type="p6:ToFipFrame">
+                      <p6:CameraSource>GreenIso</p6:CameraSource>
                     </Combinator>
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p6:CreateTaskRisingEdgeEventPayload,p6:Ports">
+                  <Expression xsi:type="PropertySource" TypeArguments="p7:CreateTaskRisingEdgeEventPayload,p7:Ports">
                     <MemberName>TaskRisingEdgeEvent</MemberName>
                     <Value>IO0</Value>
                   </Expression>
@@ -328,11 +343,11 @@
                     <Combinator xsi:type="rx:Zip" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p5:ToFipFrame">
-                      <p5:CameraSource>GreenIso</p5:CameraSource>
+                    <Combinator xsi:type="p6:ToFipFrame">
+                      <p6:CameraSource>GreenIso</p6:CameraSource>
                     </Combinator>
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p6:CreateTaskRisingEdgeEventPayload,p6:Ports">
+                  <Expression xsi:type="PropertySource" TypeArguments="p7:CreateTaskRisingEdgeEventPayload,p7:Ports">
                     <MemberName>TaskRisingEdgeEvent</MemberName>
                     <Value>IO1</Value>
                   </Expression>
@@ -398,11 +413,11 @@
                     <Combinator xsi:type="rx:Zip" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p5:ToFipFrame">
-                      <p5:CameraSource>Red</p5:CameraSource>
+                    <Combinator xsi:type="p6:ToFipFrame">
+                      <p6:CameraSource>Red</p6:CameraSource>
                     </Combinator>
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p6:CreateTaskRisingEdgeEventPayload,p6:Ports">
+                  <Expression xsi:type="PropertySource" TypeArguments="p7:CreateTaskRisingEdgeEventPayload,p7:Ports">
                     <MemberName>TaskRisingEdgeEvent</MemberName>
                     <Value>IO2</Value>
                   </Expression>
@@ -566,9 +581,9 @@
                     <Selector>LightSourceBlue</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p7:CreateTaskFromLightSource" />
+                    <Combinator xsi:type="p1:CreateTaskFromLightSource" />
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p5:ToFipFrame,p5:FipCameraSource">
+                  <Expression xsi:type="PropertySource" TypeArguments="p6:ToFipFrame,p6:FipCameraSource">
                     <MemberName>CameraSource</MemberName>
                     <Value>Green</Value>
                   </Expression>
@@ -582,9 +597,9 @@
                     <Selector>LightSourceUv</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p7:CreateTaskFromLightSource" />
+                    <Combinator xsi:type="p1:CreateTaskFromLightSource" />
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p5:ToFipFrame,p5:FipCameraSource">
+                  <Expression xsi:type="PropertySource" TypeArguments="p6:ToFipFrame,p6:FipCameraSource">
                     <MemberName>CameraSource</MemberName>
                     <Value>Iso</Value>
                   </Expression>
@@ -598,9 +613,9 @@
                     <Selector>LightSourceLime</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p7:CreateTaskFromLightSource" />
+                    <Combinator xsi:type="p1:CreateTaskFromLightSource" />
                   </Expression>
-                  <Expression xsi:type="PropertySource" TypeArguments="p5:ToFipFrame,p5:FipCameraSource">
+                  <Expression xsi:type="PropertySource" TypeArguments="p6:ToFipFrame,p6:FipCameraSource">
                     <MemberName>CameraSource</MemberName>
                     <Value>Red</Value>
                   </Expression>
@@ -620,7 +635,7 @@
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="rx:AsyncSubject">
-                    <Name>CalibratedLasers</Name>
+                    <Name>CalibratedLightSources</Name>
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />
                 </Nodes>
@@ -675,8 +690,8 @@
                   <Expression xsi:type="SubscribeSubject">
                     <Name>CuttlefishFipEvents</Name>
                   </Expression>
-                  <Expression xsi:type="p6:Parse">
-                    <harp:Register xsi:type="p6:ClearAllTasks" />
+                  <Expression xsi:type="p7:Parse">
+                    <harp:Register xsi:type="p7:ClearAllTasks" />
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Zip" />
@@ -736,8 +751,8 @@
                   <Expression xsi:type="WorkflowInput">
                     <Name>Source1</Name>
                   </Expression>
-                  <Expression xsi:type="p7:CreateLaserTask">
-                    <p7:Payload xsi:type="p7:OffLaserTask" />
+                  <Expression xsi:type="p1:CreateLightSourceTask">
+                    <p1:Payload xsi:type="p1:OffLightSourceTask" />
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
                     <Name>TriggerTask</Name>
@@ -756,7 +771,7 @@
                 <rx:DueTime>PT0.3S</rx:DueTime>
               </Combinator>
             </Expression>
-            <Expression xsi:type="PropertySource" TypeArguments="p6:CreateSetTaskStatePayload,p6:TaskState">
+            <Expression xsi:type="PropertySource" TypeArguments="p7:CreateSetTaskStatePayload,p7:TaskState">
               <MemberName>SetTaskState</MemberName>
               <Value>Start</Value>
             </Expression>
@@ -771,7 +786,7 @@
                     <Name>ParsedFipStreams</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>CalibratedLasers</Name>
+                    <Name>CalibratedLightSources</Name>
                   </Expression>
                   <Expression xsi:type="MemberSelector">
                     <Selector>Count</Selector>
@@ -839,8 +854,8 @@
                   <Expression xsi:type="WorkflowInput">
                     <Name>Source1</Name>
                   </Expression>
-                  <Expression xsi:type="p7:CreateLaserTask">
-                    <p7:Payload xsi:type="p7:FipModeLaserTask" />
+                  <Expression xsi:type="p1:CreateLightSourceTask">
+                    <p1:Payload xsi:type="p1:FipModeLightSourceTask" />
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
                     <Name>TriggerTask</Name>
@@ -866,7 +881,7 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>StartExperiment</Name>
             </Expression>
-            <Expression xsi:type="PropertySource" TypeArguments="p6:CreateSetTaskStatePayload,p6:TaskState">
+            <Expression xsi:type="PropertySource" TypeArguments="p7:CreateSetTaskStatePayload,p7:TaskState">
               <MemberName>SetTaskState</MemberName>
               <Value>Start</Value>
             </Expression>
@@ -877,14 +892,14 @@
               <Name>TriggeringLogic</Name>
               <Workflow>
                 <Nodes>
-                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p7:ITriggerLaserTask">
+                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p1:ITriggerLightSourceTask">
                     <rx:Name>TriggerTask</rx:Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>TriggerTask</Name>
                   </Expression>
-                  <Expression xsi:type="p7:LaserTaskOfType">
-                    <p7:Type xsi:type="TypeMapping" TypeArguments="p7:FipModeLaserTask" />
+                  <Expression xsi:type="p1:LightSourceTaskOfType">
+                    <p1:Type xsi:type="TypeMapping" TypeArguments="p1:FipModeLightSourceTask" />
                   </Expression>
                   <Expression xsi:type="rx:CreateObservable">
                     <Name>CreateFipModeTasks</Name>
@@ -923,7 +938,7 @@
                           <Workflow>
                             <Nodes>
                               <Expression xsi:type="SubscribeSubject">
-                                <Name>CalibratedLasers</Name>
+                                <Name>CalibratedLightSources</Name>
                               </Expression>
                               <Expression xsi:type="Combinator">
                                 <Combinator xsi:type="rx:Merge" />
@@ -963,18 +978,18 @@
                                       </PropertyMappings>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p6:ConfigureTask">
-                                        <p6:MessageType>Write</p6:MessageType>
-                                        <p6:PwmPort>IO4</p6:PwmPort>
-                                        <p6:DutyCycle>0.389436632</p6:DutyCycle>
-                                        <p6:Frequency>10000</p6:Frequency>
-                                        <p6:TriggerPorts>IO1</p6:TriggerPorts>
-                                        <p6:EventsEnabled>true</p6:EventsEnabled>
-                                        <p6:IsMuted>false</p6:IsMuted>
-                                        <p6:Delta1>15650</p6:Delta1>
-                                        <p6:Delta2>666</p6:Delta2>
-                                        <p6:Delta3>300</p6:Delta3>
-                                        <p6:Delta4>50</p6:Delta4>
+                                      <Combinator xsi:type="p7:ConfigureTask">
+                                        <p7:MessageType>Write</p7:MessageType>
+                                        <p7:PwmPort>IO4</p7:PwmPort>
+                                        <p7:DutyCycle>0.389436632</p7:DutyCycle>
+                                        <p7:Frequency>10000</p7:Frequency>
+                                        <p7:TriggerPorts>IO1</p7:TriggerPorts>
+                                        <p7:EventsEnabled>true</p7:EventsEnabled>
+                                        <p7:IsMuted>false</p7:IsMuted>
+                                        <p7:Delta1>15650</p7:Delta1>
+                                        <p7:Delta2>666</p7:Delta2>
+                                        <p7:Delta3>300</p7:Delta3>
+                                        <p7:Delta4>50</p7:Delta4>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
@@ -1036,8 +1051,8 @@
                   <Expression xsi:type="SubscribeSubject">
                     <Name>TriggerTask</Name>
                   </Expression>
-                  <Expression xsi:type="p7:LaserTaskOfType">
-                    <p7:Type xsi:type="TypeMapping" TypeArguments="p7:ContinuousLaserTask" />
+                  <Expression xsi:type="p1:LightSourceTaskOfType">
+                    <p1:Type xsi:type="TypeMapping" TypeArguments="p1:ContinuousLightSourceTask" />
                   </Expression>
                   <Expression xsi:type="rx:CreateObservable">
                     <Name>CreateCalibrationModeTask</Name>
@@ -1072,7 +1087,7 @@
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="rx:SelectMany">
-                          <Name>MakeContinuousLaserTask</Name>
+                          <Name>MakeContinuousLightSourceTask</Name>
                           <Workflow>
                             <Nodes>
                               <Expression xsi:type="WorkflowInput">
@@ -1084,13 +1099,13 @@
                                 </Combinator>
                               </Expression>
                               <Expression xsi:type="rx:AsyncSubject">
-                                <Name>laser</Name>
+                                <Name>lightSource</Name>
                               </Expression>
                               <Expression xsi:type="SubscribeSubject">
-                                <Name>CalibratedLasers</Name>
+                                <Name>CalibratedLightSources</Name>
                               </Expression>
                               <Expression xsi:type="SubscribeSubject">
-                                <Name>laser</Name>
+                                <Name>lightSource</Name>
                               </Expression>
                               <Expression xsi:type="MemberSelector">
                                 <Selector>Channel</Selector>
@@ -1101,7 +1116,7 @@
                                 </PropertyMappings>
                               </Expression>
                               <Expression xsi:type="Index">
-                                <Operand xsi:type="WorkflowProperty" TypeArguments="p5:FipCameraSource">
+                                <Operand xsi:type="WorkflowProperty" TypeArguments="p6:FipCameraSource">
                                   <Value>Green</Value>
                                 </Operand>
                               </Expression>
@@ -1135,7 +1150,7 @@
                                       </PropertyMappings>
                                     </Expression>
                                     <Expression xsi:type="SubscribeSubject">
-                                      <Name>laser</Name>
+                                      <Name>lightSource</Name>
                                     </Expression>
                                     <Expression xsi:type="MemberSelector">
                                       <Selector>Power</Selector>
@@ -1146,18 +1161,18 @@
                                       </PropertyMappings>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p6:ConfigureTask">
-                                        <p6:MessageType>Write</p6:MessageType>
-                                        <p6:PwmPort>IO2</p6:PwmPort>
-                                        <p6:DutyCycle>0.614</p6:DutyCycle>
-                                        <p6:Frequency>10000</p6:Frequency>
-                                        <p6:TriggerPorts>None</p6:TriggerPorts>
-                                        <p6:EventsEnabled>false</p6:EventsEnabled>
-                                        <p6:IsMuted>false</p6:IsMuted>
-                                        <p6:Delta1>10000</p6:Delta1>
-                                        <p6:Delta2>0</p6:Delta2>
-                                        <p6:Delta3>0</p6:Delta3>
-                                        <p6:Delta4>0</p6:Delta4>
+                                      <Combinator xsi:type="p7:ConfigureTask">
+                                        <p7:MessageType>Write</p7:MessageType>
+                                        <p7:PwmPort>IO2</p7:PwmPort>
+                                        <p7:DutyCycle>0.614</p7:DutyCycle>
+                                        <p7:Frequency>10000</p7:Frequency>
+                                        <p7:TriggerPorts>None</p7:TriggerPorts>
+                                        <p7:EventsEnabled>false</p7:EventsEnabled>
+                                        <p7:IsMuted>false</p7:IsMuted>
+                                        <p7:Delta1>10000</p7:Delta1>
+                                        <p7:Delta2>0</p7:Delta2>
+                                        <p7:Delta3>0</p7:Delta3>
+                                        <p7:Delta4>0</p7:Delta4>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
@@ -1213,8 +1228,8 @@
                   <Expression xsi:type="SubscribeSubject">
                     <Name>TriggerTask</Name>
                   </Expression>
-                  <Expression xsi:type="p7:LaserTaskOfType">
-                    <p7:Type xsi:type="TypeMapping" TypeArguments="p7:OffLaserTask" />
+                  <Expression xsi:type="p1:LightSourceTaskOfType">
+                    <p1:Type xsi:type="TypeMapping" TypeArguments="p1:OffLightSourceTask" />
                   </Expression>
                   <Expression xsi:type="Annotation">
                     <Name>Implementation note</Name>
@@ -1257,7 +1272,7 @@
                           <Workflow>
                             <Nodes>
                               <Expression xsi:type="SubscribeSubject">
-                                <Name>CalibratedLasers</Name>
+                                <Name>CalibratedLightSources</Name>
                               </Expression>
                               <Expression xsi:type="Combinator">
                                 <Combinator xsi:type="rx:Merge" />
@@ -1299,18 +1314,18 @@
                                       <Property Name="DutyCycle" />
                                     </Expression>
                                     <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p6:ConfigureTask">
-                                        <p6:MessageType>Write</p6:MessageType>
-                                        <p6:PwmPort>IO4</p6:PwmPort>
-                                        <p6:DutyCycle>0</p6:DutyCycle>
-                                        <p6:Frequency>10000</p6:Frequency>
-                                        <p6:TriggerPorts>IO1</p6:TriggerPorts>
-                                        <p6:EventsEnabled>true</p6:EventsEnabled>
-                                        <p6:IsMuted>false</p6:IsMuted>
-                                        <p6:Delta1>15650</p6:Delta1>
-                                        <p6:Delta2>666</p6:Delta2>
-                                        <p6:Delta3>300</p6:Delta3>
-                                        <p6:Delta4>50</p6:Delta4>
+                                      <Combinator xsi:type="p7:ConfigureTask">
+                                        <p7:MessageType>Write</p7:MessageType>
+                                        <p7:PwmPort>IO4</p7:PwmPort>
+                                        <p7:DutyCycle>0</p7:DutyCycle>
+                                        <p7:Frequency>10000</p7:Frequency>
+                                        <p7:TriggerPorts>IO1</p7:TriggerPorts>
+                                        <p7:EventsEnabled>true</p7:EventsEnabled>
+                                        <p7:IsMuted>false</p7:IsMuted>
+                                        <p7:Delta1>15650</p7:Delta1>
+                                        <p7:Delta2>666</p7:Delta2>
+                                        <p7:Delta3>300</p7:Delta3>
+                                        <p7:Delta4>50</p7:Delta4>
                                       </Combinator>
                                     </Expression>
                                     <Expression xsi:type="Combinator">
@@ -1386,10 +1401,10 @@
                     <Name>ClearTasks</Name>
                     <Workflow>
                       <Nodes>
-                        <Expression xsi:type="p6:CreateMessage">
+                        <Expression xsi:type="p7:CreateMessage">
                           <harp:MessageType>Write</harp:MessageType>
-                          <harp:Payload xsi:type="p6:CreateSetTaskStatePayload">
-                            <p6:SetTaskState>Stop</p6:SetTaskState>
+                          <harp:Payload xsi:type="p7:CreateSetTaskStatePayload">
+                            <p7:SetTaskState>Stop</p7:SetTaskState>
                           </harp:Payload>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
@@ -1400,10 +1415,10 @@
                             <rx:DueTime>PT0.03S</rx:DueTime>
                           </Combinator>
                         </Expression>
-                        <Expression xsi:type="p6:CreateMessage">
+                        <Expression xsi:type="p7:CreateMessage">
                           <harp:MessageType>Write</harp:MessageType>
-                          <harp:Payload xsi:type="p6:CreateClearAllTasksPayload">
-                            <p6:ClearAllTasks>Enabled</p6:ClearAllTasks>
+                          <harp:Payload xsi:type="p7:CreateClearAllTasksPayload">
+                            <p7:ClearAllTasks>Enabled</p7:ClearAllTasks>
                           </harp:Payload>
                         </Expression>
                         <Expression xsi:type="MulticastSubject">
@@ -1429,12 +1444,12 @@
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Switch" />
                   </Expression>
-                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p6:TaskState">
+                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p7:TaskState">
                     <rx:Name>SetTaskState</rx:Name>
                   </Expression>
-                  <Expression xsi:type="p6:Format">
+                  <Expression xsi:type="p7:Format">
                     <harp:MessageType>Write</harp:MessageType>
-                    <harp:Register xsi:type="p6:SetTaskState" />
+                    <harp:Register xsi:type="p7:SetTaskState" />
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
                     <Name>CuttlefishFipCommands</Name>
@@ -1514,7 +1529,7 @@
                           <Selector>Item2.Value</Selector>
                         </Expression>
                         <Expression xsi:type="HasFlag">
-                          <Operand xsi:type="WorkflowProperty" TypeArguments="p6:Ports">
+                          <Operand xsi:type="WorkflowProperty" TypeArguments="p7:Ports">
                             <Value>IO0</Value>
                           </Operand>
                         </Expression>
@@ -1542,10 +1557,10 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p5:CircleActivityCalculator">
-                      <p5:RoiSettings />
-                      <p5:Source>Iso</p5:Source>
-                      <p5:Operation>Avg</p5:Operation>
+                    <Combinator xsi:type="p6:CircleActivityCalculator">
+                      <p6:RoiSettings />
+                      <p6:Source>Iso</p6:Source>
+                      <p6:Operation>Avg</p6:Operation>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
@@ -1562,7 +1577,7 @@
                           <Selector>Item2.Value</Selector>
                         </Expression>
                         <Expression xsi:type="HasFlag">
-                          <Operand xsi:type="WorkflowProperty" TypeArguments="p6:Ports">
+                          <Operand xsi:type="WorkflowProperty" TypeArguments="p7:Ports">
                             <Value>IO1</Value>
                           </Operand>
                         </Expression>
@@ -1590,10 +1605,10 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p5:CircleActivityCalculator">
-                      <p5:RoiSettings />
-                      <p5:Source>Green</p5:Source>
-                      <p5:Operation>Avg</p5:Operation>
+                    <Combinator xsi:type="p6:CircleActivityCalculator">
+                      <p6:RoiSettings />
+                      <p6:Source>Green</p6:Source>
+                      <p6:Operation>Avg</p6:Operation>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
@@ -1610,7 +1625,7 @@
                           <Selector>Item2.Value</Selector>
                         </Expression>
                         <Expression xsi:type="HasFlag">
-                          <Operand xsi:type="WorkflowProperty" TypeArguments="p6:Ports">
+                          <Operand xsi:type="WorkflowProperty" TypeArguments="p7:Ports">
                             <Value>IO2</Value>
                           </Operand>
                         </Expression>
@@ -1638,10 +1653,10 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p5:CircleActivityCalculator">
-                      <p5:RoiSettings />
-                      <p5:Source>Red</p5:Source>
-                      <p5:Operation>Avg</p5:Operation>
+                    <Combinator xsi:type="p6:CircleActivityCalculator">
+                      <p6:RoiSettings />
+                      <p6:Source>Red</p6:Source>
+                      <p6:Operation>Avg</p6:Operation>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
@@ -1696,8 +1711,11 @@
       <Edge From="0" To="1" Label="Source1" />
       <Edge From="1" To="2" Label="Source1" />
       <Edge From="3" To="4" Label="Source1" />
-      <Edge From="9" To="10" Label="Source1" />
-      <Edge From="11" To="12" Label="Source1" />
+      <Edge From="5" To="6" Label="Source1" />
+      <Edge From="6" To="7" Label="Source1" />
+      <Edge From="7" To="8" Label="Source1" />
+      <Edge From="13" To="14" Label="Source1" />
+      <Edge From="15" To="16" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>

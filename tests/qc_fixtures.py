@@ -104,6 +104,14 @@ def make_session(root: Path, spec: SessionSpec | None = None) -> Path:
         ("EndSessionTime", "2026-04-17T17:03:07+00:00"),
         ("Annotations", "synthetic"),
         ("HardwareQA", "synthetic"),
+        (
+            "LightSourceOutput",
+            {
+                "blue": {"power": 10.0, "is_calibrated": True},
+                "uv": {"power": 0.05, "is_calibrated": False},
+                "lime": {"power": 10.0, "is_calibrated": True},
+            },
+        ),
     ):
         event = {"name": name, "timestamp": 1000.0, "timestamp_source": "harp", "data": data}
         (root / "SoftwareEvents" / f"{name}.json").write_text(json.dumps(event) + "\n", encoding="utf-8")

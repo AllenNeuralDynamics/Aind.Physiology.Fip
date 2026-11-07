@@ -22,7 +22,7 @@ public class ReadAllTextOrTaskDefault : Source<string>
     // Four enabled fibers mapped 1:1 to ROIs, with every channel's power at 0.
     static AindPhysioFipTaskLogic CreateDefaultTaskLogic()
     {
-        var parameters = new AindPhysioFipTaskParameters { BluePower = 0, UvPower = 0, LimePower = 0 };
+        var parameters = new AindPhysioFipTaskParameters { Power = new LightSourcesPower { Blue = 0, Uv = 0, Lime = 0 } };
         for (int i = 0; i < DefaultFiberCount; i++)
         {
             parameters.Measurements.Add(new Measurement { FiberNumber = i, RoiNumber = i, Enabled = true });

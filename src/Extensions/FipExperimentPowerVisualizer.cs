@@ -63,17 +63,18 @@ public class FipExperimentPowerVisualizer
     /// property grid.
     /// </summary>
     [XmlIgnore]
-    [Description("The task logic providing the default power (uW) of each channel: Green = BluePower, Iso = UvPower, Red = LimePower. Unset powers, or a null task logic, default to 0. Set via PropertyMapping, not wired as a Process argument.")]
+    [Description("The task logic providing the default power (uW) of each channel: Green = Power.Blue, Iso = Power.Uv, Red = Power.Lime. Unset powers, or a null task logic, default to 0. Set via PropertyMapping, not wired as a Process argument.")]
     public AindPhysioFipTaskLogic TaskLogic { get; set; }
 
     static double? TaskPower(FipCameraSource channel, AindPhysioFipTaskLogic taskLogic)
     {
-        if (taskLogic == null || taskLogic.TaskParameters == null) return null;
+        if (taskLogic == null || taskLogic.TaskParameters == null || taskLogic.TaskParameters.Power == null) return null;
+        var power = taskLogic.TaskParameters.Power;
         switch (channel)
         {
-            case FipCameraSource.Green: return taskLogic.TaskParameters.BluePower;
-            case FipCameraSource.Iso: return taskLogic.TaskParameters.UvPower;
-            case FipCameraSource.Red: return taskLogic.TaskParameters.LimePower;
+            case FipCameraSource.Green: return power.Blue;
+            case FipCameraSource.Iso: return power.Uv;
+            case FipCameraSource.Red: return power.Lime;
             default: return null;
         }
     }

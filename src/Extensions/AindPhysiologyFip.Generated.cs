@@ -482,11 +482,7 @@ namespace AindPhysiologyFip
     
         private System.Collections.Generic.List<Measurement> _measurements;
     
-        private double? _bluePower;
-    
-        private double? _uvPower;
-    
-        private double? _limePower;
+        private LightSourcesPower _power;
     
         public AindPhysioFipTaskParameters()
         {
@@ -499,9 +495,7 @@ namespace AindPhysiologyFip
             _rngSeed = other._rngSeed;
             _aindBehaviorServicesPkgVersion = other._aindBehaviorServicesPkgVersion;
             _measurements = other._measurements;
-            _bluePower = other._bluePower;
-            _uvPower = other._uvPower;
-            _limePower = other._limePower;
+            _power = other._power;
         }
     
         /// <summary>
@@ -553,53 +547,20 @@ namespace AindPhysiologyFip
         }
     
         /// <summary>
-        /// Power of the blue light source in uW.
+        /// Power of the light sources.
         /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("blue_power")]
-        [System.ComponentModel.DescriptionAttribute("Power of the blue light source in uW.")]
-        public double? BluePower
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        [Newtonsoft.Json.JsonPropertyAttribute("power")]
+        [System.ComponentModel.DescriptionAttribute("Power of the light sources.")]
+        public LightSourcesPower Power
         {
             get
             {
-                return _bluePower;
+                return _power;
             }
             set
             {
-                _bluePower = value;
-            }
-        }
-    
-        /// <summary>
-        /// Power of the UV light source in uW.
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("uv_power")]
-        [System.ComponentModel.DescriptionAttribute("Power of the UV light source in uW.")]
-        public double? UvPower
-        {
-            get
-            {
-                return _uvPower;
-            }
-            set
-            {
-                _uvPower = value;
-            }
-        }
-    
-        /// <summary>
-        /// Power of the lime light source in uW.
-        /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("lime_power")]
-        [System.ComponentModel.DescriptionAttribute("Power of the lime light source in uW.")]
-        public double? LimePower
-        {
-            get
-            {
-                return _limePower;
-            }
-            set
-            {
-                _limePower = value;
+                _power = value;
             }
         }
     
@@ -618,9 +579,7 @@ namespace AindPhysiologyFip
             stringBuilder.Append("RngSeed = " + _rngSeed + ", ");
             stringBuilder.Append("AindBehaviorServicesPkgVersion = " + _aindBehaviorServicesPkgVersion + ", ");
             stringBuilder.Append("Measurements = " + _measurements + ", ");
-            stringBuilder.Append("BluePower = " + _bluePower + ", ");
-            stringBuilder.Append("UvPower = " + _uvPower + ", ");
-            stringBuilder.Append("LimePower = " + _limePower);
+            stringBuilder.Append("Power = " + _power);
             return true;
         }
     
@@ -1597,6 +1556,113 @@ namespace AindPhysiologyFip
     }
 
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Bonsai.Sgen", "0.9.0.0 (Newtonsoft.Json v13.0.0.0)")]
+    [Bonsai.WorkflowElementCategoryAttribute(Bonsai.ElementCategory.Source)]
+    [Bonsai.CombinatorAttribute(MethodName="Generate")]
+    public partial class LightSourcesPower
+    {
+    
+        private double _blue;
+    
+        private double _uv;
+    
+        private double _lime;
+    
+        public LightSourcesPower()
+        {
+        }
+    
+        protected LightSourcesPower(LightSourcesPower other)
+        {
+            _blue = other._blue;
+            _uv = other._uv;
+            _lime = other._lime;
+        }
+    
+        /// <summary>
+        /// Power of the blue light source in uW.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("blue", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Power of the blue light source in uW.")]
+        public double Blue
+        {
+            get
+            {
+                return _blue;
+            }
+            set
+            {
+                _blue = value;
+            }
+        }
+    
+        /// <summary>
+        /// Power of the UV light source in uW.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("uv", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Power of the UV light source in uW.")]
+        public double Uv
+        {
+            get
+            {
+                return _uv;
+            }
+            set
+            {
+                _uv = value;
+            }
+        }
+    
+        /// <summary>
+        /// Power of the lime light source in uW.
+        /// </summary>
+        [Newtonsoft.Json.JsonPropertyAttribute("lime", Required=Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DescriptionAttribute("Power of the lime light source in uW.")]
+        public double Lime
+        {
+            get
+            {
+                return _lime;
+            }
+            set
+            {
+                _lime = value;
+            }
+        }
+    
+        public System.IObservable<LightSourcesPower> Generate()
+        {
+            return System.Reactive.Linq.Observable.Defer(() => System.Reactive.Linq.Observable.Return(new LightSourcesPower(this)));
+        }
+    
+        public System.IObservable<LightSourcesPower> Generate<TSource>(System.IObservable<TSource> source)
+        {
+            return System.Reactive.Linq.Observable.Select(source, _ => new LightSourcesPower(this));
+        }
+    
+        protected virtual bool PrintMembers(System.Text.StringBuilder stringBuilder)
+        {
+            stringBuilder.Append("Blue = " + _blue + ", ");
+            stringBuilder.Append("Uv = " + _uv + ", ");
+            stringBuilder.Append("Lime = " + _lime);
+            return true;
+        }
+    
+        public override string ToString()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.Append(GetType().Name);
+            stringBuilder.Append(" { ");
+            if (PrintMembers(stringBuilder))
+            {
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+            return stringBuilder.ToString();
+        }
+    }
+
+
     /// <summary>
     /// Description of a single fiber.
     /// </summary>
@@ -2534,6 +2600,11 @@ namespace AindPhysiologyFip
             return Process<LightSourceCalibration>(source);
         }
 
+        public System.IObservable<string> Process(System.IObservable<LightSourcesPower> source)
+        {
+            return Process<LightSourcesPower>(source);
+        }
+
         public System.IObservable<string> Process(System.IObservable<Measurement> source)
         {
             return Process<Measurement>(source);
@@ -2584,6 +2655,7 @@ namespace AindPhysiologyFip
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<HarpCuttlefishfip>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSource>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSourceCalibration>))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<LightSourcesPower>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Measurement>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Networking>))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Bonsai.Expressions.TypeMapping<Point2f>))]

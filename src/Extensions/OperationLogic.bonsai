@@ -110,8 +110,8 @@
             <Expression xsi:type="WorkflowInput">
               <Name>Source1</Name>
             </Expression>
-            <Expression xsi:type="p1:CreateLaserTask">
-              <p1:Payload xsi:type="p1:OffLaserTask" />
+            <Expression xsi:type="p1:CreateLightSourceTask">
+              <p1:Payload xsi:type="p1:OffLightSourceTask" />
             </Expression>
             <Expression xsi:type="MulticastSubject">
               <Name>TriggerTask</Name>
@@ -145,7 +145,7 @@
               <Name>ParsedFipStreams</Name>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
-              <Name>CalibratedLasers</Name>
+              <Name>CalibratedLightSources</Name>
             </Expression>
             <Expression xsi:type="MemberSelector">
               <Selector>Count</Selector>
@@ -213,8 +213,8 @@
             <Expression xsi:type="WorkflowInput">
               <Name>Source1</Name>
             </Expression>
-            <Expression xsi:type="p1:CreateLaserTask">
-              <p1:Payload xsi:type="p1:FipModeLaserTask" />
+            <Expression xsi:type="p1:CreateLightSourceTask">
+              <p1:Payload xsi:type="p1:FipModeLightSourceTask" />
             </Expression>
             <Expression xsi:type="MulticastSubject">
               <Name>TriggerTask</Name>
@@ -251,14 +251,14 @@
         <Name>TriggeringLogic</Name>
         <Workflow>
           <Nodes>
-            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p1:ITriggerLaserTask">
+            <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p1:ITriggerLightSourceTask">
               <rx:Name>TriggerTask</rx:Name>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
               <Name>TriggerTask</Name>
             </Expression>
-            <Expression xsi:type="p1:LaserTaskOfType">
-              <p1:Type xsi:type="TypeMapping" TypeArguments="p1:FipModeLaserTask" />
+            <Expression xsi:type="p1:LightSourceTaskOfType">
+              <p1:Type xsi:type="TypeMapping" TypeArguments="p1:FipModeLightSourceTask" />
             </Expression>
             <Expression xsi:type="rx:CreateObservable">
               <Name>CreateFipModeTasks</Name>
@@ -297,7 +297,7 @@
                     <Workflow>
                       <Nodes>
                         <Expression xsi:type="SubscribeSubject">
-                          <Name>CalibratedLasers</Name>
+                          <Name>CalibratedLightSources</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="rx:Merge" />
@@ -410,8 +410,8 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>TriggerTask</Name>
             </Expression>
-            <Expression xsi:type="p1:LaserTaskOfType">
-              <p1:Type xsi:type="TypeMapping" TypeArguments="p1:ContinuousLaserTask" />
+            <Expression xsi:type="p1:LightSourceTaskOfType">
+              <p1:Type xsi:type="TypeMapping" TypeArguments="p1:ContinuousLightSourceTask" />
             </Expression>
             <Expression xsi:type="rx:CreateObservable">
               <Name>CreateCalibrationModeTask</Name>
@@ -446,7 +446,7 @@
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="rx:SelectMany">
-                    <Name>MakeContinuousLaserTask</Name>
+                    <Name>MakeContinuousLightSourceTask</Name>
                     <Workflow>
                       <Nodes>
                         <Expression xsi:type="WorkflowInput">
@@ -458,13 +458,13 @@
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="rx:AsyncSubject">
-                          <Name>laser</Name>
+                          <Name>lightSource</Name>
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
-                          <Name>CalibratedLasers</Name>
+                          <Name>CalibratedLightSources</Name>
                         </Expression>
                         <Expression xsi:type="SubscribeSubject">
-                          <Name>laser</Name>
+                          <Name>lightSource</Name>
                         </Expression>
                         <Expression xsi:type="MemberSelector">
                           <Selector>Channel</Selector>
@@ -509,7 +509,7 @@
                                 </PropertyMappings>
                               </Expression>
                               <Expression xsi:type="SubscribeSubject">
-                                <Name>laser</Name>
+                                <Name>lightSource</Name>
                               </Expression>
                               <Expression xsi:type="MemberSelector">
                                 <Selector>Power</Selector>
@@ -587,8 +587,8 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>TriggerTask</Name>
             </Expression>
-            <Expression xsi:type="p1:LaserTaskOfType">
-              <p1:Type xsi:type="TypeMapping" TypeArguments="p1:OffLaserTask" />
+            <Expression xsi:type="p1:LightSourceTaskOfType">
+              <p1:Type xsi:type="TypeMapping" TypeArguments="p1:OffLightSourceTask" />
             </Expression>
             <Expression xsi:type="Annotation">
               <Name>Implementation note</Name>
@@ -631,7 +631,7 @@
                     <Workflow>
                       <Nodes>
                         <Expression xsi:type="SubscribeSubject">
-                          <Name>CalibratedLasers</Name>
+                          <Name>CalibratedLightSources</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="rx:Merge" />

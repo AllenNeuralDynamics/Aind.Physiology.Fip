@@ -174,7 +174,7 @@ public class FipCameraPowerControlVisualizer
                 }
                 else if (currentState is FipModeLightSourceTask && lightSource != null)
                 {
-                    FipPowerUi.CenteredText(lightSource.CalibratedPower.ToString("F1") + " µW", FipPowerUi.ActiveColor);
+                    FipPowerUi.CenteredText(FipPowerUi.FormatPower(lightSource, (float)lightSource.CalibratedDutyCycle), FipPowerUi.ActiveColor);
                 }
                 else
                 {
@@ -183,7 +183,7 @@ public class FipCameraPowerControlVisualizer
 
                 // What Start Experiment will use, independent of the slider.
                 ImGui.TableNextColumn();
-                FipPowerUi.CenteredText(lightSource != null ? lightSource.CalibratedPower.ToString("F1") + " µW" : "-", null);
+                FipPowerUi.CenteredText(FipPowerUi.FormatPower(lightSource, lightSource != null ? (float)lightSource.CalibratedDutyCycle : 0f), null);
 
                 ImGui.TableNextColumn();
                 ImGui.PushStyleColor(ImGuiCol.Button, isActiveChannel ? FipPowerUi.ActiveColor : FipPowerUi.InactiveColor);

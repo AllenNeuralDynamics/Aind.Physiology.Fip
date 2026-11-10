@@ -133,12 +133,19 @@ public class FipExperimentPowerVisualizer
                     // default powers (0 without one) applied to the input's light sources.
                     var input = LightSources ?? emptyLightSources;
                     var taskLogic = TaskLogic;
-                    if (!ReferenceEquals(input, source) || !ReferenceEquals(taskLogic, appliedTaskLogic))
+                    var inputChanged = !ReferenceEquals(input, source);
+                    var taskLogicChanged = !ReferenceEquals(taskLogic, appliedTaskLogic);
+                    if (inputChanged || taskLogicChanged)
                     {
                         source = input;
                         appliedTaskLogic = taskLogic;
-                        current = ApplyTaskPowers(input, taskLogic);
-                        edits.Clear();
+                        // A committed edit comes back through the subject that feeds LightSources as the
+                        // very instance we emitted; keep it instead of resetting to the task logic powers.
+                        if (taskLogicChanged || !ReferenceEquals(input, current))
+                        {
+                            current = ApplyTaskPowers(input, taskLogic);
+                            edits.Clear();
+                        }
                     }
 
                     var renderFontSize = AutoFontSize ? FipPowerUi.AutoFontSize(current.Count, 1.6f, 30f) : FontSize;

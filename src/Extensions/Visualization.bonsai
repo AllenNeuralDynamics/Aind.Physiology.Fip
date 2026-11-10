@@ -271,18 +271,6 @@
                         <Expression xsi:type="MulticastSubject">
                           <Name>TriggerTask</Name>
                         </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="rx:Delay">
-                            <rx:DueTime>PT0.2S</rx:DueTime>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="PropertySource" TypeArguments="p2:CreateSetTaskStatePayload,p2:TaskState">
-                          <MemberName>SetTaskState</MemberName>
-                          <Value>Start</Value>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>SetTaskState</Name>
-                        </Expression>
                         <Expression xsi:type="WorkflowOutput" />
                       </Nodes>
                       <Edges>
@@ -297,9 +285,6 @@
                         <Edge From="8" To="9" Label="Source4" />
                         <Edge From="9" To="10" Label="Source1" />
                         <Edge From="10" To="11" Label="Source1" />
-                        <Edge From="11" To="12" Label="Source1" />
-                        <Edge From="12" To="13" Label="Source1" />
-                        <Edge From="13" To="14" Label="Source1" />
                       </Edges>
                     </Workflow>
                   </Expression>

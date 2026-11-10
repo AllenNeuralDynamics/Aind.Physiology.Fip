@@ -273,17 +273,12 @@
         <Name>Cleanup</Name>
         <Workflow>
           <Nodes>
-            <Expression xsi:type="PropertySource" TypeArguments="p5:CreateSetTaskStatePayload,p5:TaskState">
-              <MemberName>SetTaskState</MemberName>
-              <Value>Stop</Value>
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="rx:Take">
-                <rx:Count>1</rx:Count>
-              </Combinator>
-            </Expression>
+            <Expression xsi:type="Unit" />
             <Expression xsi:type="MulticastSubject">
-              <Name>SetTaskState</Name>
+              <Name>ClearTasks</Name>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>

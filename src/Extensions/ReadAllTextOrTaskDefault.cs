@@ -19,10 +19,10 @@ public class ReadAllTextOrTaskDefault : Source<string>
 
     const int DefaultFiberCount = 4;
 
-    // Four enabled fibers mapped 1:1 to ROIs, with every channel's power at 0.
+    // Four enabled fibers mapped 1:1 to ROIs, with every channel's power at its schema default.
     static AindPhysioFipTaskLogic CreateDefaultTaskLogic()
     {
-        var parameters = new AindPhysioFipTaskParameters { Power = new LightSourcesPower { Blue = 0, Uv = 0, Lime = 0 } };
+        var parameters = new AindPhysioFipTaskParameters { Power = new LightSourcesPower() };
         for (int i = 0; i < DefaultFiberCount; i++)
         {
             parameters.Measurements.Add(new Measurement { FiberNumber = i, RoiNumber = i, Enabled = true });

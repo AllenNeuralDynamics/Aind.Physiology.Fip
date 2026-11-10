@@ -165,16 +165,8 @@
           "type": "array"
         },
         "power": {
-          "default": null,
-          "description": "Power of the light sources.",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/LightSourcesPower"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "$ref": "#/$defs/LightSourcesPower",
+          "description": "Power of the light sources."
         }
       },
       "title": "AindPhysioFipTaskParameters",
@@ -448,29 +440,27 @@
     "LightSourcesPower": {
       "properties": {
         "blue": {
+          "default": 20,
           "description": "Power of the blue light source in uW.",
           "minimum": 0,
           "title": "Blue",
           "type": "number"
         },
         "uv": {
+          "default": 20,
           "description": "Power of the UV light source in uW.",
           "minimum": 0,
           "title": "Uv",
           "type": "number"
         },
         "lime": {
+          "default": 20,
           "description": "Power of the lime light source in uW.",
           "minimum": 0,
           "title": "Lime",
           "type": "number"
         }
       },
-      "required": [
-        "blue",
-        "uv",
-        "lime"
-      ],
       "title": "LightSourcesPower",
       "type": "object"
     },

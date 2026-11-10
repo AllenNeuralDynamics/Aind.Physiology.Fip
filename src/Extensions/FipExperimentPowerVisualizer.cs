@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Numerics;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Xml.Serialization;
@@ -73,9 +74,9 @@ public class FipExperimentPowerVisualizer
         public float Duty;
     }
 
-    public IObservable<IDictionary<FipCameraSource, CalibratedLightSource>> Process<TTickSource>(IObservable<TTickSource> frames)
+    public IObservable<FipExperimentPowerCommand> Process<TTickSource>(IObservable<TTickSource> frames)
     {
-        return Observable.Create<IDictionary<FipCameraSource, CalibratedLightSource>>(observer =>
+        return Observable.Create<FipExperimentPowerCommand>(observer =>
         {
             var edits = new Dictionary<FipCameraSource, EditState>();
 
@@ -97,7 +98,8 @@ public class FipExperimentPowerVisualizer
                     var editable = Enabled && isFipMode && !locked;
                     if (!editable) edits.Clear();
 
-                    var renderFontSize = AutoFontSize ? FipPowerUi.AutoFontSize(lightSources.Count, 1.6f, 30f) : FontSize;
+                    // Width model: ~30 text lines for the table plus ~7 for the button column.
+                    var renderFontSize = AutoFontSize ? FipPowerUi.AutoFontSize(lightSources.Count, 1.6f, 37f) : FontSize;
                     FipPowerUi.PushFont(renderFontSize);
 
                     if (Enabled && locked)
@@ -106,12 +108,35 @@ public class FipExperimentPowerVisualizer
                     }
                     else if (Enabled && !isFipMode)
                     {
-                        ImGui.TextColored(FipPowerUi.InactiveColor, "Select Fip Mode in the Calibration tab to change the power.");
+                        ImGui.TextColored(FipPowerUi.InactiveColor, "Select Fip Mode to change the power.");
                     }
+
+                    // Mode buttons on the left, same behavior as the Calibration tab: Off stops the device,
+                    // Fip Mode runs the Fip cycle. Disabled while an experiment is running (Enabled=false).
+                    const float itemSpacing = 8f;
+                    var buttonColumnWidth = renderFontSize * 6f;
+                    var buttonHeight = Math.Max(ImGui.GetFrameHeight(), (ImGui.GetContentRegionAvail().Y - itemSpacing) / 2f);
+                    var buttonSize = new Vector2(buttonColumnWidth, buttonHeight);
+                    ITriggerLightSourceTask requestedTask = null;
+                    ImGui.BeginGroup();
+                    ImGui.BeginDisabled(!Enabled);
+                    if (ImGui.Button("Off##FipExperimentPower", buttonSize))
+                    {
+                        requestedTask = new StopLightSourceTask();
+                    }
+                    ImGui.PushStyleColor(ImGuiCol.Button, isFipMode ? FipPowerUi.ActiveColor : FipPowerUi.InactiveColor);
+                    if (ImGui.Button((isFipMode ? "Fip Mode (Active)" : "Fip Mode") + "##FipExperimentPower", buttonSize))
+                    {
+                        requestedTask = new FipModeLightSourceTask();
+                    }
+                    ImGui.PopStyleColor();
+                    ImGui.EndDisabled();
+                    ImGui.EndGroup();
+                    ImGui.SameLine();
 
                     FipPowerUi.ComputeRowHeight(lightSources.Count);
                     var tableFlags = ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchProp;
-                    if (ImGui.BeginTable("##FipExperimentPower", 4, tableFlags))
+                    if (ImGui.BeginTable("##FipExperimentPower", 4, tableFlags, new Vector2(ImGui.GetContentRegionAvail().X, 0)))
                     {
                         ImGui.TableSetupColumn("Channel", ImGuiTableColumnFlags.WidthStretch, 0.5f);
                         ImGui.TableSetupColumn("Light", ImGuiTableColumnFlags.WidthStretch, 0.5f);
@@ -198,14 +223,41 @@ public class FipExperimentPowerVisualizer
                         if (committedUpdate != null)
                         {
                             LightSources = committedUpdate;
-                            observer.OnNext(committedUpdate);
+                            observer.OnNext(new FipExperimentPowerCommand(committedUpdate, null));
                         }
                     }
 
                     ImGui.PopFont();
+
+                    if (requestedTask != null)
+                    {
+                        observer.OnNext(new FipExperimentPowerCommand(null, requestedTask));
+                    }
                 },
                 observer.OnError,
                 observer.OnCompleted));
         });
     }
+}
+
+/// <summary>
+/// Output of <see cref="FipExperimentPowerVisualizer"/>: either committed power edits
+/// (<see cref="LightSources"/>, feed into CalibratedLightSources) or a mode button press
+/// (<see cref="Task"/>, feed into TriggerTask). Exactly one of the two is non-null.
+/// </summary>
+public class FipExperimentPowerCommand
+{
+    public FipExperimentPowerCommand(IDictionary<FipCameraSource, CalibratedLightSource> lightSources, ITriggerLightSourceTask task)
+    {
+        LightSources = lightSources;
+        Task = task;
+    }
+
+    public IDictionary<FipCameraSource, CalibratedLightSource> LightSources { get; private set; }
+
+    public ITriggerLightSourceTask Task { get; private set; }
+
+    public bool HasLightSources { get { return LightSources != null; } }
+
+    public bool HasTask { get { return Task != null; } }
 }

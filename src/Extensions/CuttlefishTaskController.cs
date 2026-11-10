@@ -45,7 +45,7 @@ public class CuttlefishTaskController
 
     public IObservable<HarpMessage> Process(
         IObservable<ITriggerLightSourceTask> requests,
-        IObservable<Dictionary<FipCameraSource, CalibratedLightSource>> lightSources,
+        IObservable<IDictionary<FipCameraSource, CalibratedLightSource>> lightSources,
         IObservable<Unit> clear)
     {
         return Observable.Create<HarpMessage>(observer =>
@@ -74,7 +74,7 @@ public class CuttlefishTaskController
 
         // Desired state; a null request means "cleared" (stopped, no tasks).
         ITriggerLightSourceTask request;
-        Dictionary<FipCameraSource, CalibratedLightSource> lightSources;
+        IDictionary<FipCameraSource, CalibratedLightSource> lightSources;
         bool dirty;
         DateTime notBefore;
         int lastCycleUs = -1; // unknown until the first apply
@@ -106,7 +106,7 @@ public class CuttlefishTaskController
             }
         }
 
-        public void SetLightSources(Dictionary<FipCameraSource, CalibratedLightSource> value)
+        public void SetLightSources(IDictionary<FipCameraSource, CalibratedLightSource> value)
         {
             lock (gate)
             {
@@ -126,7 +126,7 @@ public class CuttlefishTaskController
             while (true)
             {
                 ITriggerLightSourceTask target;
-                Dictionary<FipCameraSource, CalibratedLightSource> sources;
+                IDictionary<FipCameraSource, CalibratedLightSource> sources;
                 lock (gate)
                 {
                     while (true)
@@ -158,7 +158,7 @@ public class CuttlefishTaskController
         }
 
         // Returns false when disposed mid-script.
-        bool Apply(ITriggerLightSourceTask target, Dictionary<FipCameraSource, CalibratedLightSource> sources)
+        bool Apply(ITriggerLightSourceTask target, IDictionary<FipCameraSource, CalibratedLightSource> sources)
         {
             var payloads = new List<byte[]>();
             var cycleUs = BuildTasks(target, sources, payloads);
@@ -188,7 +188,7 @@ public class CuttlefishTaskController
         // Fills the AddTask payloads for the requested mode and returns the resulting cycle length (us).
         static int BuildTasks(
             ITriggerLightSourceTask target,
-            Dictionary<FipCameraSource, CalibratedLightSource> sources,
+            IDictionary<FipCameraSource, CalibratedLightSource> sources,
             List<byte[]> payloads)
         {
             if (target == null || sources == null) return 0;
@@ -223,7 +223,7 @@ public class CuttlefishTaskController
             return cycleUs;
         }
 
-        static int FullFipCycleUs(Dictionary<FipCameraSource, CalibratedLightSource> sources)
+        static int FullFipCycleUs(IDictionary<FipCameraSource, CalibratedLightSource> sources)
         {
             var cycleUs = 0;
             if (sources == null) return cycleUs;

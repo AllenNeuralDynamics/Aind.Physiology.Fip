@@ -687,8 +687,9 @@ public class RoiManagerVisualizer
 
     // "Hide ROIs" toggle: when set, the circles aren't drawn (or draggable) on the images.
     bool hideRois;
-    // Locked at startup so the ROIs can't be changed by accident before the experiment.
-    bool locked = true;
+    // Locked at startup so the ROIs can't be changed by accident before the experiment. Shared with
+    // the experiment power control (FipUiLock), so this one button gates both.
+    bool locked { get { return FipUiLock.Locked; } set { FipUiLock.Locked = value; } }
 
     static readonly Vector4 toggleOffColor = new Vector4(0.35f, 0.35f, 0.35f, 1f);
     static readonly Vector4 toggleOnColor = new Vector4(0.20f, 0.45f, 0.85f, 1f);

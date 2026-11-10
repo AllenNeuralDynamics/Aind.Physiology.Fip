@@ -174,7 +174,7 @@ public class FipCameraPowerControlVisualizer
                 }
                 else if (currentState is FipModeLightSourceTask && lightSource != null)
                 {
-                    FipPowerUi.CenteredText(lightSource.CalibratedPower.ToString("F1") + " µW", FipPowerUi.ActiveColor);
+                    FipPowerUi.CenteredText(FipPowerUi.FormatPower(lightSource, (float)lightSource.CalibratedDutyCycle), FipPowerUi.ActiveColor);
                 }
                 else
                 {
@@ -183,7 +183,7 @@ public class FipCameraPowerControlVisualizer
 
                 // What Start Experiment will use, independent of the slider.
                 ImGui.TableNextColumn();
-                FipPowerUi.CenteredText(lightSource != null ? lightSource.CalibratedPower.ToString("F1") + " µW" : "-", null);
+                FipPowerUi.CenteredText(FipPowerUi.FormatPower(lightSource, lightSource != null ? (float)lightSource.CalibratedDutyCycle : 0f), null);
 
                 ImGui.TableNextColumn();
                 ImGui.PushStyleColor(ImGuiCol.Button, isActiveChannel ? FipPowerUi.ActiveColor : FipPowerUi.InactiveColor);
@@ -213,9 +213,11 @@ public class FipCameraPowerControlVisualizer
 
         // Off always stays plain/default colored; its role is to grey out the other
         // buttons via their own State checks, not to show a state of its own.
+        // Stops the device altogether (no light, no camera triggers), unlike OffLightSourceTask,
+        // which keeps the Fip cycle running in the dark for background frames.
         if (ImGui.Button("Off##FipCameraPowerControl", buttonSize))
         {
-            observer.OnNext(new OffLightSourceTask());
+            observer.OnNext(new StopLightSourceTask());
         }
 
         var isFipMode = currentState is FipModeLightSourceTask;

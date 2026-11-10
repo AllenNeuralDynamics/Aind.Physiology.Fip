@@ -61,9 +61,19 @@ public class FipModeLightSourceTask : ITriggerLightSourceTask
 }
 
 /// <summary>
-/// Represents a request to stop driving all light sources. Carries no additional settings,
-/// since stopping applies to every channel at once.
+/// Represents a request to keep the Fip acquisition cycle running (cameras still triggered) with
+/// every light source at zero duty cycle, e.g. to acquire background frames. Carries no additional
+/// settings, since it applies to every channel at once. Use <see cref="StopLightSourceTask"/> to stop
+/// the device altogether.
 /// </summary>
 public class OffLightSourceTask : ITriggerLightSourceTask
+{
+}
+
+/// <summary>
+/// Represents a request to stop the device altogether: no light and no camera triggers. The task
+/// schedule is stopped and cleared and is not restarted.
+/// </summary>
+public class StopLightSourceTask : ITriggerLightSourceTask
 {
 }

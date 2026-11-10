@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Xml.Serialization;
-using AindPhysiologyFip;
 using Bonsai;
 using FipExtensions;
 using Hexa.NET.ImGui;
@@ -17,17 +16,19 @@ using Hexa.NET.ImGui;
 /// Source1 = Frame subject.
 /// </summary>
 /// <remarks>
+/// The rows always show <see cref="LightSources"/> (the CalibratedLightSources subject, which already
+/// carries the task's default powers); the only local state is the value being typed or dragged.
 /// Power is in microwatts for calibrated light sources and in percent otherwise. Editing either
 /// field updates the other through the light source's calibration, and both are clamped to the
-/// range the light source can reach. Each committed edit (Enter, focus loss or slider release) emits a new
-/// dictionary with every channel's <see cref="CalibratedLightSource"/>, the edited one rebuilt
-/// with the resulting duty cycle. Nothing is emitted until the user edits something. Assigning a
-/// new <see cref="LightSources"/> or <see cref="TaskLogic"/> instance discards pending edits and
-/// reloads the rows, with each channel's power defaulting to the task logic's value (0 if unset).
+/// range the light source can reach. Each committed edit (Enter, focus loss or slider release) emits
+/// a copy of <see cref="LightSources"/> with the edited channel rebuilt at the new duty cycle; feed it
+/// back into the same subject. Power only applies to Fip mode, so values can only be changed while
+/// <see cref="State"/> is Fip mode, <see cref="Enabled"/> is true and the shared UI lock
+/// (the ROI manager's Locked/Unlocked button) is unlocked.
 /// </remarks>
 [Combinator]
 [WorkflowElementCategory(ElementCategory.Combinator)]
-[Description("Renders one row per Fip camera channel found in LightSources (channel and light names in their colors, editable experiment power in microwatts, and editable duty cycle; the two are locked to each other through the calibration). Each committed edit emits a Dictionary<FipCameraSource, CalibratedLightSource> with the edit applied. Source1 = Frame subject; LightSources is set via PropertyMapping, not wired as a Process argument. Set Enabled to false to display the values without allowing changes.")]
+[Description("Renders one row per Fip camera channel found in LightSources (channel and light names in their colors, editable power and duty cycle locked to each other through the calibration). Each committed edit emits LightSources with the edit applied. Source1 = Frame subject; LightSources and State are set via PropertyMapping. Values can only be changed in Fip mode while Enabled is true.")]
 public class FipExperimentPowerVisualizer
 {
     private bool visible = true;
@@ -46,7 +47,7 @@ public class FipExperimentPowerVisualizer
     [Description("When true, the font size is scaled each frame so the control fills the available window space, and FontSize is ignored.")]
     public bool AutoFontSize { get { return autoFontSize; } set { autoFontSize = value; } }
 
-    private static readonly Dictionary<FipCameraSource, CalibratedLightSource> emptyLightSources =
+    private static readonly IDictionary<FipCameraSource, CalibratedLightSource> emptyLightSources =
         new Dictionary<FipCameraSource, CalibratedLightSource>();
 
     /// <summary>
@@ -54,57 +55,18 @@ public class FipExperimentPowerVisualizer
     /// Not serialized: assign via PropertyMapping rather than the property grid.
     /// </summary>
     [XmlIgnore]
-    public Dictionary<FipCameraSource, CalibratedLightSource> LightSources { get; set; }
+    public IDictionary<FipCameraSource, CalibratedLightSource> LightSources { get; set; }
 
     /// <summary>
-    /// Gets or sets the task logic that provides the default power of each channel (Green = blue
-    /// light, Iso = UV light, Red = lime light). A channel the task logic doesn't set, or a null
-    /// task logic, defaults to 0. Not serialized: assign via PropertyMapping rather than the
-    /// property grid.
+    /// Gets or sets the light source task currently driving the device. Power is only meaningful in
+    /// Fip mode, so the values can only be changed while this is a <see cref="FipModeLightSourceTask"/>.
+    /// Not serialized: assign via PropertyMapping rather than the property grid.
     /// </summary>
     [XmlIgnore]
-    [Description("The task logic providing the default power (uW) of each channel: Green = Power.Blue, Iso = Power.Uv, Red = Power.Lime. Unset powers, or a null task logic, default to 0. Set via PropertyMapping, not wired as a Process argument.")]
-    public AindPhysioFipTaskLogic TaskLogic { get; set; }
+    [Description("The light source task currently driving the device. Values can only be changed in Fip mode. Set via PropertyMapping, not wired as a Process argument.")]
+    public ITriggerLightSourceTask State { get; set; }
 
-    static double? TaskPower(FipCameraSource channel, AindPhysioFipTaskLogic taskLogic)
-    {
-        if (taskLogic == null || taskLogic.TaskParameters == null || taskLogic.TaskParameters.Power == null) return null;
-        var power = taskLogic.TaskParameters.Power;
-        switch (channel)
-        {
-            case FipCameraSource.Green: return power.Blue;
-            case FipCameraSource.Iso: return power.Uv;
-            case FipCameraSource.Red: return power.Lime;
-            default: return null;
-        }
-    }
-
-    // Rebuilds every channel with the task logic's power (0 when unset), clamped to what the
-    // light source can reach, converted to a duty cycle through its calibration.
-    static Dictionary<FipCameraSource, CalibratedLightSource> ApplyTaskPowers(
-        Dictionary<FipCameraSource, CalibratedLightSource> lightSources, AindPhysioFipTaskLogic taskLogic)
-    {
-        var result = new Dictionary<FipCameraSource, CalibratedLightSource>();
-        foreach (var pair in lightSources)
-        {
-            var lightSource = pair.Value;
-            if (lightSource == null)
-            {
-                result[pair.Key] = null;
-                continue;
-            }
-
-            var low = lightSource.DutyCycleToPower.Interpolate(0);
-            var high = lightSource.DutyCycleToPower.Interpolate(1);
-            var power = Math.Max(Math.Min(low, high), Math.Min(Math.Max(low, high), TaskPower(pair.Key, taskLogic) ?? 0));
-            result[pair.Key] = new CalibratedLightSource(
-                lightSource.LightSource, lightSource.DutyCycleToPower, lightSource.PowerToDutyCycle,
-                lightSource.PowerToDutyCycle.Interpolate(power));
-        }
-        return result;
-    }
-
-    // Pending (uncommitted) values of a row being edited. Power is in display units
+    // Value of a row while it is being typed or dragged. Power is in display units
     // (microwatts, or percent when uncalibrated).
     private class EditState
     {
@@ -112,16 +74,13 @@ public class FipExperimentPowerVisualizer
         public float Duty;
     }
 
-    public IObservable<Dictionary<FipCameraSource, CalibratedLightSource>> Process<TTickSource>(IObservable<TTickSource> frames)
+    public IObservable<FipExperimentPowerCommand> Process<TTickSource>(IObservable<TTickSource> frames)
     {
-        return Observable.Create<Dictionary<FipCameraSource, CalibratedLightSource>>(observer =>
+        return Observable.Create<FipExperimentPowerCommand>(observer =>
         {
-            Dictionary<FipCameraSource, CalibratedLightSource> source = null;
-            AindPhysioFipTaskLogic appliedTaskLogic = null;
-            Dictionary<FipCameraSource, CalibratedLightSource> current = emptyLightSources;
             var edits = new Dictionary<FipCameraSource, EditState>();
 
-            var frameSub = frames.SubscribeSafe(Observer.Create<TTickSource>(
+            return frames.SubscribeSafe(Observer.Create<TTickSource>(
                 _ =>
                 {
                     // Mirrors bonsai-rx/imgui PR #29, not yet in 0.1.0.
@@ -129,32 +88,64 @@ public class FipExperimentPowerVisualizer
 
                     if (!Visible) return;
 
-                    // A new input or task logic instance resets the edit state to the task logic's
-                    // default powers (0 without one) applied to the input's light sources.
-                    var input = LightSources ?? emptyLightSources;
-                    var taskLogic = TaskLogic;
-                    if (!ReferenceEquals(input, source) || !ReferenceEquals(taskLogic, appliedTaskLogic))
-                    {
-                        source = input;
-                        appliedTaskLogic = taskLogic;
-                        current = ApplyTaskPowers(input, taskLogic);
-                        edits.Clear();
-                    }
+                    var lightSources = LightSources ?? emptyLightSources;
 
-                    var renderFontSize = AutoFontSize ? FipPowerUi.AutoFontSize(current.Count, 1.6f, 30f) : FontSize;
+                    // Power only applies to Fip mode: edits are allowed only while Fip mode is running
+                    // (so they are applied live) and no experiment is running.
+                    // Also gated by the shared Locked/Unlocked button of the ROI manager.
+                    var isFipMode = State is FipModeLightSourceTask;
+                    var locked = FipUiLock.Locked;
+                    var editable = Enabled && isFipMode && !locked;
+                    if (!editable) edits.Clear();
+
+                    // Width model: ~30 text lines for the table plus ~7 for the button column.
+                    var renderFontSize = AutoFontSize ? FipPowerUi.AutoFontSize(lightSources.Count, 1.6f, 37f) : FontSize;
                     FipPowerUi.PushFont(renderFontSize);
 
-                    FipPowerUi.ComputeRowHeight(current.Count);
+                    if (Enabled && locked)
+                    {
+                        ImGui.TextColored(FipPowerUi.InactiveColor, "Locked: unlock in the ROI manager to change the power.");
+                    }
+                    else if (Enabled && !isFipMode)
+                    {
+                        ImGui.TextColored(FipPowerUi.InactiveColor, "Select Fip Mode to change the power.");
+                    }
+
+                    // Mode buttons on the left, same behavior as the Calibration tab: Off stops the device,
+                    // Fip Mode runs the Fip cycle. Disabled while an experiment is running (Enabled=false).
+                    const float itemSpacing = 8f;
+                    var buttonColumnWidth = renderFontSize * 6f;
+                    var buttonHeight = Math.Max(ImGui.GetFrameHeight(), (ImGui.GetContentRegionAvail().Y - itemSpacing) / 2f);
+                    var buttonSize = new Vector2(buttonColumnWidth, buttonHeight);
+                    ITriggerLightSourceTask requestedTask = null;
+                    ImGui.BeginGroup();
+                    ImGui.BeginDisabled(!Enabled);
+                    if (ImGui.Button("Off##FipExperimentPower", buttonSize))
+                    {
+                        requestedTask = new StopLightSourceTask();
+                    }
+                    ImGui.PushStyleColor(ImGuiCol.Button, isFipMode ? FipPowerUi.ActiveColor : FipPowerUi.InactiveColor);
+                    if (ImGui.Button((isFipMode ? "Fip Mode (Active)" : "Fip Mode") + "##FipExperimentPower", buttonSize))
+                    {
+                        requestedTask = new FipModeLightSourceTask();
+                    }
+                    ImGui.PopStyleColor();
+                    ImGui.EndDisabled();
+                    ImGui.EndGroup();
+                    ImGui.SameLine();
+
+                    FipPowerUi.ComputeRowHeight(lightSources.Count);
                     var tableFlags = ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchProp;
-                    if (ImGui.BeginTable("##FipExperimentPower", 4, tableFlags))
+                    if (ImGui.BeginTable("##FipExperimentPower", 4, tableFlags, new Vector2(ImGui.GetContentRegionAvail().X, 0)))
                     {
                         ImGui.TableSetupColumn("Channel", ImGuiTableColumnFlags.WidthStretch, 0.5f);
                         ImGui.TableSetupColumn("Light", ImGuiTableColumnFlags.WidthStretch, 0.5f);
-                        ImGui.TableSetupColumn("Power (µW)", ImGuiTableColumnFlags.WidthStretch, 1.5f);
+                        ImGui.TableSetupColumn("Power", ImGuiTableColumnFlags.WidthStretch, 1.5f);
                         ImGui.TableSetupColumn("Duty Cycle", ImGuiTableColumnFlags.WidthStretch, 2f);
                         ImGui.TableHeadersRow();
 
-                        foreach (var pair in current)
+                        IDictionary<FipCameraSource, CalibratedLightSource> committedUpdate = null;
+                        foreach (var pair in lightSources)
                         {
                             var channel = pair.Key;
                             var lightSource = pair.Value;
@@ -188,15 +179,15 @@ public class FipExperimentPowerVisualizer
                             var duty = isEditing ? edit.Duty : (float)lightSource.CalibratedDutyCycle;
                             var committed = false;
 
-                            ImGui.BeginDisabled(!Enabled);
+                            ImGui.BeginDisabled(!editable);
 
                             ImGui.TableNextColumn();
                             FipPowerUi.VerticalCenter(ImGui.GetFrameHeight());
                             ImGui.SetNextItemWidth(-1);
-                            if (ImGui.InputFloat("Power##" + channel.ToString(), ref power, 0f, 0f, calibrated ? "%.1f" : "%.1f%%"))
+                            if (ImGui.InputFloat("Power##" + channel.ToString(), ref power, 0f, 0f, calibrated ? "%.1f uW" : "%.1f%%"))
                             {
                                 power = Math.Max(minPower, Math.Min(maxPower, power));
-                                duty = (float)lightSource.PowerToDutyCycle.Interpolate(power / scale);
+                                duty = (float)Math.Max(0, Math.Min(1, lightSource.PowerToDutyCycle.Interpolate(power / scale)));
                                 edits[channel] = new EditState { Power = power, Duty = duty };
                             }
                             committed |= ImGui.IsItemDeactivatedAfterEdit();
@@ -216,25 +207,57 @@ public class FipExperimentPowerVisualizer
 
                             if (committed && edits.TryGetValue(channel, out edit))
                             {
-                                var updated = new Dictionary<FipCameraSource, CalibratedLightSource>(current);
-                                updated[channel] = new CalibratedLightSource(
-                                    lightSource.LightSource, lightSource.DutyCycleToPower, lightSource.PowerToDutyCycle, edit.Duty);
-                                current = updated;
                                 edits.Remove(channel);
-                                observer.OnNext(updated);
-                                break;
+                                if (committedUpdate == null)
+                                {
+                                    committedUpdate = new Dictionary<FipCameraSource, CalibratedLightSource>(lightSources);
+                                }
+                                committedUpdate[channel] = new CalibratedLightSource(
+                                    lightSource.LightSource, lightSource.DutyCycleToPower, lightSource.PowerToDutyCycle, edit.Duty);
                             }
                         }
 
                         ImGui.EndTable();
+
+                        // Emit after drawing; the subject feeds the new values back into LightSources.
+                        if (committedUpdate != null)
+                        {
+                            LightSources = committedUpdate;
+                            observer.OnNext(new FipExperimentPowerCommand(committedUpdate, null));
+                        }
                     }
 
                     ImGui.PopFont();
+
+                    if (requestedTask != null)
+                    {
+                        observer.OnNext(new FipExperimentPowerCommand(null, requestedTask));
+                    }
                 },
                 observer.OnError,
                 observer.OnCompleted));
-
-            return frameSub;
         });
     }
+}
+
+/// <summary>
+/// Output of <see cref="FipExperimentPowerVisualizer"/>: either committed power edits
+/// (<see cref="LightSources"/>, feed into CalibratedLightSources) or a mode button press
+/// (<see cref="Task"/>, feed into TriggerTask). Exactly one of the two is non-null.
+/// </summary>
+public class FipExperimentPowerCommand
+{
+    public FipExperimentPowerCommand(IDictionary<FipCameraSource, CalibratedLightSource> lightSources, ITriggerLightSourceTask task)
+    {
+        LightSources = lightSources;
+        Task = task;
+    }
+
+    public IDictionary<FipCameraSource, CalibratedLightSource> LightSources { get; private set; }
+
+    public ITriggerLightSourceTask Task { get; private set; }
+
+    public bool HasLightSources { get { return LightSources != null; } }
+
+    public bool HasTask { get { return Task != null; } }
 }

@@ -22,6 +22,7 @@ using Bonsai.Expressions;
 [XmlInclude(typeof(ContinuousLightSourceTask))]
 [XmlInclude(typeof(FipModeLightSourceTask))]
 [XmlInclude(typeof(OffLightSourceTask))]
+[XmlInclude(typeof(StopLightSourceTask))]
 public class CreateLightSourceTask : ExpressionBuilder, ICustomTypeDescriptor
 {
     static readonly Range<int> argumentRange = Range.Create(0, 1);

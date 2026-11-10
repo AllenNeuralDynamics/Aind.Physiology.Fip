@@ -3,6 +3,16 @@ using System.Numerics;
 using Hexa.NET.ImGui;
 
 /// <summary>
+/// UI lock shared by the ROI manager (which owns the Locked/Unlocked button) and the experiment
+/// power control. Locked at startup so neither can be changed by accident.
+/// </summary>
+static class FipUiLock
+{
+    static volatile bool locked = true;
+    public static bool Locked { get { return locked; } set { locked = value; } }
+}
+
+/// <summary>
 /// ImGui helpers shared by the Fip power visualizers: colors, auto font sizing, stretched table
 /// rows and centered cell text.
 /// </summary>

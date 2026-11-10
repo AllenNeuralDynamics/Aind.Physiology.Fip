@@ -1570,6 +1570,9 @@ namespace AindPhysiologyFip
     
         public LightSourcesPower()
         {
+            _blue = 20D;
+            _uv = 20D;
+            _lime = 20D;
         }
     
         protected LightSourcesPower(LightSourcesPower other)
@@ -1582,7 +1585,7 @@ namespace AindPhysiologyFip
         /// <summary>
         /// Power of the blue light source in uW.
         /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("blue", Required=Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonPropertyAttribute("blue")]
         [System.ComponentModel.DescriptionAttribute("Power of the blue light source in uW.")]
         public double Blue
         {
@@ -1599,7 +1602,7 @@ namespace AindPhysiologyFip
         /// <summary>
         /// Power of the UV light source in uW.
         /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("uv", Required=Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonPropertyAttribute("uv")]
         [System.ComponentModel.DescriptionAttribute("Power of the UV light source in uW.")]
         public double Uv
         {
@@ -1616,7 +1619,7 @@ namespace AindPhysiologyFip
         /// <summary>
         /// Power of the lime light source in uW.
         /// </summary>
-        [Newtonsoft.Json.JsonPropertyAttribute("lime", Required=Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonPropertyAttribute("lime")]
         [System.ComponentModel.DescriptionAttribute("Power of the lime light source in uW.")]
         public double Lime
         {

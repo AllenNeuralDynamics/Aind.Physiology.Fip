@@ -19,17 +19,17 @@ class Measurement(BaseModel):
 
 
 class LightSourcesPower(BaseModel):
-    blue: LightSourcePower = Field(ge=0, description="Power of the blue light source in uW.")
-    uv: LightSourcePower = Field(ge=0, description="Power of the UV light source in uW.")
-    lime: LightSourcePower = Field(ge=0, description="Power of the lime light source in uW.")
+    blue: LightSourcePower = Field(default=20, ge=0, description="Power of the blue light source in uW.")
+    uv: LightSourcePower = Field(default=20, ge=0, description="Power of the UV light source in uW.")
+    lime: LightSourcePower = Field(default=20, ge=0, description="Power of the lime light source in uW.")
 
 
 class AindPhysioFipTaskParameters(TaskParameters):
     """Parameters of the FIP task, mirroring what the UI lets the user change."""
 
     measurements: list[Measurement] = Field(default_factory=list, description="Measurements used in the experiment.")
-    power: LightSourcesPower | None = Field(
-        default=None, validate_default=True, description="Power of the light sources."
+    power: LightSourcesPower = Field(
+        default_factory=LightSourcesPower, validate_default=True, description="Power of the light sources."
     )
 
     @model_validator(mode="after")

@@ -191,7 +191,8 @@ public class CuttlefishTaskController
             IDictionary<FipCameraSource, CalibratedLightSource> sources,
             List<byte[]> payloads)
         {
-            if (target == null || sources == null) return 0;
+            // Stop (and clear requests, target == null) leave the schedule stopped and empty: no tasks, no Start.
+            if (target == null || target is StopLightSourceTask || sources == null) return 0;
             var cycleUs = 0;
 
             var continuous = target as ContinuousLightSourceTask;

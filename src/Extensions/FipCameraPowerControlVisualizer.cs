@@ -213,9 +213,11 @@ public class FipCameraPowerControlVisualizer
 
         // Off always stays plain/default colored; its role is to grey out the other
         // buttons via their own State checks, not to show a state of its own.
+        // Stops the device altogether (no light, no camera triggers), unlike OffLightSourceTask,
+        // which keeps the Fip cycle running in the dark for background frames.
         if (ImGui.Button("Off##FipCameraPowerControl", buttonSize))
         {
-            observer.OnNext(new OffLightSourceTask());
+            observer.OnNext(new StopLightSourceTask());
         }
 
         var isFipMode = currentState is FipModeLightSourceTask;

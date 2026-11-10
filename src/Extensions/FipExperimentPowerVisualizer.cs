@@ -66,6 +66,15 @@ public class FipExperimentPowerVisualizer
     [Description("The task logic providing the default power (uW) of each channel: Green = Power.Blue, Iso = Power.Uv, Red = Power.Lime. Unset powers, or a null task logic, default to 0. Set via PropertyMapping, not wired as a Process argument.")]
     public AindPhysioFipTaskLogic TaskLogic { get; set; }
 
+    /// <summary>
+    /// Gets or sets the light source task currently driving the device. Power is only meaningful in
+    /// Fip mode, so the values can only be changed while this is a <see cref="FipModeLightSourceTask"/>.
+    /// Not serialized: assign via PropertyMapping rather than the property grid.
+    /// </summary>
+    [XmlIgnore]
+    [Description("The light source task currently driving the device. Values can only be changed in Fip mode. Set via PropertyMapping, not wired as a Process argument.")]
+    public ITriggerLightSourceTask State { get; set; }
+
     static double? TaskPower(FipCameraSource channel, AindPhysioFipTaskLogic taskLogic)
     {
         if (taskLogic == null || taskLogic.TaskParameters == null || taskLogic.TaskParameters.Power == null) return null;
@@ -148,8 +157,18 @@ public class FipExperimentPowerVisualizer
                         }
                     }
 
+                    // Power only applies to Fip mode: edits are allowed only while Fip mode is running
+                    // (so they are applied live) and no experiment is running.
+                    var isFipMode = State is FipModeLightSourceTask;
+                    var editable = Enabled && isFipMode;
+
                     var renderFontSize = AutoFontSize ? FipPowerUi.AutoFontSize(current.Count, 1.6f, 30f) : FontSize;
                     FipPowerUi.PushFont(renderFontSize);
+
+                    if (Enabled && !isFipMode)
+                    {
+                        ImGui.TextColored(FipPowerUi.InactiveColor, "Select Fip Mode in the Calibration tab to change the power.");
+                    }
 
                     FipPowerUi.ComputeRowHeight(current.Count);
                     var tableFlags = ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchProp;
@@ -195,7 +214,7 @@ public class FipExperimentPowerVisualizer
                             var duty = isEditing ? edit.Duty : (float)lightSource.CalibratedDutyCycle;
                             var committed = false;
 
-                            ImGui.BeginDisabled(!Enabled);
+                            ImGui.BeginDisabled(!editable);
 
                             ImGui.TableNextColumn();
                             FipPowerUi.VerticalCenter(ImGui.GetFrameHeight());

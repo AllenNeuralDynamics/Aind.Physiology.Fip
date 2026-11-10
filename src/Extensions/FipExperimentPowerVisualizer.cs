@@ -22,7 +22,8 @@ using Hexa.NET.ImGui;
 /// range the light source can reach. Each committed edit (Enter, focus loss or slider release) emits
 /// a copy of <see cref="LightSources"/> with the edited channel rebuilt at the new duty cycle; feed it
 /// back into the same subject. Power only applies to Fip mode, so values can only be changed while
-/// <see cref="State"/> is Fip mode and <see cref="Enabled"/> is true.
+/// <see cref="State"/> is Fip mode, <see cref="Enabled"/> is true and the shared UI lock
+/// (the ROI manager's Locked/Unlocked button) is unlocked.
 /// </remarks>
 [Combinator]
 [WorkflowElementCategory(ElementCategory.Combinator)]
@@ -90,14 +91,20 @@ public class FipExperimentPowerVisualizer
 
                     // Power only applies to Fip mode: edits are allowed only while Fip mode is running
                     // (so they are applied live) and no experiment is running.
+                    // Also gated by the shared Locked/Unlocked button of the ROI manager.
                     var isFipMode = State is FipModeLightSourceTask;
-                    var editable = Enabled && isFipMode;
+                    var locked = FipUiLock.Locked;
+                    var editable = Enabled && isFipMode && !locked;
                     if (!editable) edits.Clear();
 
                     var renderFontSize = AutoFontSize ? FipPowerUi.AutoFontSize(lightSources.Count, 1.6f, 30f) : FontSize;
                     FipPowerUi.PushFont(renderFontSize);
 
-                    if (Enabled && !isFipMode)
+                    if (Enabled && locked)
+                    {
+                        ImGui.TextColored(FipPowerUi.InactiveColor, "Locked: unlock in the ROI manager to change the power.");
+                    }
+                    else if (Enabled && !isFipMode)
                     {
                         ImGui.TextColored(FipPowerUi.InactiveColor, "Select Fip Mode in the Calibration tab to change the power.");
                     }

@@ -634,10 +634,16 @@
                       <rx:Count>1</rx:Count>
                     </Combinator>
                   </Expression>
-                  <Expression xsi:type="rx:AsyncSubject">
+                  <Expression xsi:type="rx:BehaviorSubject">
                     <Name>CalibratedLightSources</Name>
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>TaskSchema</Name>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="p1:ApplyTaskPowers" />
+                  </Expression>
                 </Nodes>
                 <Edges>
                   <Edge From="0" To="1" Label="Source1" />
@@ -660,8 +666,10 @@
                   <Edge From="14" To="15" Label="Source3" />
                   <Edge From="15" To="16" Label="Source1" />
                   <Edge From="16" To="17" Label="Source1" />
-                  <Edge From="17" To="18" Label="Source1" />
+                  <Edge From="17" To="21" Label="Source1" />
                   <Edge From="18" To="19" Label="Source1" />
+                  <Edge From="20" To="21" Label="Source2" />
+                  <Edge From="21" To="18" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -771,13 +779,6 @@
                 <rx:DueTime>PT0.3S</rx:DueTime>
               </Combinator>
             </Expression>
-            <Expression xsi:type="PropertySource" TypeArguments="p7:CreateSetTaskStatePayload,p7:TaskState">
-              <MemberName>SetTaskState</MemberName>
-              <Value>Start</Value>
-            </Expression>
-            <Expression xsi:type="MulticastSubject">
-              <Name>SetTaskState</Name>
-            </Expression>
             <Expression xsi:type="rx:SelectMany">
               <Name>WaitBackgroundFrames</Name>
               <Workflow>
@@ -878,16 +879,6 @@
             <Expression xsi:type="MulticastSubject">
               <Name>StartExperiment</Name>
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>StartExperiment</Name>
-            </Expression>
-            <Expression xsi:type="PropertySource" TypeArguments="p7:CreateSetTaskStatePayload,p7:TaskState">
-              <MemberName>SetTaskState</MemberName>
-              <Value>Start</Value>
-            </Expression>
-            <Expression xsi:type="MulticastSubject">
-              <Name>SetTaskState</Name>
-            </Expression>
             <Expression xsi:type="GroupWorkflow">
               <Name>TriggeringLogic</Name>
               <Workflow>
@@ -898,580 +889,28 @@
                   <Expression xsi:type="SubscribeSubject">
                     <Name>TriggerTask</Name>
                   </Expression>
-                  <Expression xsi:type="p1:LightSourceTaskOfType">
-                    <p1:Type xsi:type="TypeMapping" TypeArguments="p1:FipModeLightSourceTask" />
-                  </Expression>
-                  <Expression xsi:type="rx:CreateObservable">
-                    <Name>CreateFipModeTasks</Name>
-                    <Workflow>
-                      <Nodes>
-                        <Expression xsi:type="WorkflowInput">
-                          <Name>Source1</Name>
-                        </Expression>
-                        <Expression xsi:type="rx:Sink">
-                          <Name>ClearTasks</Name>
-                          <Workflow>
-                            <Nodes>
-                              <Expression xsi:type="WorkflowInput">
-                                <Name>Source1</Name>
-                              </Expression>
-                              <Expression xsi:type="Unit" />
-                              <Expression xsi:type="MulticastSubject">
-                                <Name>ClearTasks</Name>
-                              </Expression>
-                              <Expression xsi:type="WorkflowOutput" />
-                            </Nodes>
-                            <Edges>
-                              <Edge From="0" To="1" Label="Source1" />
-                              <Edge From="1" To="2" Label="Source1" />
-                              <Edge From="2" To="3" Label="Source1" />
-                            </Edges>
-                          </Workflow>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="rx:Delay">
-                            <rx:DueTime>PT0.05S</rx:DueTime>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="rx:SelectMany">
-                          <Name>MakeTaskConfiguration</Name>
-                          <Workflow>
-                            <Nodes>
-                              <Expression xsi:type="SubscribeSubject">
-                                <Name>CalibratedLightSources</Name>
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Merge" />
-                              </Expression>
-                              <Expression xsi:type="rx:CreateObservable">
-                                <Workflow>
-                                  <Nodes>
-                                    <Expression xsi:type="WorkflowInput">
-                                      <Name>Source1</Name>
-                                    </Expression>
-                                    <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="rx:Take">
-                                        <rx:Count>1</rx:Count>
-                                      </Combinator>
-                                    </Expression>
-                                    <Expression xsi:type="rx:AsyncSubject">
-                                      <Name>thisCalibration</Name>
-                                    </Expression>
-                                    <Expression xsi:type="SubscribeSubject">
-                                      <Name>thisCalibration</Name>
-                                    </Expression>
-                                    <Expression xsi:type="MemberSelector">
-                                      <Selector>Value</Selector>
-                                    </Expression>
-                                    <Expression xsi:type="InputMapping">
-                                      <PropertyMappings>
-                                        <Property Name="PwmPort" Selector="LightSource.Task.LightSourcePort" />
-                                        <Property Name="DutyCycle" Selector="CalibratedDutyCycle" />
-                                        <Property Name="Frequency" Selector="LightSource.Task.PwmFrequency" />
-                                        <Property Name="TriggerPorts" Selector="LightSource.Task.CameraPort" />
-                                        <Property Name="EventsEnabled" Selector="LightSource.Task.EventsEnabled" />
-                                        <Property Name="IsMuted" Selector="LightSource.Task.MuteOutput" />
-                                        <Property Name="Delta1" Selector="LightSource.Task.Delta1" />
-                                        <Property Name="Delta2" Selector="LightSource.Task.Delta2" />
-                                        <Property Name="Delta3" Selector="LightSource.Task.Delta3" />
-                                        <Property Name="Delta4" Selector="LightSource.Task.Delta4" />
-                                      </PropertyMappings>
-                                    </Expression>
-                                    <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p7:ConfigureTask">
-                                        <p7:MessageType>Write</p7:MessageType>
-                                        <p7:PwmPort>IO4</p7:PwmPort>
-                                        <p7:DutyCycle>0.389436632</p7:DutyCycle>
-                                        <p7:Frequency>10000</p7:Frequency>
-                                        <p7:TriggerPorts>IO1</p7:TriggerPorts>
-                                        <p7:EventsEnabled>true</p7:EventsEnabled>
-                                        <p7:IsMuted>false</p7:IsMuted>
-                                        <p7:Delta1>15650</p7:Delta1>
-                                        <p7:Delta2>666</p7:Delta2>
-                                        <p7:Delta3>300</p7:Delta3>
-                                        <p7:Delta4>50</p7:Delta4>
-                                      </Combinator>
-                                    </Expression>
-                                    <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="rx:Take">
-                                        <rx:Count>1</rx:Count>
-                                      </Combinator>
-                                    </Expression>
-                                    <Expression xsi:type="WorkflowOutput" />
-                                  </Nodes>
-                                  <Edges>
-                                    <Edge From="0" To="1" Label="Source1" />
-                                    <Edge From="1" To="2" Label="Source1" />
-                                    <Edge From="3" To="4" Label="Source1" />
-                                    <Edge From="4" To="5" Label="Source1" />
-                                    <Edge From="5" To="6" Label="Source1" />
-                                    <Edge From="6" To="7" Label="Source1" />
-                                    <Edge From="7" To="8" Label="Source1" />
-                                  </Edges>
-                                </Workflow>
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Merge" />
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Timer">
-                                  <rx:DueTime>PT0S</rx:DueTime>
-                                  <rx:Period>PT0.03S</rx:Period>
-                                </Combinator>
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Zip" />
-                              </Expression>
-                              <Expression xsi:type="MemberSelector">
-                                <Selector>Item1</Selector>
-                              </Expression>
-                              <Expression xsi:type="WorkflowOutput" />
-                            </Nodes>
-                            <Edges>
-                              <Edge From="0" To="1" Label="Source1" />
-                              <Edge From="1" To="2" Label="Source1" />
-                              <Edge From="2" To="3" Label="Source1" />
-                              <Edge From="3" To="5" Label="Source1" />
-                              <Edge From="4" To="5" Label="Source2" />
-                              <Edge From="5" To="6" Label="Source1" />
-                              <Edge From="6" To="7" Label="Source1" />
-                            </Edges>
-                          </Workflow>
-                        </Expression>
-                        <Expression xsi:type="WorkflowOutput" />
-                      </Nodes>
-                      <Edges>
-                        <Edge From="0" To="1" Label="Source1" />
-                        <Edge From="1" To="2" Label="Source1" />
-                        <Edge From="2" To="3" Label="Source1" />
-                        <Edge From="3" To="4" Label="Source1" />
-                      </Edges>
-                    </Workflow>
-                  </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>TriggerTask</Name>
-                  </Expression>
-                  <Expression xsi:type="p1:LightSourceTaskOfType">
-                    <p1:Type xsi:type="TypeMapping" TypeArguments="p1:ContinuousLightSourceTask" />
-                  </Expression>
-                  <Expression xsi:type="rx:CreateObservable">
-                    <Name>CreateCalibrationModeTask</Name>
-                    <Workflow>
-                      <Nodes>
-                        <Expression xsi:type="WorkflowInput">
-                          <Name>Source1</Name>
-                        </Expression>
-                        <Expression xsi:type="rx:Sink">
-                          <Name>ClearTasks</Name>
-                          <Workflow>
-                            <Nodes>
-                              <Expression xsi:type="WorkflowInput">
-                                <Name>Source1</Name>
-                              </Expression>
-                              <Expression xsi:type="Unit" />
-                              <Expression xsi:type="MulticastSubject">
-                                <Name>ClearTasks</Name>
-                              </Expression>
-                              <Expression xsi:type="WorkflowOutput" />
-                            </Nodes>
-                            <Edges>
-                              <Edge From="0" To="1" Label="Source1" />
-                              <Edge From="1" To="2" Label="Source1" />
-                              <Edge From="2" To="3" Label="Source1" />
-                            </Edges>
-                          </Workflow>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="rx:Delay">
-                            <rx:DueTime>PT0.05S</rx:DueTime>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="rx:SelectMany">
-                          <Name>MakeContinuousLightSourceTask</Name>
-                          <Workflow>
-                            <Nodes>
-                              <Expression xsi:type="WorkflowInput">
-                                <Name>Source1</Name>
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Take">
-                                  <rx:Count>1</rx:Count>
-                                </Combinator>
-                              </Expression>
-                              <Expression xsi:type="rx:AsyncSubject">
-                                <Name>lightSource</Name>
-                              </Expression>
-                              <Expression xsi:type="SubscribeSubject">
-                                <Name>CalibratedLightSources</Name>
-                              </Expression>
-                              <Expression xsi:type="SubscribeSubject">
-                                <Name>lightSource</Name>
-                              </Expression>
-                              <Expression xsi:type="MemberSelector">
-                                <Selector>Channel</Selector>
-                              </Expression>
-                              <Expression xsi:type="PropertyMapping">
-                                <PropertyMappings>
-                                  <Property Name="Value" />
-                                </PropertyMappings>
-                              </Expression>
-                              <Expression xsi:type="Index">
-                                <Operand xsi:type="WorkflowProperty" TypeArguments="p6:FipCameraSource">
-                                  <Value>Green</Value>
-                                </Operand>
-                              </Expression>
-                              <Expression xsi:type="rx:CreateObservable">
-                                <Name>CreateContinuousTask</Name>
-                                <Workflow>
-                                  <Nodes>
-                                    <Expression xsi:type="WorkflowInput">
-                                      <Name>Source1</Name>
-                                    </Expression>
-                                    <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="rx:Take">
-                                        <rx:Count>1</rx:Count>
-                                      </Combinator>
-                                    </Expression>
-                                    <Expression xsi:type="rx:AsyncSubject">
-                                      <Name>thisCalibration</Name>
-                                    </Expression>
-                                    <Expression xsi:type="SubscribeSubject">
-                                      <Name>thisCalibration</Name>
-                                    </Expression>
-                                    <Expression xsi:type="SubscribeSubject">
-                                      <Name>thisCalibration</Name>
-                                    </Expression>
-                                    <Expression xsi:type="MemberSelector">
-                                      <Selector>LightSource.Task.LightSourcePort</Selector>
-                                    </Expression>
-                                    <Expression xsi:type="PropertyMapping">
-                                      <PropertyMappings>
-                                        <Property Name="PwmPort" />
-                                      </PropertyMappings>
-                                    </Expression>
-                                    <Expression xsi:type="SubscribeSubject">
-                                      <Name>lightSource</Name>
-                                    </Expression>
-                                    <Expression xsi:type="MemberSelector">
-                                      <Selector>Power</Selector>
-                                    </Expression>
-                                    <Expression xsi:type="PropertyMapping">
-                                      <PropertyMappings>
-                                        <Property Name="DutyCycle" />
-                                      </PropertyMappings>
-                                    </Expression>
-                                    <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p7:ConfigureTask">
-                                        <p7:MessageType>Write</p7:MessageType>
-                                        <p7:PwmPort>IO2</p7:PwmPort>
-                                        <p7:DutyCycle>0.614</p7:DutyCycle>
-                                        <p7:Frequency>10000</p7:Frequency>
-                                        <p7:TriggerPorts>None</p7:TriggerPorts>
-                                        <p7:EventsEnabled>false</p7:EventsEnabled>
-                                        <p7:IsMuted>false</p7:IsMuted>
-                                        <p7:Delta1>10000</p7:Delta1>
-                                        <p7:Delta2>0</p7:Delta2>
-                                        <p7:Delta3>0</p7:Delta3>
-                                        <p7:Delta4>0</p7:Delta4>
-                                      </Combinator>
-                                    </Expression>
-                                    <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="rx:Take">
-                                        <rx:Count>1</rx:Count>
-                                      </Combinator>
-                                    </Expression>
-                                    <Expression xsi:type="WorkflowOutput" />
-                                  </Nodes>
-                                  <Edges>
-                                    <Edge From="0" To="1" Label="Source1" />
-                                    <Edge From="1" To="2" Label="Source1" />
-                                    <Edge From="3" To="10" Label="Source1" />
-                                    <Edge From="4" To="5" Label="Source1" />
-                                    <Edge From="5" To="6" Label="Source1" />
-                                    <Edge From="6" To="10" Label="Source2" />
-                                    <Edge From="7" To="8" Label="Source1" />
-                                    <Edge From="8" To="9" Label="Source1" />
-                                    <Edge From="9" To="10" Label="Source3" />
-                                    <Edge From="10" To="11" Label="Source1" />
-                                    <Edge From="11" To="12" Label="Source1" />
-                                  </Edges>
-                                </Workflow>
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Merge" />
-                              </Expression>
-                              <Expression xsi:type="WorkflowOutput" />
-                            </Nodes>
-                            <Edges>
-                              <Edge From="0" To="1" Label="Source1" />
-                              <Edge From="1" To="2" Label="Source1" />
-                              <Edge From="3" To="7" Label="Source1" />
-                              <Edge From="4" To="5" Label="Source1" />
-                              <Edge From="5" To="6" Label="Source1" />
-                              <Edge From="6" To="7" Label="Source2" />
-                              <Edge From="7" To="8" Label="Source1" />
-                              <Edge From="8" To="9" Label="Source1" />
-                              <Edge From="9" To="10" Label="Source1" />
-                            </Edges>
-                          </Workflow>
-                        </Expression>
-                        <Expression xsi:type="WorkflowOutput" />
-                      </Nodes>
-                      <Edges>
-                        <Edge From="0" To="1" Label="Source1" />
-                        <Edge From="1" To="2" Label="Source1" />
-                        <Edge From="2" To="3" Label="Source1" />
-                        <Edge From="3" To="4" Label="Source1" />
-                      </Edges>
-                    </Workflow>
-                  </Expression>
-                  <Expression xsi:type="SubscribeSubject">
-                    <Name>TriggerTask</Name>
-                  </Expression>
-                  <Expression xsi:type="p1:LightSourceTaskOfType">
-                    <p1:Type xsi:type="TypeMapping" TypeArguments="p1:OffLightSourceTask" />
-                  </Expression>
-                  <Expression xsi:type="Annotation">
-                    <Name>Implementation note</Name>
-                    <Text><![CDATA[This mimicks the CreateFipModeTasks but sets PWM duty cycle to 0]]></Text>
-                  </Expression>
-                  <Expression xsi:type="rx:CreateObservable">
-                    <Name>CreateFipModeTasksWithoutLight</Name>
-                    <Workflow>
-                      <Nodes>
-                        <Expression xsi:type="WorkflowInput">
-                          <Name>Source1</Name>
-                        </Expression>
-                        <Expression xsi:type="rx:Sink">
-                          <Name>ClearTasks</Name>
-                          <Workflow>
-                            <Nodes>
-                              <Expression xsi:type="WorkflowInput">
-                                <Name>Source1</Name>
-                              </Expression>
-                              <Expression xsi:type="Unit" />
-                              <Expression xsi:type="MulticastSubject">
-                                <Name>ClearTasks</Name>
-                              </Expression>
-                              <Expression xsi:type="WorkflowOutput" />
-                            </Nodes>
-                            <Edges>
-                              <Edge From="0" To="1" Label="Source1" />
-                              <Edge From="1" To="2" Label="Source1" />
-                              <Edge From="2" To="3" Label="Source1" />
-                            </Edges>
-                          </Workflow>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="rx:Delay">
-                            <rx:DueTime>PT0.05S</rx:DueTime>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="rx:SelectMany">
-                          <Name>MakeTaskConfiguration</Name>
-                          <Workflow>
-                            <Nodes>
-                              <Expression xsi:type="SubscribeSubject">
-                                <Name>CalibratedLightSources</Name>
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Merge" />
-                              </Expression>
-                              <Expression xsi:type="rx:CreateObservable">
-                                <Workflow>
-                                  <Nodes>
-                                    <Expression xsi:type="WorkflowInput">
-                                      <Name>Source1</Name>
-                                    </Expression>
-                                    <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="rx:Take">
-                                        <rx:Count>1</rx:Count>
-                                      </Combinator>
-                                    </Expression>
-                                    <Expression xsi:type="rx:AsyncSubject">
-                                      <Name>thisCalibration</Name>
-                                    </Expression>
-                                    <Expression xsi:type="SubscribeSubject">
-                                      <Name>thisCalibration</Name>
-                                    </Expression>
-                                    <Expression xsi:type="MemberSelector">
-                                      <Selector>Value</Selector>
-                                    </Expression>
-                                    <Expression xsi:type="InputMapping">
-                                      <PropertyMappings>
-                                        <Property Name="PwmPort" Selector="LightSource.Task.LightSourcePort" />
-                                        <Property Name="Frequency" Selector="LightSource.Task.PwmFrequency" />
-                                        <Property Name="TriggerPorts" Selector="LightSource.Task.CameraPort" />
-                                        <Property Name="EventsEnabled" Selector="LightSource.Task.EventsEnabled" />
-                                        <Property Name="IsMuted" Selector="LightSource.Task.MuteOutput" />
-                                        <Property Name="Delta1" Selector="LightSource.Task.Delta1" />
-                                        <Property Name="Delta2" Selector="LightSource.Task.Delta2" />
-                                        <Property Name="Delta3" Selector="LightSource.Task.Delta3" />
-                                        <Property Name="Delta4" Selector="LightSource.Task.Delta4" />
-                                      </PropertyMappings>
-                                    </Expression>
-                                    <Expression xsi:type="ExternalizedMapping">
-                                      <Property Name="DutyCycle" />
-                                    </Expression>
-                                    <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="p7:ConfigureTask">
-                                        <p7:MessageType>Write</p7:MessageType>
-                                        <p7:PwmPort>IO4</p7:PwmPort>
-                                        <p7:DutyCycle>0</p7:DutyCycle>
-                                        <p7:Frequency>10000</p7:Frequency>
-                                        <p7:TriggerPorts>IO1</p7:TriggerPorts>
-                                        <p7:EventsEnabled>true</p7:EventsEnabled>
-                                        <p7:IsMuted>false</p7:IsMuted>
-                                        <p7:Delta1>15650</p7:Delta1>
-                                        <p7:Delta2>666</p7:Delta2>
-                                        <p7:Delta3>300</p7:Delta3>
-                                        <p7:Delta4>50</p7:Delta4>
-                                      </Combinator>
-                                    </Expression>
-                                    <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="rx:Take">
-                                        <rx:Count>1</rx:Count>
-                                      </Combinator>
-                                    </Expression>
-                                    <Expression xsi:type="WorkflowOutput" />
-                                  </Nodes>
-                                  <Edges>
-                                    <Edge From="0" To="1" Label="Source1" />
-                                    <Edge From="1" To="2" Label="Source1" />
-                                    <Edge From="3" To="4" Label="Source1" />
-                                    <Edge From="4" To="5" Label="Source1" />
-                                    <Edge From="5" To="7" Label="Source1" />
-                                    <Edge From="6" To="7" Label="Source2" />
-                                    <Edge From="7" To="8" Label="Source1" />
-                                    <Edge From="8" To="9" Label="Source1" />
-                                  </Edges>
-                                </Workflow>
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Merge" />
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Timer">
-                                  <rx:DueTime>PT0S</rx:DueTime>
-                                  <rx:Period>PT0.03S</rx:Period>
-                                </Combinator>
-                              </Expression>
-                              <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="rx:Zip" />
-                              </Expression>
-                              <Expression xsi:type="MemberSelector">
-                                <Selector>Item1</Selector>
-                              </Expression>
-                              <Expression xsi:type="WorkflowOutput" />
-                            </Nodes>
-                            <Edges>
-                              <Edge From="0" To="1" Label="Source1" />
-                              <Edge From="1" To="2" Label="Source1" />
-                              <Edge From="2" To="3" Label="Source1" />
-                              <Edge From="3" To="5" Label="Source1" />
-                              <Edge From="4" To="5" Label="Source2" />
-                              <Edge From="5" To="6" Label="Source1" />
-                              <Edge From="6" To="7" Label="Source1" />
-                            </Edges>
-                          </Workflow>
-                        </Expression>
-                        <Expression xsi:type="WorkflowOutput" />
-                      </Nodes>
-                      <Edges>
-                        <Edge From="0" To="1" Label="Source1" />
-                        <Edge From="1" To="2" Label="Source1" />
-                        <Edge From="2" To="3" Label="Source1" />
-                        <Edge From="3" To="4" Label="Source1" />
-                      </Edges>
-                    </Workflow>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="rx:Merge" />
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="rx:Switch" />
-                  </Expression>
-                  <Expression xsi:type="MulticastSubject">
-                    <Name>CuttlefishFipCommands</Name>
+                    <Name>CalibratedLightSources</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>ClearTasks</Name>
                   </Expression>
-                  <Expression xsi:type="rx:CreateObservable">
-                    <Name>ClearTasks</Name>
-                    <Workflow>
-                      <Nodes>
-                        <Expression xsi:type="p7:CreateMessage">
-                          <harp:MessageType>Write</harp:MessageType>
-                          <harp:Payload xsi:type="p7:CreateSetTaskStatePayload">
-                            <p7:SetTaskState>Stop</p7:SetTaskState>
-                          </harp:Payload>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>CuttlefishFipCommands</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="rx:Delay">
-                            <rx:DueTime>PT0.03S</rx:DueTime>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="p7:CreateMessage">
-                          <harp:MessageType>Write</harp:MessageType>
-                          <harp:Payload xsi:type="p7:CreateClearAllTasksPayload">
-                            <p7:ClearAllTasks>Enabled</p7:ClearAllTasks>
-                          </harp:Payload>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>CuttlefishFipCommands</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="rx:Take">
-                            <rx:Count>1</rx:Count>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="WorkflowOutput" />
-                      </Nodes>
-                      <Edges>
-                        <Edge From="0" To="1" Label="Source1" />
-                        <Edge From="1" To="2" Label="Source1" />
-                        <Edge From="2" To="3" Label="Source1" />
-                        <Edge From="3" To="4" Label="Source1" />
-                        <Edge From="4" To="5" Label="Source1" />
-                        <Edge From="5" To="6" Label="Source1" />
-                      </Edges>
-                    </Workflow>
-                  </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="rx:Switch" />
-                  </Expression>
-                  <Expression xsi:type="rx:BehaviorSubject" TypeArguments="p7:TaskState">
-                    <rx:Name>SetTaskState</rx:Name>
-                  </Expression>
-                  <Expression xsi:type="p7:Format">
-                    <harp:MessageType>Write</harp:MessageType>
-                    <harp:Register xsi:type="p7:SetTaskState" />
+                    <Combinator xsi:type="p1:CuttlefishTaskController">
+                      <p1:StopMargin>20</p1:StopMargin>
+                      <p1:SettleTime>10</p1:SettleTime>
+                      <p1:PowerChangeDelay>250</p1:PowerChangeDelay>
+                    </Combinator>
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
                     <Name>CuttlefishFipCommands</Name>
                   </Expression>
                 </Nodes>
                 <Edges>
-                  <Edge From="1" To="2" Label="Source1" />
-                  <Edge From="2" To="3" Label="Source1" />
-                  <Edge From="3" To="11" Label="Source1" />
+                  <Edge From="1" To="4" Label="Source1" />
+                  <Edge From="2" To="4" Label="Source2" />
+                  <Edge From="3" To="4" Label="Source3" />
                   <Edge From="4" To="5" Label="Source1" />
-                  <Edge From="5" To="6" Label="Source1" />
-                  <Edge From="6" To="11" Label="Source2" />
-                  <Edge From="7" To="8" Label="Source1" />
-                  <Edge From="8" To="10" Label="Source1" />
-                  <Edge From="9" To="10" Label="Source2" />
-                  <Edge From="10" To="11" Label="Source3" />
-                  <Edge From="11" To="12" Label="Source1" />
-                  <Edge From="12" To="13" Label="Source1" />
-                  <Edge From="14" To="15" Label="Source1" />
-                  <Edge From="15" To="16" Label="Source1" />
-                  <Edge From="17" To="18" Label="Source1" />
-                  <Edge From="18" To="19" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -1489,10 +928,6 @@
             <Edge From="9" To="10" Label="Source1" />
             <Edge From="10" To="11" Label="Source1" />
             <Edge From="11" To="12" Label="Source1" />
-            <Edge From="12" To="13" Label="Source1" />
-            <Edge From="13" To="14" Label="Source1" />
-            <Edge From="15" To="16" Label="Source1" />
-            <Edge From="16" To="17" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>

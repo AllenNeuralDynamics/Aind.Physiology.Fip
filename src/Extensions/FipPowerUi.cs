@@ -22,6 +22,8 @@ static class FipPowerUi
     public static readonly Vector4 InactiveColor = new Vector4(0.35f, 0.35f, 0.35f, 0.6f);
     public static readonly Vector4 StateOnColor = new Vector4(0.15f, 0.45f, 0.90f, 1f);
     public static readonly Vector4 StateOffColor = new Vector4(0.35f, 0.35f, 0.35f, 1f);
+    // Marks a slider value that has not been sent to the hardware yet.
+    public static readonly Vector4 PendingColor = new Vector4(0.95f, 0.65f, 0.10f, 1f);
 
     // Row height of the table being drawn; rows are stretched so the table fills the window.
     public static float RowHeight;

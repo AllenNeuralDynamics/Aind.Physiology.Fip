@@ -69,6 +69,9 @@ public class FipCameraPowerControlVisualizer
     private class RowState
     {
         public float Power;
+        // Pending typed value; only applied to Power when the input loses focus or Enter is pressed.
+        public float Typed;
+        public bool Typing;
     }
 
     public IObservable<ITriggerLightSourceTask> Process<TTickSource>(IObservable<TTickSource> frames)
@@ -135,9 +138,9 @@ public class FipCameraPowerControlVisualizer
         if (ImGui.BeginTable("##FipCameraPowerControl", 6, tableFlags, new Vector2(tableWidth, 0)))
         {
             ImGui.TableSetupColumn("Light", ImGuiTableColumnFlags.WidthStretch, 0.5f);
-            ImGui.TableSetupColumn("Power", ImGuiTableColumnFlags.WidthStretch, 2f);
-            ImGui.TableSetupColumn("Current Power", ImGuiTableColumnFlags.WidthStretch, 1f);
-            ImGui.TableSetupColumn("Experiment", ImGuiTableColumnFlags.WidthStretch, 1f);
+            ImGui.TableSetupColumn("CW Power", ImGuiTableColumnFlags.WidthStretch, 2f);
+            ImGui.TableSetupColumn("Current CW Power", ImGuiTableColumnFlags.WidthStretch, 1f);
+            ImGui.TableSetupColumn("Experiment Power", ImGuiTableColumnFlags.WidthStretch, 1f);
             ImGui.TableSetupColumn("Set CW", ImGuiTableColumnFlags.WidthStretch, 1f);
             ImGui.TableSetupColumn("State", ImGuiTableColumnFlags.WidthStretch, 0.5f);
             ImGui.TableHeadersRow();
@@ -158,13 +161,51 @@ public class FipCameraPowerControlVisualizer
 
                 ImGui.TableNextColumn();
                 FipPowerUi.VerticalCenter(ImGui.GetFrameHeight() + ImGui.GetTextLineHeight() + 4f);
-                ImGui.SetNextItemWidth(-1);
+                var inputWidth = 70f;
+                ImGui.SetNextItemWidth(Math.Max(20f, ImGui.GetContentRegionAvail().X - inputWidth - 8f));
                 var power = row.Power;
-                if (ImGui.SliderFloat("Power" + idSuffix, ref power, 0f, 1f))
+                if (ImGui.SliderFloat("##Power" + idSuffix, ref power, 0f, 1f, ""))
                 {
                     row.Power = power;
                 }
-                ImGui.TextUnformatted(FipPowerUi.FormatPower(lightSource, row.Power));
+                // On slider release, push the new power if this channel is already on.
+                var committed = ImGui.IsItemDeactivatedAfterEdit();
+
+                // Typed alternative to the slider: exact duty cycle in [0, 1], applied on Enter / focus loss.
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(inputWidth);
+                var typed = row.Typing ? row.Typed : row.Power;
+                if (ImGui.InputFloat("##PowerInput" + idSuffix, ref typed, 0f, 0f, "%.3f"))
+                {
+                    row.Typed = typed;
+                }
+                row.Typing = ImGui.IsItemActive();
+                if (ImGui.IsItemDeactivatedAfterEdit())
+                {
+                    row.Power = Math.Min(1f, Math.Max(0f, row.Typed));
+                    committed = true;
+                }
+
+                if (committed && isActiveChannel)
+                {
+                    observer.OnNext(new ContinuousLightSourceTask(channel, row.Power));
+                }
+                // Unsent: an active channel whose slider differs from what is applied, or an off
+                // channel whose slider was moved away from the rig-config duty cycle.
+                var reference = isActiveChannel
+                    ? activeContinuous.Power
+                    : (lightSource != null ? (float)lightSource.CalibratedDutyCycle : 0f);
+                var pending = Math.Abs(row.Power - reference) > 1e-4f;
+                if (pending)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, FipPowerUi.PendingColor);
+                    ImGui.TextUnformatted(FipPowerUi.FormatPower(lightSource, row.Power) + " (not set)");
+                    ImGui.PopStyleColor();
+                }
+                else
+                {
+                    ImGui.TextUnformatted(FipPowerUi.FormatPower(lightSource, row.Power));
+                }
 
                 // What is actually applied right now (the slider only takes effect on Set CW).
                 ImGui.TableNextColumn();
@@ -186,7 +227,7 @@ public class FipCameraPowerControlVisualizer
                 FipPowerUi.CenteredText(FipPowerUi.FormatPower(lightSource, lightSource != null ? (float)lightSource.CalibratedDutyCycle : 0f), null);
 
                 ImGui.TableNextColumn();
-                ImGui.PushStyleColor(ImGuiCol.Button, isActiveChannel ? FipPowerUi.ActiveColor : FipPowerUi.InactiveColor);
+                ImGui.PushStyleColor(ImGuiCol.Button, pending ? FipPowerUi.PendingColor : isActiveChannel ? FipPowerUi.ActiveColor : FipPowerUi.InactiveColor);
                 if (ImGui.Button("Set CW" + idSuffix, new Vector2(ImGui.GetContentRegionAvail().X, Math.Max(0f, FipPowerUi.RowHeight - 8f))))
                 {
                     observer.OnNext(new ContinuousLightSourceTask(channel, row.Power));

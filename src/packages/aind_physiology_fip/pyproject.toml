@@ -20,7 +20,7 @@ Issues = "https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/issues"
 Changelog = "https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/releases"
 
 [project.optional-dependencies]
-data = ["contraqctor < 0.6", "opencv-python"]
+data = ["contraqctor >= 0.6", "opencv-python"]
 
 [project.scripts]
 fip = "aind_physiology_fip.cli:main"

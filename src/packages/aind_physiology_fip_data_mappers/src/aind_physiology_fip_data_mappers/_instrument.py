@@ -157,7 +157,7 @@ class AindInstrumentDataMapper:
             modification_date=mapped_at.date(),
             calibrations=cls._get_calibrations(rig, mapped_at),
             components=all_components,
-            coordinate_system=coordinate_system,
+            global_coordinate_system=coordinate_system,
             connections=connections,
         )
 

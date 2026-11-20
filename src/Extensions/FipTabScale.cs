@@ -14,20 +14,24 @@ using Hexa.NET.ImGui;
 /// frame. The scale is global to the ImGui context, not just this tab. The Fip visualizers divide
 /// their own font size by this scale (see <see cref="FipPowerUi.PushFont"/>), so their content
 /// keeps its auto-fit size and only the tab bar and other unscaled text grow.
+/// It also applies the Fip look and the monitor DPI scale (<see cref="FipStyle.Apply"/>); the DPI
+/// scale multiplies with this one.
 /// </remarks>
 [Combinator]
 [WorkflowElementCategory(ElementCategory.Combinator)]
 [Description("Scales the ImGui font of the whole context, including the tab labels drawn by the host. Pass-through: place it after the tab tick (frame subject). Takes effect on the next frame.")]
 public class FipTabScale
 {
-    private float scale = 1.5f;
-    [Description("Font scale applied to the ImGui style. 1 is the default size.")]
+    private float scale = 1f;
+    [Description("Font scale applied to the ImGui style, on top of the monitor DPI scale. 1 is the default size.")]
     public float Scale { get { return scale; } set { scale = value; } }
 
     public IObservable<TSource> Process<TSource>(IObservable<TSource> source)
     {
         return source.Select(value =>
         {
+            // Font, style and monitor DPI first (FontScaleDpi + ScaleAllSizes), then the user zoom on top.
+            FipStyle.Apply();
             var scale = Math.Max(0.25f, Scale);
             // ImGuiStylePtr.FontScaleMain isn't supported by Bonsai's script-extensions compiler
             // (CS0570); go through the underlying struct instead.

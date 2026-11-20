@@ -53,8 +53,8 @@ public class RoiManagerVisualizer
     [Description("Specifies whether Save/Load/Reset/Add, the ROI table and circle drag/resize are enabled. When false, everything is read-only, but circles still highlight green on hover.")]
     public bool Enabled { get { return enabled; } set { enabled = value; } }
 
-    private float fontSize = 20f;
-    [Description("Font size used to render the control.")]
+    private float fontSize = 13f;
+    [Description("Font size used to render the control, in pixels at 96 DPI (100% display scaling); scaled with the monitor DPI.")]
     public float FontSize { get { return fontSize; } set { fontSize = value; } }
 
     private string localRoiDefaultPath = "../local/default.json";
@@ -79,8 +79,9 @@ public class RoiManagerVisualizer
     const float minRadius = 2f;
     const float radiusStep = 2f;
     const float circleFillAlpha = 0.35f;
-    const float circleStrokeThickness = 4f;
-    const float swatchBorderThickness = 3f;
+    // Line thicknesses in 96-DPI pixels; scaled with FipDpi.Px where drawn.
+    const float circleStrokeThickness = 2f;
+    const float swatchBorderThickness = 1.5f;
     static readonly Vector4 activeCircleColor = new Vector4(0.15f, 0.85f, 0.15f, 1f);
     static readonly Vector4 labelColor = new Vector4(1f, 1f, 1f, 1f);
 
@@ -88,8 +89,18 @@ public class RoiManagerVisualizer
 
     const int defaultRoiCount = 4;
     const float defaultRadius = 20f;
-    const float controlButtonWidth = 140f;
-    const float cameraBorderThickness = 4f;
+    // Control buttons share one row (or two rows of three when the window is too narrow for
+    // the labels). Sized per frame by LayoutControlButtons.
+    const int controlButtonCount = 6;
+    static readonly string[] controlButtonLabels = { "Save ROI", "Load ROI", "Reset ROI", "Add ROI", "Locked", "Unlocked", "Hide ROIs" };
+    Vector2 controlButtonSize;
+    int controlButtonsPerRow = controlButtonCount;
+    int controlButtonIndex;
+    // The ROI table always keeps room for its header plus this many rows, and scrolls the rest.
+    const int minVisibleTableRows = 3;
+    // Cameras never get shorter than this (96-DPI pixels), even in a very short window.
+    const float minCameraHeight = 80f;
+    const float cameraBorderThickness = 2f;
 
     // Geometry of one circle, in that camera's image-pixel space.
     class PickerCircle
@@ -487,6 +498,8 @@ public class RoiManagerVisualizer
 
                     foreach (var slot in slots) UpdateTexture(slot, imageLock);
 
+                    FipStyle.Apply();
+
                     // If anything below throws mid-frame, the managed exception would otherwise
                     // leave ImGui's window/table/popup stacks unbalanced, and the next native
                     // ImGui call aborts the whole Bonsai process (0xc0000409). Snapshot ImGui's
@@ -498,45 +511,40 @@ public class RoiManagerVisualizer
                     {
                         ImGui.PushFont(ImGui.GetFont(), FontSize);
 
-                        // Fixed-size child + AlwaysVerticalScrollbar keep our size and scrollbar
-                        // gutter stable across frames - otherwise small content-height changes
-                        // (image scaling, Roi table row count) flip a scrollbar on/off, which
-                        // itself changes the available width, causing visible jitter.
-                        ImGui.BeginChild("##RoiManagerCanvas", Vector2.Zero, ImGuiChildFlags.None, ImGuiWindowFlags.AlwaysVerticalScrollbar);
+                        // Layout, top to bottom: cameras, hint, control buttons, Roi table. Only the
+                        // Roi table scrolls: the cameras shrink to leave the table room for its
+                        // header and a few rows, and the table scrolls the rest. The canvas itself
+                        // never scrolls, so no scrollbar flips on/off and jitters the width.
+                        ImGui.BeginChild("##RoiManagerCanvas", Vector2.Zero, ImGuiChildFlags.None, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
 
                         RenderWarningPopup();
 
+                        LayoutControlButtons();
+                        var spacing = FipDpi.ItemSpacing.Y;
+                        var tableRowHeight = ImGui.GetFrameHeight() + 2f * CellPaddingY();
+                        var belowCameras = ImGui.GetTextLineHeight() + spacing
+                            + ControlButtonRows() * (controlButtonSize.Y + spacing)
+                            + (minVisibleTableRows + 1) * tableRowHeight + spacing;
+                        var cameraHeight = Math.Max(FipDpi.Px(minCameraHeight), ImGui.GetContentRegionAvail().Y - belowCameras);
+
                         var currentActiveKeys = new HashSet<string>();
-                        changed |= RenderCameras(slots, state.Meta, previousActiveKeys, currentActiveKeys, selectedKeys, editable, !hideRois);
+                        changed |= RenderCameras(slots, state.Meta, previousActiveKeys, currentActiveKeys, selectedKeys, editable, !hideRois, cameraHeight);
                         previousActiveKeys = currentActiveKeys;
 
                         ImGui.TextDisabled("Drag a circle to move it  -  Scroll while hovering it to resize");
 
-                        // Buttons stacked in a fixed-width column to the left of the Roi table.
-                        if (ImGui.BeginTable("##RoiManagerBottom", 2, ImGuiTableFlags.None))
-                        {
-                            ImGui.TableSetupColumn("##RoiManagerControls", ImGuiTableColumnFlags.WidthFixed, controlButtonWidth * 2f + 8f);
-                            ImGui.TableSetupColumn("##RoiManagerTable", ImGuiTableColumnFlags.WidthStretch);
-                            ImGui.TableNextRow();
+                        // The lock is outside any disabled block so it can always be toggled.
+                        // Hide ROIs is view-only, so it stays usable during acquisition
+                        // (Enabled=false), but it is still covered by the lock.
+                        RenderLockButton();
+                        ImGui.BeginDisabled(locked);
+                        RenderHideRoisButton();
+                        ImGui.EndDisabled();
+                        ImGui.BeginDisabled(!editable);
+                        RenderControls(state, slots, selectedKeys, ref changed);
+                        ImGui.EndDisabled();
 
-                            ImGui.TableNextColumn();
-                            // The lock is outside any disabled block so it can always be toggled.
-                            // Hide ROIs is view-only, so it stays usable during acquisition
-                            // (Enabled=false), but it is still covered by the lock.
-                            RenderLockButton();
-                            ImGui.SameLine();
-                            ImGui.BeginDisabled(locked);
-                            RenderHideRoisButton();
-                            ImGui.EndDisabled();
-                            ImGui.BeginDisabled(!editable);
-                            RenderControls(state, slots, selectedKeys, ref changed);
-                            ImGui.EndDisabled();
-
-                            ImGui.TableNextColumn();
-                            changed |= RenderRoiTable(state, selectedKeys, editable);
-
-                            ImGui.EndTable();
-                        }
+                        changed |= RenderRoiTable(state, selectedKeys, editable, Math.Max(tableRowHeight * 2f, ImGui.GetContentRegionAvail().Y));
 
                         ImGui.EndChild();
 
@@ -560,8 +568,9 @@ public class RoiManagerVisualizer
 
     void RenderControls(RoiState state, List<ImageSlot> slots, HashSet<string> selectedKeys, ref bool changed)
     {
-        var buttonSize = new Vector2(controlButtonWidth, ImGui.GetFrameHeight() * 1.6f);
+        var buttonSize = controlButtonSize;
 
+        NextControlButton();
         if (ImGui.Button("Save ROI##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmSaveRoi##RoiManager");
         if (ConfirmPopup("ConfirmSaveRoi##RoiManager", "Overwrite the saved ROI positions on disk?"))
         {
@@ -572,7 +581,7 @@ public class RoiManagerVisualizer
             }
         }
 
-        ImGui.SameLine();
+        NextControlButton();
         if (ImGui.Button("Load ROI##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmLoadRoi##RoiManager");
         if (ConfirmPopup("ConfirmLoadRoi##RoiManager", "Load the saved ROI positions? This overwrites the current positions."))
         {
@@ -589,6 +598,7 @@ public class RoiManagerVisualizer
             }
         }
 
+        NextControlButton();
         if (ImGui.Button("Reset ROI##RoiManager", buttonSize)) ImGui.OpenPopup("ConfirmResetRoi##RoiManager");
         if (ConfirmPopup("ConfirmResetRoi##RoiManager", "Reset to the default ROI configuration?"))
         {
@@ -598,12 +608,50 @@ public class RoiManagerVisualizer
             changed = true;
         }
 
-        ImGui.SameLine();
+        NextControlButton();
         if (ImGui.Button("Add ROI##RoiManager", buttonSize))
         {
             AddRoi(state, slots);
             changed = true;
         }
+    }
+
+    // Splits the full width evenly across the control buttons: one row of six, or two rows of
+    // three when six would clip the longest label. Call once per frame before drawing them.
+    void LayoutControlButtons()
+    {
+        var labelWidth = 0f;
+        foreach (var label in controlButtonLabels)
+        {
+            labelWidth = Math.Max(labelWidth, FipDpi.FitWidth(label, 0f));
+        }
+        var width = ImGui.GetContentRegionAvail().X;
+        var spacing = FipDpi.ItemSpacing.X;
+        controlButtonsPerRow = RowButtonWidth(width, spacing, controlButtonCount) >= labelWidth ? controlButtonCount : controlButtonCount / 2;
+        controlButtonSize = new Vector2(Math.Max(1f, RowButtonWidth(width, spacing, controlButtonsPerRow)), ImGui.GetFrameHeight());
+        controlButtonIndex = 0;
+    }
+
+    static float RowButtonWidth(float width, float spacing, int perRow)
+    {
+        return (width - (perRow - 1) * spacing) / perRow;
+    }
+
+    int ControlButtonRows()
+    {
+        return (controlButtonCount + controlButtonsPerRow - 1) / controlButtonsPerRow;
+    }
+
+    // Keeps the next control button on the current row until the row is full.
+    void NextControlButton()
+    {
+        if (controlButtonIndex % controlButtonsPerRow != 0) ImGui.SameLine();
+        controlButtonIndex++;
+    }
+
+    static float CellPaddingY()
+    {
+        unsafe { return ImGui.GetStyle().Handle->CellPadding.Y; }
     }
 
     static bool ConfirmPopup(string id, string message)
@@ -702,7 +750,8 @@ public class RoiManagerVisualizer
         ImGui.PushStyleColor(ImGuiCol.Button, color);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, hovered);
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, color);
-        if (ImGui.Button((locked ? "Locked" : "Unlocked") + "##RoiManagerLock", new Vector2(controlButtonWidth, ImGui.GetFrameHeight() * 1.6f)))
+        NextControlButton();
+        if (ImGui.Button((locked ? "Locked" : "Unlocked") + "##RoiManagerLock", controlButtonSize))
         {
             locked = !locked;
         }
@@ -716,7 +765,8 @@ public class RoiManagerVisualizer
         ImGui.PushStyleColor(ImGuiCol.Button, color);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, hovered);
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, color);
-        if (ImGui.Button("Hide ROIs##RoiManager", new Vector2(controlButtonWidth, ImGui.GetFrameHeight() * 1.6f)))
+        NextControlButton();
+        if (ImGui.Button("Hide ROIs##RoiManager", controlButtonSize))
         {
             hideRois = !hideRois;
         }
@@ -730,7 +780,7 @@ public class RoiManagerVisualizer
         if (ImGui.BeginPopupModal(popupId, ImGuiWindowFlags.AlwaysAutoResize))
         {
             ImGui.TextUnformatted(warningMessage ?? string.Empty);
-            if (ImGui.Button("OK##RoiManagerWarning", new Vector2(120f, 0f)))
+            if (ImGui.Button("OK##RoiManagerWarning", new Vector2(FipDpi.Px(120f), 0f)))
             {
                 warningMessage = null;
                 ImGui.CloseCurrentPopup();
@@ -739,7 +789,7 @@ public class RoiManagerVisualizer
         }
     }
 
-    static bool RenderCameras(List<ImageSlot> slots, List<RoiMeta> meta, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled, bool showRois)
+    static bool RenderCameras(List<ImageSlot> slots, List<RoiMeta> meta, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled, bool showRois, float maxHeight)
     {
         var changed = false;
         if (ImGui.BeginTable("##RoiManagerCameras", slots.Count, ImGuiTableFlags.SizingStretchSame))
@@ -748,7 +798,7 @@ public class RoiManagerVisualizer
             foreach (var slot in slots)
             {
                 ImGui.TableNextColumn();
-                changed |= RenderCameraImage(slot, meta, previousActiveKeys, currentActiveKeys, selectedKeys, enabled, showRois);
+                changed |= RenderCameraImage(slot, meta, previousActiveKeys, currentActiveKeys, selectedKeys, enabled, showRois, maxHeight);
             }
 
             ImGui.EndTable();
@@ -756,7 +806,7 @@ public class RoiManagerVisualizer
         return changed;
     }
 
-    static bool RenderCameraImage(ImageSlot slot, List<RoiMeta> meta, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled, bool showRois)
+    static bool RenderCameraImage(ImageSlot slot, List<RoiMeta> meta, HashSet<string> previousActiveKeys, HashSet<string> currentActiveKeys, HashSet<string> selectedKeys, bool enabled, bool showRois, float maxHeight)
     {
         if (slot.TextureId == 0 || slot.TextureWidth <= 0 || slot.TextureHeight <= 0)
         {
@@ -768,10 +818,10 @@ public class RoiManagerVisualizer
         var boundsWidth = (float)slot.TextureWidth;
         var boundsHeight = (float)slot.TextureHeight;
         var avail = ImGui.GetContentRegionAvail();
-        // Fit inside BOTH available dimensions (letterbox), not just width - otherwise the
-        // image can overflow past the bottom of a height-constrained container.
+        // Fit inside the column width AND maxHeight (letterbox), so the image never pushes the
+        // controls and Roi table below it out of view.
         var scaleByWidth = avail.X / boundsWidth;
-        var scaleByHeight = avail.Y > 0f ? avail.Y / boundsHeight : scaleByWidth;
+        var scaleByHeight = maxHeight > 0f ? maxHeight / boundsHeight : scaleByWidth;
         var scale = Math.Min(scaleByWidth, scaleByHeight);
         var displaySize = new Vector2(boundsWidth * scale, boundsHeight * scale);
         var origin = ImGui.GetCursorScreenPos();
@@ -782,18 +832,20 @@ public class RoiManagerVisualizer
         var drawList = ImGui.GetWindowDrawList();
         // Thick border in the camera's color identifies each channel (in place of a title). Drawn
         // inset by half its thickness so it stays inside the image bounds.
-        var borderInset = new Vector2(cameraBorderThickness * 0.5f, cameraBorderThickness * 0.5f);
+        var borderThickness = FipDpi.Px(cameraBorderThickness);
+        var borderInset = new Vector2(borderThickness * 0.5f, borderThickness * 0.5f);
         drawList.AddRect(
             origin + borderInset, origin + displaySize - borderInset,
             ImGui.ColorConvertFloat4ToU32(ColorExtensions.CameraColor(slot.Camera)),
-            0f, ImDrawFlags.None, cameraBorderThickness);
+            0f, ImDrawFlags.None, borderThickness);
 
         // Channel name in the bottom-left corner, just inside the border, on a dark backing so
         // it stays readable over bright frames. Drawn before the circles so they stay on top.
-        var labelPadding = new Vector2(cameraBorderThickness + 4f, cameraBorderThickness + 2f);
+        var labelPadding = new Vector2(borderThickness + FipDpi.Px(4f), borderThickness + FipDpi.Px(2f));
         var labelSize = ImGui.CalcTextSize(slot.Label);
         var labelPos = new Vector2(origin.X + labelPadding.X, origin.Y + displaySize.Y - labelPadding.Y - labelSize.Y);
-        drawList.AddRectFilled(labelPos - new Vector2(3f, 1f), labelPos + labelSize + new Vector2(3f, 1f), ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.6f)));
+        var labelMargin = new Vector2(FipDpi.Px(3f), FipDpi.Px(1f));
+        drawList.AddRectFilled(labelPos - labelMargin, labelPos + labelSize + labelMargin, ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.6f)));
         drawList.AddText(labelPos, ImGui.ColorConvertFloat4ToU32(ColorExtensions.CameraColor(slot.Camera)), slot.Label);
 
         // "Hide ROIs": skip the circles entirely (no drawing, no drag/resize); the image, border
@@ -835,23 +887,24 @@ public class RoiManagerVisualizer
         var fill = isActive ? activeCircleColor : roiEnabled ? fillColor : disabledCircleColor;
         var center = origin + new Vector2(circle.X, circle.Y) * scale;
         var radius = circle.Radius * scale;
+        var strokeThickness = FipDpi.Px(circleStrokeThickness);
 
         drawList.AddCircleFilled(center, radius, ImGui.ColorConvertFloat4ToU32(new Vector4(fill.X, fill.Y, fill.Z, circleFillAlpha)));
-        drawList.AddCircle(center, radius, ImGui.ColorConvertFloat4ToU32(color), 0, circleStrokeThickness);
+        drawList.AddCircle(center, radius, ImGui.ColorConvertFloat4ToU32(color), 0, strokeThickness);
         if (!roiEnabled)
         {
             // Cross over the circle, reaching past its edge, so disabled Rois are unmistakable.
             var arm = radius * 1.3f / (float)Math.Sqrt(2.0);
             var crossColor = ImGui.ColorConvertFloat4ToU32(disabledCircleColor);
-            drawList.AddLine(center + new Vector2(-arm, -arm), center + new Vector2(arm, arm), crossColor, circleStrokeThickness);
-            drawList.AddLine(center + new Vector2(-arm, arm), center + new Vector2(arm, -arm), crossColor, circleStrokeThickness);
+            drawList.AddLine(center + new Vector2(-arm, -arm), center + new Vector2(arm, arm), crossColor, strokeThickness);
+            drawList.AddLine(center + new Vector2(-arm, arm), center + new Vector2(arm, -arm), crossColor, strokeThickness);
         }
         var textSize = ImGui.CalcTextSize(label);
         drawList.AddText(center - textSize * 0.5f, ImGui.ColorConvertFloat4ToU32(labelColor), label);
         if (!string.IsNullOrEmpty(name))
         {
             var nameSize = ImGui.CalcTextSize(name);
-            drawList.AddText(center + new Vector2(-nameSize.X * 0.5f, radius + 2f), ImGui.ColorConvertFloat4ToU32(color), name);
+            drawList.AddText(center + new Vector2(-nameSize.X * 0.5f, radius + FipDpi.Px(2f)), ImGui.ColorConvertFloat4ToU32(color), name);
         }
 
         ImGui.SetCursorScreenPos(center - new Vector2(radius, radius));
@@ -897,15 +950,18 @@ public class RoiManagerVisualizer
 
     // One table for every camera: row i is Roi i in Green/Iso and in Red, so editing a row or
     // deleting it applies to all cameras. Row selection does not highlight the circles.
-    static bool RenderRoiTable(RoiState state, HashSet<string> selectedKeys, bool enabled)
+    static bool RenderRoiTable(RoiState state, HashSet<string> selectedKeys, bool enabled, float height)
     {
         var changed = false;
 
         // Columns mirror AindPhysiologyFip.FipCircle: RoiNumber (the row index), FiberNumber,
         // Name, Enabled - plus an unlabeled swatch, next to the Roi number, showing the Roi's
         // circle color.
-        if (ImGui.BeginTable("##RoiTable", 6, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+        // ScrollY + a fixed outer height: the table is the only part of the ROI manager that
+        // scrolls; the header row stays frozen at the top.
+        if (ImGui.BeginTable("##RoiTable", 6, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, new Vector2(0f, height)))
         {
+            ImGui.TableSetupScrollFreeze(0, 1);
             var roiWidth = ImGui.CalcTextSize("ROI").X + ImGui.GetFrameHeight() * 0.5f;
             // Room for a 3-digit number plus the two arrow buttons.
             var fiberWidth = ImGui.CalcTextSize("000").X + ImGui.GetFrameHeight() * 2.5f;
@@ -972,10 +1028,11 @@ public class RoiManagerVisualizer
         var size = new Vector2(Math.Max(1f, ImGui.GetContentRegionAvail().X), ImGui.GetFrameHeight());
         var min = ImGui.GetCursorScreenPos();
         var max = min + size;
-        var inset = new Vector2(swatchBorderThickness * 0.5f, swatchBorderThickness * 0.5f);
+        var thickness = FipDpi.Px(swatchBorderThickness);
+        var inset = new Vector2(thickness * 0.5f, thickness * 0.5f);
         var drawList = ImGui.GetWindowDrawList();
         drawList.AddRectFilled(min, max, ImGui.ColorConvertFloat4ToU32(fill));
-        drawList.AddRect(min + inset, max - inset, ImGui.ColorConvertFloat4ToU32(edge), 0f, ImDrawFlags.None, swatchBorderThickness);
+        drawList.AddRect(min + inset, max - inset, ImGui.ColorConvertFloat4ToU32(edge), 0f, ImDrawFlags.None, thickness);
         ImGui.Dummy(size);
     }
 

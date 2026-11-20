@@ -28,8 +28,8 @@ public class FipActivityGridVisualizer
     [Description("Specifies whether the control is displayed.")]
     public bool Visible { get { return visible; } set { visible = value; } }
 
-    private float fontSize = 20f;
-    [Description("Font size used to render the control.")]
+    private float fontSize = 13f;
+    [Description("Font size used to render the control, in pixels at 96 DPI (100% display scaling); scaled with the monitor DPI.")]
     public float FontSize { get { return fontSize; } set { fontSize = value; } }
 
     private double capacity = 10;
@@ -45,7 +45,10 @@ public class FipActivityGridVisualizer
         FipCameraSource.Red,
     };
 
-    const float rowHeight = 150f;
+    // Plots split the free height evenly, but never get shorter than this (96-DPI pixels).
+    const float minRowHeight = 80f;
+    // The "By ROI" tab fits this many plots in view and scrolls for the rest.
+    const int maxVisibleRoiRows = 4;
 
     // Region indices in a CircleActivityCollection: the Background first, then ROI 0.
     const int BackgroundIndex = 0;
@@ -189,6 +192,8 @@ public class FipActivityGridVisualizer
                         }
                     }
 
+                    FipStyle.Apply();
+
                     // An exception escaping mid-frame would leave ImGui's stacks unbalanced and the
                     // next frame's NewFrame() aborts the whole Bonsai process. Snapshot ImGui's state
                     // so it can be unwound, then surface the exception as a normal workflow error.
@@ -261,6 +266,7 @@ public class FipActivityGridVisualizer
             ImGui.EndCombo();
         }
 
+        var plotHeight = FillHeight(cameraOrder.Length);
         for (int c = 0; c < cameraOrder.Length; c++)
         {
             var camera = cameraOrder[c];
@@ -287,9 +293,9 @@ public class FipActivityGridVisualizer
                 }
             }
 
-            if (ImPlot.BeginPlot("##channel" + camera.ToString(), new Vector2(-1, rowHeight), ImPlotFlags.NoTitle))
+            if (ImPlot.BeginPlot("##channel" + camera.ToString(), new Vector2(-1, plotHeight), ImPlotFlags.NoTitle | ImPlotFlags.NoMenus))
             {
-                SetupRowAxes(ColorExtensions.CameraDisplayName(camera), latest, Capacity, ColorExtensions.CameraColor(camera));
+                SetupRowAxes(ColorExtensions.CameraDisplayName(camera), latest, Capacity, ColorExtensions.CameraColor(camera), c == cameraOrder.Length - 1);
                 for (int i = 0; i < snapshots.Count; i++)
                 {
                     PlotSeries(roiNames[snapshots[i].Item1], snapshots[i].Item2, roiColors[snapshots[i].Item1]);
@@ -313,6 +319,7 @@ public class FipActivityGridVisualizer
         }
 
         ImGui.BeginChild("##FipActivityGridByRoiScroll", new Vector2(-1, -1));
+        var plotHeight = FillHeight(Math.Max(1, Math.Min(roiCount, maxVisibleRoiRows)));
         for (int roi = 0; roi < roiCount; roi++)
         {
             var latest = 0.0;
@@ -333,9 +340,9 @@ public class FipActivityGridVisualizer
                 }
             }
 
-            if (ImPlot.BeginPlot("##roi" + roi.ToString(), new Vector2(-1, rowHeight), ImPlotFlags.NoTitle | ImPlotFlags.NoLegend))
+            if (ImPlot.BeginPlot("##roi" + roi.ToString(), new Vector2(-1, plotHeight), ImPlotFlags.NoTitle | ImPlotFlags.NoMenus))
             {
-                SetupRowAxes(roi < roiNames.Length ? roiNames[roi] : RoiName(roi, null), latest, Capacity, null);
+                SetupRowAxes(roi < roiNames.Length ? roiNames[roi] : RoiName(roi, null), latest, Capacity, null, roi == roiCount - 1);
                 for (int i = 0; i < lines.Count; i++)
                 {
                     PlotSeries(ColorExtensions.CameraDisplayName(lines[i].Item1), lines[i].Item2, ColorExtensions.CameraColor(lines[i].Item1));
@@ -346,10 +353,20 @@ public class FipActivityGridVisualizer
         ImGui.EndChild();
     }
 
-    static void SetupRowAxes(string yLabel, double latest, double capacity, Vector4? yLabelColor)
+    // Height for each of `rows` plots so they fill the free height, at least minRowHeight.
+    static float FillHeight(int rows)
+    {
+        var available = ImGui.GetContentRegionAvail().Y - FipDpi.ItemSpacing.Y * (rows - 1);
+        return Math.Max(FipDpi.Px(minRowHeight), available / rows);
+    }
+
+    // Only the bottom plot shows the time tick labels; the others share its time axis.
+    static void SetupRowAxes(string yLabel, double latest, double capacity, Vector4? yLabelColor, bool showTimeTicks)
     {
         var axesFlags = ImPlotAxisFlags.NoHighlight | ImPlotAxisFlags.NoInitialFit | ImPlotAxisFlags.AutoFit;
-        ImPlot.SetupAxis(ImAxis.X1, "Seconds", axesFlags | ImPlotAxisFlags.NoLabel);
+        var timeFlags = axesFlags | ImPlotAxisFlags.NoLabel;
+        if (!showTimeTicks) timeFlags |= ImPlotAxisFlags.NoTickLabels;
+        ImPlot.SetupAxis(ImAxis.X1, "Seconds", timeFlags);
 
         // Colors the Y axis label/ticks so each "By Channel" row is identifiable at a glance;
         // ImPlot bakes the current AxisText style color into the axis at SetupAxis-call time, so
@@ -367,7 +384,7 @@ public class FipActivityGridVisualizer
     static unsafe void PlotSeries(string label, ActivityPoint[] points, Vector4 color)
     {
         if (points.Length == 0) return;
-        ImPlot.SetNextLineStyle(color, 2.0f);
+        ImPlot.SetNextLineStyle(color, FipDpi.Px(1.5f));
         var xs = new double[points.Length];
         var ys = new double[points.Length];
         for (int i = 0; i < points.Length; i++)

@@ -65,7 +65,7 @@
                     <Combinator xsi:type="p1:RoiManagerVisualizer">
                       <p1:Visible>true</p1:Visible>
                       <p1:Enabled>true</p1:Enabled>
-                      <p1:FontSize>20</p1:FontSize>
+                      <p1:FontSize>13</p1:FontSize>
                       <p1:LocalRoiDefaultPath>../local/default.json</p1:LocalRoiDefaultPath>
                     </Combinator>
                   </Expression>
@@ -119,7 +119,7 @@
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="p1:FipActivityGridVisualizer">
                       <p1:Visible>true</p1:Visible>
-                      <p1:FontSize>20</p1:FontSize>
+                      <p1:FontSize>13</p1:FontSize>
                       <p1:Capacity>10</p1:Capacity>
                     </Combinator>
                   </Expression>
@@ -152,7 +152,7 @@
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="p1:FipTabScale">
-                      <p1:Scale>2</p1:Scale>
+                      <p1:Scale>1</p1:Scale>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="rx:PublishSubject">

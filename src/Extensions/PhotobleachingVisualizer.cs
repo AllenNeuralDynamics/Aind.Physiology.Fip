@@ -55,6 +55,7 @@ public class PhotobleachingVisualizer
                 {
                     // Mirrors bonsai-rx/imgui PR #29, not yet in 0.1.0.
                     unsafe { ImGui.GetIO().Handle->ConfigErrorRecoveryEnableAssert = 0; }
+                    FipStyle.Apply();
                     if (!Visible) return;
 
                     // The scheduled stop itself is sent by the workflow; here it only shows as stopping.
@@ -76,7 +77,7 @@ public class PhotobleachingVisualizer
     {
         var avail = ImGui.GetContentRegionAvail();
         // Clock line is ~24 characters wide; the window holds the clock, two status lines and a button.
-        var fontSize = Math.Max(14f, Math.Min(72f, Math.Min(avail.X / 16f, avail.Y / 7f)));
+        var fontSize = Math.Max(FipDpi.Px(14f), Math.Min(FipDpi.Px(72f), Math.Min(avail.X / 16f, avail.Y / 7f)));
 
         string clock;
         if (stopping) clock = "Stopping...";

@@ -29,28 +29,40 @@ static class FipPowerUi
     public static float RowHeight;
 
     /// <summary>
-    /// Pushes the current font at <paramref name="size"/> pixels, compensating for the context-wide
-    /// font scale set by <see cref="FipTabScale"/> so the content size doesn't depend on it.
+    /// Pushes the current font at <paramref name="size"/> screen pixels, compensating for the
+    /// context-wide font scales (<see cref="FipTabScale"/> zoom and <see cref="FipDpi"/> DPI) so the
+    /// content size doesn't depend on them.
     /// </summary>
     public static void PushFont(float size)
     {
         // ImGuiStylePtr.FontScaleMain isn't supported by Bonsai's script-extensions compiler (CS0570).
         float scale;
         unsafe { scale = ImGui.GetStyle().Handle->FontScaleMain; }
-        ImGui.PushFont(ImGui.GetFont(), size / Math.Max(0.25f, scale));
+        ImGui.PushFont(ImGui.GetFont(), size / (Math.Max(0.25f, scale) * FipDpi.Scale));
     }
 
     /// <summary>
-    /// Picks a font size so <paramref name="rowCount"/> rows of <paramref name="linesPerRow"/> text
-    /// lines (plus a header) fit the free height, and <paramref name="widthLines"/> text lines fit
-    /// the free width.
+    /// Picks a font size so <paramref name="rowCount"/> table rows of <paramref name="linesPerRow"/>
+    /// text lines (plus a header) fit the free height, and <paramref name="widthLines"/> text lines
+    /// fit the free width. Accounts for the font's line height (Segoe UI lines are ~1.33x the font
+    /// size) and the frame/cell padding, which doesn't grow with the font. The result is in screen
+    /// pixels, clamped to 10-20 pixels at 96 DPI so the text stays at a normal reading size.
     /// </summary>
     public static float AutoFontSize(int rowCount, float linesPerRow, float widthLines)
     {
         var avail = ImGui.GetContentRegionAvail();
-        var byHeight = avail.Y / (linesPerRow * (Math.Max(1, rowCount) + 1));
+        var lineRatio = ImGui.GetTextLineHeight() / Math.Max(1f, ImGui.GetFontSize());
+        float padding;
+        unsafe
+        {
+            var style = ImGui.GetStyle().Handle;
+            padding = 2f * (style->FramePadding.Y + style->CellPadding.Y) + 1f;
+        }
+        var rows = Math.Max(1, rowCount) + 1;
+        var perRow = (avail.Y - FipDpi.Px(6f)) / rows - padding;
+        var byHeight = perRow / (linesPerRow * lineRatio);
         var byWidth = avail.X / widthLines;
-        return Math.Max(12f, Math.Min(60f, Math.Min(byHeight, byWidth)));
+        return Math.Max(FipDpi.Px(10f), Math.Min(FipDpi.Px(20f), Math.Min(byHeight, byWidth)));
     }
 
     /// <summary>
@@ -60,7 +72,7 @@ static class FipPowerUi
     public static float ComputeRowHeight(int rowCount)
     {
         var header = ImGui.GetFrameHeight();
-        var available = ImGui.GetContentRegionAvail().Y - header - 6f;
+        var available = ImGui.GetContentRegionAvail().Y - header - FipDpi.Px(6f);
         RowHeight = Math.Max(header, available / Math.Max(1, rowCount));
         return RowHeight;
     }
@@ -68,7 +80,7 @@ static class FipPowerUi
     /// <summary>Moves the cursor down so content of the given height sits in the middle of the row.</summary>
     public static void VerticalCenter(float contentHeight)
     {
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + Math.Max(0f, (RowHeight - contentHeight) / 2f - 4f));
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + Math.Max(0f, (RowHeight - contentHeight) / 2f - FipDpi.Px(4f)));
     }
 
     /// <summary>Centers text in the current table cell, horizontally and vertically. Null color = default.</summary>

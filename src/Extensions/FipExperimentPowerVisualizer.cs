@@ -85,6 +85,7 @@ public class FipExperimentPowerVisualizer
                 {
                     // Mirrors bonsai-rx/imgui PR #29, not yet in 0.1.0.
                     unsafe { ImGui.GetIO().Handle->ConfigErrorRecoveryEnableAssert = 0; }
+                    FipStyle.Apply();
 
                     if (!Visible) return;
 
@@ -98,24 +99,30 @@ public class FipExperimentPowerVisualizer
                     var editable = Enabled && isFipMode && !locked;
                     if (!editable) edits.Clear();
 
-                    // Width model: ~30 text lines for the table plus ~7 for the button column.
-                    var renderFontSize = AutoFontSize ? FipPowerUi.AutoFontSize(lightSources.Count, 1.6f, 37f) : FontSize;
+                    // Each row holds one input frame. Width model: ~30 text lines for the table
+                    // plus ~7 for the button column.
+                    var renderFontSize = AutoFontSize ? FipPowerUi.AutoFontSize(lightSources.Count, 1f, 37f) : FipDpi.Px(FontSize);
                     FipPowerUi.PushFont(renderFontSize);
 
+                    // Why the power can't be edited: shown in the Power header and as a tooltip on
+                    // the table, instead of a line of its own, so the table gets the full height.
+                    string lockReason = null;
+                    string lockHeader = null;
                     if (Enabled && locked)
                     {
-                        ImGui.TextColored(FipPowerUi.InactiveColor, "Locked: unlock in the ROI manager to change the power.");
+                        lockReason = "Locked: unlock in the ROI manager to change the power.";
+                        lockHeader = "Power (locked)";
                     }
                     else if (Enabled && !isFipMode)
                     {
-                        ImGui.TextColored(FipPowerUi.InactiveColor, "Select Fip Mode to change the power.");
+                        lockReason = "Select Fip Mode to change the power.";
+                        lockHeader = "Power (Fip Mode only)";
                     }
 
                     // Mode buttons on the left, same behavior as the Calibration tab: Off stops the device,
                     // Fip Mode runs the Fip cycle. Disabled while an experiment is running (Enabled=false).
-                    const float itemSpacing = 8f;
                     var buttonColumnWidth = renderFontSize * 6f;
-                    var buttonHeight = Math.Max(ImGui.GetFrameHeight(), (ImGui.GetContentRegionAvail().Y - itemSpacing) / 2f);
+                    var buttonHeight = Math.Max(ImGui.GetFrameHeight(), (ImGui.GetContentRegionAvail().Y - FipDpi.ItemSpacing.Y) / 2f);
                     var buttonSize = new Vector2(buttonColumnWidth, buttonHeight);
                     ITriggerLightSourceTask requestedTask = null;
                     ImGui.BeginGroup();
@@ -140,7 +147,7 @@ public class FipExperimentPowerVisualizer
                     {
                         ImGui.TableSetupColumn("Channel", ImGuiTableColumnFlags.WidthStretch, 0.5f);
                         ImGui.TableSetupColumn("Light", ImGuiTableColumnFlags.WidthStretch, 0.5f);
-                        ImGui.TableSetupColumn("Power", ImGuiTableColumnFlags.WidthStretch, 1.5f);
+                        ImGui.TableSetupColumn((lockHeader ?? "Power") + "###Power", ImGuiTableColumnFlags.WidthStretch, 1.5f);
                         ImGui.TableSetupColumn("Duty Cycle", ImGuiTableColumnFlags.WidthStretch, 2f);
                         ImGui.TableHeadersRow();
 
@@ -218,6 +225,10 @@ public class FipExperimentPowerVisualizer
                         }
 
                         ImGui.EndTable();
+                        if (lockReason != null && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+                        {
+                            ImGui.SetTooltip(lockReason);
+                        }
 
                         // Emit after drawing; the subject feeds the new values back into LightSources.
                         if (committedUpdate != null)

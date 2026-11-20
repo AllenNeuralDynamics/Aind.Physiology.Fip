@@ -125,7 +125,7 @@ wheels = [
 
 [[package]]
 name = "aind-physiology-fip"
-version = "0.5.2"
+version = "0.5.3"
 source = { editable = "src/packages/aind_physiology_fip" }
 dependencies = [
     { name = "aind-behavior-services" },

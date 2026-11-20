@@ -236,7 +236,7 @@
         <ui:Visible>true</ui:Visible>
         <ui:Location xsi:nil="true" />
         <ui:Size>
-          <ui:Width>700</ui:Width>
+          <ui:Width>490</ui:Width>
           <ui:Height>1024</ui:Height>
         </ui:Size>
         <ui:WindowState>Normal</ui:WindowState>

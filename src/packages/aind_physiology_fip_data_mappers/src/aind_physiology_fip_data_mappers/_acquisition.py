@@ -32,6 +32,11 @@ from clabe.data_mapper.helpers import snapshot_bonsai_environment
 from pandas import DataFrame
 
 from aind_physiology_fip_data_mappers._base import DataMapper
+from aind_physiology_fip_data_mappers._intended_measurements import (
+    METADATA_SERVICE_URL,
+    IntendedMeasurements,
+    fetch_intended_measurements,
+)
 from aind_physiology_fip_data_mappers._utils import (
     FIP_CHANNELS,
     GREEN_ISO_CAMERA,
@@ -68,6 +73,8 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         data_path: os.PathLike,
         repository_path: os.PathLike,
         session_end_time: datetime | None = None,
+        intended_measurements: IntendedMeasurements | None = None,
+        metadata_service_url: str = METADATA_SERVICE_URL,
     ):
         """Create a mapper for one session directory.
 
@@ -81,10 +88,17 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
                 launched it. Recorded as the acquisition end time when given, as the behavior
                 mappers do; each data stream still ends when its epoch's data does. Left unset,
                 the acquisition ends with its last data stream.
+            intended_measurements (IntendedMeasurements | None): What each of the subject's
+                fibers was implanted to measure. Left unset, they are fetched from
+                aind-metadata-service, and mapping fails if they cannot be.
+            metadata_service_url (str): Base URL of aind-metadata-service, queried when
+                ``intended_measurements`` is not given.
         """
         self._data_path = Path(data_path)
         self._repository_path = Path(repository_path)
         self._session_end_time = session_end_time
+        self._intended_measurements = intended_measurements
+        self._metadata_service_url = metadata_service_url
         self._mapped: acquisition.Acquisition | None = None
 
     def map(self) -> acquisition.Acquisition:
@@ -101,6 +115,9 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
             raise ValueError(f"No FIP epoch under {self._data_path} has both regions and timing to map.")
 
         code = self._get_code()
+        intended_measurements = self._intended_measurements
+        if intended_measurements is None:
+            intended_measurements = fetch_intended_measurements(session.subject, self._metadata_service_url)
         return acquisition.Acquisition(
             subject_id=session.subject,
             acquisition_start_time=min(stream.start_time for stream in streams),
@@ -112,7 +129,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
             # TODO: Revisit if aind-data-schema allows composing acquisition_type across modalities
             # (https://github.com/AllenNeuralDynamics/aind-data-schema/issues/1624).
             acquisition_type="",
-            data_streams=[self._get_data_stream(rig, stream, code) for stream in streams],
+            data_streams=[self._get_data_stream(rig, stream, code, intended_measurements) for stream in streams],
         )
 
     def _get_code(self) -> list[Code]:
@@ -146,7 +163,11 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
 
     @classmethod
     def _get_data_stream(
-        cls, rig: AindPhysioFipRig, stream: _FipDataStreamMetadata, code: list[Code]
+        cls,
+        rig: AindPhysioFipRig,
+        stream: _FipDataStreamMetadata,
+        code: list[Code],
+        intended_measurements: IntendedMeasurements,
     ) -> acquisition.DataStream:
         """One epoch: the patch cords acquired, and how each of their channels was excited and imaged."""
         light_sources = cls._get_light_source_configs(stream.light_source_output)
@@ -161,10 +182,12 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         connections = []
 
         # Each recorded fiber adds its patch cord and the implant the patch cord connects to.
-        for roi, fiber in cls._get_recorded_fibers(stream):
+        for roi, fiber in cls._get_recorded_fibers(stream, intended_measurements):
             patch_cord, implant = patch_cord_name(roi), _fiber_name(fiber)
             active_devices.extend([patch_cord, implant])
-            configurations.append(cls._get_patch_cord_config(roi, fiber, light_sources, exposures))
+            configurations.append(
+                cls._get_patch_cord_config(roi, fiber, light_sources, exposures, intended_measurements[implant])
+            )
             connections.append(Connection(source_device=patch_cord, target_device=implant))
 
         return acquisition.DataStream(
@@ -210,15 +233,20 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         }
 
     @staticmethod
-    def _get_recorded_fibers(stream: _FipDataStreamMetadata) -> list[tuple[int, int]]:
-        """(ROI index, fiber number) for each ROI recorded as enabled and mapped to a fiber.
+    def _get_recorded_fibers(
+        stream: _FipDataStreamMetadata, intended_measurements: IntendedMeasurements
+    ) -> list[tuple[int, int]]:
+        """(ROI index, fiber number) for each ROI recorded as enabled, mapped to a fiber, and measured.
 
         ROI N on each camera sits over patch cord N. The ROI manager edits one table for both
         cameras, so an ROI's fiber and enabled state must agree between them.
 
+        A recorded fiber the subject has no intended measurements for is left out with a warning,
+        along with its patch cord and connection. Measured fibers that were not recorded add nothing.
+
         aind-data-schema requires at least one patch cord in a fiber photometry stream, so an
-        epoch with no enabled, mapped ROI cannot be described and is rejected. That includes
-        sessions predating fiber numbers, which already have their metadata.
+        epoch left with no fiber cannot be described and is rejected. That includes sessions
+        predating fiber numbers, which already have their metadata.
         """
         green, red = stream.regions.camera_green_iso_roi, stream.regions.camera_red_roi
         if len(green) != len(red):
@@ -242,7 +270,24 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
                 f"No enabled ROI in {stream.id} is mapped to a fiber, and aind-data-schema requires at least one "
                 "patch cord in a fiber photometry stream."
             )
-        return fibers
+
+        fibers_with_intended_measures = []
+        for roi, fiber in fibers:
+            if _fiber_name(fiber) in intended_measurements:
+                fibers_with_intended_measures.append((roi, fiber))
+            else:
+                logger.warning(
+                    f"The subject has no intended measurements for {_fiber_name(fiber)}, "
+                    f"so {patch_cord_name(roi)} is left out of {stream.id}."
+                )
+        if not fibers_with_intended_measures:
+            recorded = [_fiber_name(fiber) for _, fiber in fibers]
+            raise ValueError(
+                f"None of the fibers recorded in {stream.id} {recorded} have intended measurements; the subject "
+                f"has them for {sorted(intended_measurements)}. aind-data-schema requires at least one patch cord in a "
+                "fiber photometry stream."
+            )
+        return fibers_with_intended_measures
 
     @staticmethod
     def _get_patch_cord_config(
@@ -250,16 +295,19 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         fiber: int,
         light_sources: dict[LedId, configs.LightEmittingDiodeConfig],
         exposures: dict[LedId, float],
+        intended_measurements: dict[str, str | None],
     ) -> configs.PatchCordConfig:
         """The patch cord over ROI ``roi``, carrying one channel per LED and camera pairing.
 
-        Each channel's camera exposure is the one set by the LED that excites it.
+        Each channel's camera exposure is the one set by the LED that excites it, and its intended
+        measurement is the one ``intended_measurements`` holds for that channel of fiber ``fiber``.
         """
         return configs.PatchCordConfig(
             device_name=patch_cord_name(roi),
             channels=[
                 configs.Channel(
                     channel_name=f"Fiber_{fiber}_{channel.name}",
+                    intended_measurement=intended_measurements[channel.measurement_key],
                     detector=configs.DetectorConfig(
                         device_name=channel.camera.name,
                         exposure_time=exposures[channel.led],

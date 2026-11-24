@@ -8,7 +8,7 @@ saved to a file and passed in instead.
 
 TODO: Temporary. Replace with the powerlims endpoint once procedures, and with them the
 intended measurements, are in Dataverse
-(https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/issues/101).
+(https://github.com/AllenNeuralDynamics/Aind.Physiology.Fip/issues/105).
 
 Functions:
     fetch_intended_measurements: Query the service for a subject's intended measurements.

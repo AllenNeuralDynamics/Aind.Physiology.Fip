@@ -229,10 +229,23 @@ Alternatively, you can use the mapping classes directly. For instance to map the
 from aind_physiology_fip_data_mappers import AindAcquisitionDataMapper
 
 data_path = "path to dataset"
-acquisition_mapped = AindAcquisitionDataMapper(data_path).map()
+repository_path = "path to the Aind.Physiology.Fip checkout the session was acquired with"
+acquisition_mapped = AindAcquisitionDataMapper(data_path, repository_path).map()
 with open("acquisition_fib.json", "w", encoding="utf-8") as f:
     f.write(acquisition_mapped.model_dump_json(indent=2))
 ```
+
+### Intended measurements
+
+Each channel's `intended_measurement` (what its fiber was implanted to measure, e.g. dopamine) is fetched from the `intended_measurements` endpoint of [aind-metadata-service](http://aind-metadata-service) by subject. Mapping fails if the lookup fails, so a session is not uploaded without them. A recorded fiber the subject has no measurements for is left out of the acquisition with a warning.
+
+To map a session while the service is unavailable, save the endpoint's response for the subject to a file and pass it instead:
+
+```powershell
+uv run fip-data-mapper --data-path <session> --intended-measurements intended_measurements.json
+```
+
+The service URL defaults to `http://aind-metadata-service` and can be changed with `--metadata-service-url` or the `METADATA_SERVICE_URL` environment variable.
 
 ## Regenerating schemas
 

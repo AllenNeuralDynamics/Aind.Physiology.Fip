@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from datetime import datetime
@@ -9,7 +8,6 @@ import pydantic_settings
 
 from ._acquisition import AindAcquisitionDataMapper as AindAcquisitionDataMapper
 from ._instrument import AindInstrumentDataMapper as AindInstrumentDataMapper
-from ._intended_measurements import METADATA_SERVICE_URL, parse_intended_measurements
 from ._utils import TrackedDeviceName
 
 logger = logging.getLogger(__name__)
@@ -56,20 +54,6 @@ class DataMapperCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
             "configured once, rather than passed on every run."
         ),
     )
-    metadata_service_url: str = pydantic.Field(
-        default=METADATA_SERVICE_URL,
-        description=(
-            "Base URL of aind-metadata-service, queried for the intended measurements of the subject's "
-            "fibers. Settable as METADATA_SERVICE_URL in the environment."
-        ),
-    )
-    intended_measurements: Path | None = pydantic.Field(
-        default=None,
-        description=(
-            "JSON file holding the aind-metadata-service intended_measurements response for the subject, "
-            "used instead of querying the service, e.g. to map a session while the service is unavailable."
-        ),
-    )
 
     def cli_cmd(self):
         instrument_mapped = AindInstrumentDataMapper(
@@ -85,12 +69,6 @@ class DataMapperCli(pydantic_settings.BaseSettings, cli_kebab_case=True):
             data_path=Path(self.data_path),
             repository_path=self.repository_path,
             session_end_time=self.session_end_time,
-            intended_measurements=(
-                parse_intended_measurements(json.loads(self.intended_measurements.read_text(encoding="utf-8")))
-                if self.intended_measurements is not None
-                else None
-            ),
-            metadata_service_url=self.metadata_service_url,
         ).map()
         logger.info("Writing %s to %s", ACQUISITION_FILE_NAME, self.data_path)
         with open(Path(self.data_path) / ACQUISITION_FILE_NAME, "w", encoding="utf-8") as f:

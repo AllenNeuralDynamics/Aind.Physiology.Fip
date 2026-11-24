@@ -280,14 +280,12 @@ class ChannelSpec:
     led: LedId
     camera: CameraSpec
     emission_wavelength: int
-    # The channel's key in the intended measurements of a fiber.
-    measurement_key: str
 
 
 FIP_CHANNELS: tuple[ChannelSpec, ...] = (
-    ChannelSpec("Green", LedId.BLUE, GREEN_ISO_CAMERA, 520, "G"),
-    ChannelSpec("Isosbestic", LedId.UV, GREEN_ISO_CAMERA, 520, "Iso"),
-    ChannelSpec("Red", LedId.LIME, RED_CAMERA, 590, "R"),
+    ChannelSpec("Green", LedId.BLUE, GREEN_ISO_CAMERA, 520),
+    ChannelSpec("Isosbestic", LedId.UV, GREEN_ISO_CAMERA, 520),
+    ChannelSpec("Red", LedId.LIME, RED_CAMERA, 590),
 )
 
 

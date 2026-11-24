@@ -33,7 +33,6 @@ from pandas import DataFrame
 
 from aind_physiology_fip_data_mappers._base import DataMapper
 from aind_physiology_fip_data_mappers._intended_measurements import (
-    METADATA_SERVICE_URL,
     IntendedMeasurements,
     fetch_intended_measurements,
 )
@@ -73,8 +72,6 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         data_path: os.PathLike,
         repository_path: os.PathLike,
         session_end_time: datetime | None = None,
-        intended_measurements: IntendedMeasurements | None = None,
-        metadata_service_url: str = METADATA_SERVICE_URL,
     ):
         """Create a mapper for one session directory.
 
@@ -88,17 +85,10 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
                 launched it. Recorded as the acquisition end time when given, as the behavior
                 mappers do; each data stream still ends when its epoch's data does. Left unset,
                 the acquisition ends with its last data stream.
-            intended_measurements (IntendedMeasurements | None): What each of the subject's
-                fibers was implanted to measure. Left unset, they are fetched from
-                aind-metadata-service, and mapping fails if they cannot be.
-            metadata_service_url (str): Base URL of aind-metadata-service, queried when
-                ``intended_measurements`` is not given.
         """
         self._data_path = Path(data_path)
         self._repository_path = Path(repository_path)
         self._session_end_time = session_end_time
-        self._intended_measurements = intended_measurements
-        self._metadata_service_url = metadata_service_url
         self._mapped: acquisition.Acquisition | None = None
 
     def map(self) -> acquisition.Acquisition:
@@ -115,9 +105,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
             raise ValueError(f"No FIP epoch under {self._data_path} has both regions and timing to map.")
 
         code = self._get_code()
-        intended_measurements = self._intended_measurements
-        if intended_measurements is None:
-            intended_measurements = fetch_intended_measurements(session.subject, self._metadata_service_url)
+        intended_measurements = fetch_intended_measurements(session.subject)
         return acquisition.Acquisition(
             subject_id=session.subject,
             acquisition_start_time=min(stream.start_time for stream in streams),
@@ -307,7 +295,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
             channels=[
                 configs.Channel(
                     channel_name=f"Fiber_{fiber}_{channel.name}",
-                    intended_measurement=intended_measurements[channel.measurement_key],
+                    intended_measurement=intended_measurements[channel.name],
                     detector=configs.DetectorConfig(
                         device_name=channel.camera.name,
                         exposure_time=exposures[channel.led],

@@ -3,8 +3,7 @@
 The values are not on the rig, so the acquisition mapper fetches them from the service's
 ``intended_measurements`` endpoint, as the aind-metadata-mapper FIP mapper did at upload.
 The lookup fails loudly: a session whose measurements cannot be fetched stays on the rig
-until it is mapped again, by which point the service is back or the response has been
-saved to a file and passed in instead.
+until it is mapped again.
 
 TODO: Temporary. Replace with the powerlims endpoint once procedures, and with them the
 intended measurements, are in Dataverse
@@ -26,13 +25,11 @@ logger = logging.getLogger(__name__)
 
 METADATA_SERVICE_URL = "http://aind-metadata-service"
 
-# Fiber name ("Fiber_0") to the measurement of each channel, keyed by ``ChannelSpec.measurement_key``.
+# Fiber name ("Fiber_0") to the measurement of each channel, keyed by channel name ("Green").
 IntendedMeasurements = dict[str, dict[str, str | None]]
 
 
-def fetch_intended_measurements(
-    subject_id: str, metadata_service_url: str = METADATA_SERVICE_URL
-) -> IntendedMeasurements:
+def fetch_intended_measurements(subject_id: str) -> IntendedMeasurements:
     """Query aind-metadata-service for the intended measurements of a subject's fibers.
 
     Raises:
@@ -40,7 +37,7 @@ def fetch_intended_measurements(
         ValueError: If the service has no measurements for the subject, answers with an
             error, or returns a response that cannot be read.
     """
-    url = f"{metadata_service_url.rstrip('/')}/intended_measurements/{subject_id}"
+    url = f"{METADATA_SERVICE_URL}/intended_measurements/{subject_id}"
     status, body = _get(url)
     # The service answers 300 when the subject has more than one fiber.
     if status not in (200, 300):
@@ -79,9 +76,9 @@ def parse_intended_measurements(response: dict[str, Any]) -> IntendedMeasurement
 
     result = {
         row["fiber_name"]: {
-            "G": _measurement(row.get("intended_measurement_G")),
-            "Iso": _measurement(row.get("intended_measurement_Iso")),
-            "R": _measurement(row.get("intended_measurement_R")),
+            "Green": _measurement(row.get("intended_measurement_G")),
+            "Isosbestic": _measurement(row.get("intended_measurement_Iso")),
+            "Red": _measurement(row.get("intended_measurement_R")),
         }
         for row in rows
         if row.get("fiber_name")

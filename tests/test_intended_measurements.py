@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from aind_physiology_fip_data_mappers._intended_measurements import (
+    METADATA_SERVICE_URL,
     fetch_intended_measurements,
     parse_intended_measurements,
 )
@@ -75,11 +76,11 @@ class TestParse:
         parsed = parse_intended_measurements(RESPONSE)
 
         assert sorted(parsed) == ["Fiber_0", "Fiber_1", "Fiber_2", "Fiber_3"]
-        assert parsed["Fiber_0"] == {"G": "serotonin", "Iso": "control", "R": "acetylcholine"}
+        assert parsed["Fiber_0"] == {"Green": "serotonin", "Isosbestic": "control", "Red": "acetylcholine"}
 
     def test_none_string_is_no_measurement(self):
         """The service writes a channel with nothing to measure as the string "None\""""
-        assert parse_intended_measurements(RESPONSE)["Fiber_1"]["R"] is None
+        assert parse_intended_measurements(RESPONSE)["Fiber_1"]["Red"] is None
 
     def test_blue_is_not_read(self):
         """FIP has no blue channel, so the blue measurement is dropped"""
@@ -106,10 +107,10 @@ class TestFetch:
     def test_reads_a_multiple_fiber_response(self):
         """The service answers 300 for several fibers, which urllib raises but which carries the data"""
         with patch(URLOPEN, side_effect=_http_error(300, RESPONSE)) as urlopen:
-            parsed = fetch_intended_measurements("876201", "http://service/")
+            parsed = fetch_intended_measurements("876201")
 
-        assert urlopen.call_args.args[0] == "http://service/intended_measurements/876201"
-        assert parsed["Fiber_2"]["G"] == "dopamine"
+        assert urlopen.call_args.args[0] == f"{METADATA_SERVICE_URL}/intended_measurements/876201"
+        assert parsed["Fiber_2"]["Green"] == "dopamine"
 
     def test_reads_a_single_fiber_response(self):
         """A subject with one fiber is answered with a 200"""

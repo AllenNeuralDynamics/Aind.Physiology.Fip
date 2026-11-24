@@ -227,44 +227,6 @@ class TestAindInstrumentMapper(unittest.TestCase):
         self.assertEqual(mapped.instrument_id, mock_rig().rig_name)
         self.assertEqual((self.data_path / ACQUISITION_FILE_NAME).read_text(encoding="utf-8"), "{}")
 
-    @patch("aind_physiology_fip_data_mappers.AindAcquisitionDataMapper")
-    def test_cli_queries_the_metadata_service_by_default(self, mock_acquisition_mapper):
-        """Without a measurements file, the acquisition mapper is left to query the given service"""
-        mock_acquisition_mapper.return_value.map.return_value.model_dump_json.return_value = "{}"
-
-        DataMapperCli(data_path=self.data_path, metadata_service_url="http://service").cli_cmd()
-
-        kwargs = mock_acquisition_mapper.call_args.kwargs
-        self.assertIsNone(kwargs["intended_measurements"])
-        self.assertEqual(kwargs["metadata_service_url"], "http://service")
-
-    @patch("aind_physiology_fip_data_mappers.AindAcquisitionDataMapper")
-    def test_cli_reads_intended_measurements_from_a_file(self, mock_acquisition_mapper):
-        """A saved service response stands in for the lookup, e.g. while the service is down"""
-        mock_acquisition_mapper.return_value.map.return_value.model_dump_json.return_value = "{}"
-        saved = self.data_path / "intended_measurements.json"
-        saved.write_text(
-            json.dumps(
-                {
-                    "data": {
-                        "fiber_name": "Fiber_0",
-                        "intended_measurement_R": "None",
-                        "intended_measurement_G": "dopamine",
-                        "intended_measurement_B": "None",
-                        "intended_measurement_Iso": "control",
-                    }
-                }
-            ),
-            encoding="utf-8",
-        )
-
-        DataMapperCli(data_path=self.data_path, intended_measurements=saved).cli_cmd()
-
-        self.assertEqual(
-            mock_acquisition_mapper.call_args.kwargs["intended_measurements"],
-            {"Fiber_0": {"G": "dopamine", "Iso": "control", "R": None}},
-        )
-
     def test_trigger_connections(self):
         """The cuttlefish board is wired out to each LED and camera it triggers"""
         mapped = self.rig_mapper.map()

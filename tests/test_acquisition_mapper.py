@@ -1,9 +1,11 @@
 """Tests the aind-data-schema acquisition mapper against a synthetic session directory."""
 
 import json
+import logging
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from unittest.mock import patch
 
 import git
 import pytest
@@ -24,6 +26,14 @@ LIGHT_SOURCE_OUTPUT = {
     "blue": {"power": 12.5, "is_calibrated": True},
     "uv": {"power": 0.25, "is_calibrated": False},
     "lime": {"power": 30.0, "is_calibrated": True},
+}
+
+# The intended measurements of the mock session's four fibers, as aind-metadata-service returns them for a real subject.
+INTENDED_MEASUREMENTS = {
+    "Fiber_0": {"G": "serotonin", "Iso": "control", "R": "acetylcholine"},
+    "Fiber_1": {"G": "calcium", "Iso": "control", "R": None},
+    "Fiber_2": {"G": "dopamine", "Iso": "control", "R": "acetylcholine"},
+    "Fiber_3": {"G": "dopamine", "Iso": "control", "R": "acetylcholine"},
 }
 
 
@@ -61,8 +71,9 @@ def _make_session(
     return root
 
 
-def _map(root: Path) -> acquisition.Acquisition:
-    return AindAcquisitionDataMapper(root, REPOSITORY).map()
+def _map(root: Path, intended_measurements: dict | None = None) -> acquisition.Acquisition:
+    intended_measurements = INTENDED_MEASUREMENTS if intended_measurements is None else intended_measurements
+    return AindAcquisitionDataMapper(root, REPOSITORY, intended_measurements=intended_measurements).map()
 
 
 def _patch_cords(mapped: acquisition.Acquisition) -> dict[str, object]:
@@ -85,7 +96,9 @@ def test_maps_session_to_valid_acquisition(tmp_path):
 def test_session_end_time_sets_the_acquisition_end(tmp_path):
     """A supplied session end time ends the acquisition, while the stream still ends with its data"""
     end = datetime(2025, 1, 1, 13, 5, tzinfo=UTC)
-    mapped = AindAcquisitionDataMapper(_make_session(tmp_path, mock_roi_settings()), REPOSITORY, end).map()
+    mapped = AindAcquisitionDataMapper(
+        _make_session(tmp_path, mock_roi_settings()), REPOSITORY, end, intended_measurements=INTENDED_MEASUREMENTS
+    ).map()
 
     assert mapped.acquisition_end_time == end
     (stream,) = mapped.data_streams
@@ -236,3 +249,90 @@ def test_active_devices_exist_in_the_instrument(tmp_path):
     components = {c.name for c in instrument.components}
     missing = {d for d in stream.active_devices if not d.startswith("Fiber_")} - components
     assert not missing, f"Acquisition names devices the instrument does not have: {sorted(missing)}"
+
+
+def _intended_measurements(patch_cord) -> dict[str, str | None]:
+    return {c.channel_name: c.intended_measurement for c in patch_cord.channels}
+
+
+def test_channels_record_their_fibers_intended_measurement(tmp_path):
+    """Each channel records what its fiber was implanted to measure on that channel"""
+    patch_cords = _patch_cords(_map(_make_session(tmp_path, mock_roi_settings())))
+
+    assert _intended_measurements(patch_cords["Patch Cord 0"]) == {
+        "Fiber_0_Green": "serotonin",
+        "Fiber_0_Isosbestic": "control",
+        "Fiber_0_Red": "acetylcholine",
+    }
+    assert _intended_measurements(patch_cords["Patch Cord 1"])["Fiber_1_Red"] is None
+
+
+def test_intended_measurement_follows_the_fiber_not_the_roi(tmp_path):
+    """A patch cord over ROI N connected to fiber M records fiber M's measurements"""
+    regions = mock_roi_settings()
+    for rois in (regions.camera_green_iso_roi, regions.camera_red_roi):
+        rois[0].measurement.fiber_number, rois[2].measurement.fiber_number = 2, 0
+
+    patch_cord = _patch_cords(_map(_make_session(tmp_path, regions)))["Patch Cord 0"]
+    assert _intended_measurements(patch_cord) == {
+        "Fiber_2_Green": "dopamine",
+        "Fiber_2_Isosbestic": "control",
+        "Fiber_2_Red": "acetylcholine",
+    }
+
+
+def test_fiber_without_intended_measurements_is_left_out(tmp_path, caplog):
+    """A recorded fiber the subject has no measurements for loses its patch cord, devices and connection"""
+    intended_measurements = {k: v for k, v in INTENDED_MEASUREMENTS.items() if k != "Fiber_1"}
+    with caplog.at_level(logging.WARNING, logger="aind_physiology_fip_data_mappers._acquisition"):
+        mapped = _map(_make_session(tmp_path, mock_roi_settings()), intended_measurements)
+    (stream,) = mapped.data_streams
+
+    assert sorted(_patch_cords(mapped)) == ["Patch Cord 0", "Patch Cord 2", "Patch Cord 3"]
+    assert not {"Patch Cord 1", "Fiber_1"} & set(stream.active_devices)
+    assert ("Patch Cord 1", "Fiber_1") not in {(c.source_device, c.target_device) for c in stream.connections}
+    assert "no intended measurements for Fiber_1" in caplog.text
+
+
+def test_unrecorded_fiber_with_intended_measurements_adds_nothing(tmp_path):
+    """Measurements for a fiber no enabled ROI recorded do not add a patch cord or device"""
+    intended_measurements = {**INTENDED_MEASUREMENTS, "Fiber_7": {"G": "dopamine", "Iso": "control", "R": None}}
+    mapped = _map(_make_session(tmp_path, mock_roi_settings()), intended_measurements)
+    (stream,) = mapped.data_streams
+
+    assert sorted(_patch_cords(mapped)) == [f"Patch Cord {i}" for i in range(4)]
+    assert "Fiber_7" not in stream.active_devices
+
+
+def test_epoch_without_a_measured_fiber_is_rejected(tmp_path):
+    """With no recorded fiber left to describe, the stream would have no patch cord, so mapping fails"""
+    intended_measurements = {"Fiber_7": {"G": "dopamine", "Iso": "control", "R": None}}
+
+    with pytest.raises(ValueError, match="intended measurements"):
+        _map(_make_session(tmp_path, mock_roi_settings()), intended_measurements)
+
+
+def test_intended_measurements_are_fetched_when_not_given(tmp_path):
+    """Without measurements passed in, the mapper fetches the session subject's from the metadata service"""
+    root = _make_session(tmp_path, mock_roi_settings())
+    with patch(
+        "aind_physiology_fip_data_mappers._acquisition.fetch_intended_measurements",
+        return_value=INTENDED_MEASUREMENTS,
+    ) as fetch:
+        mapped = AindAcquisitionDataMapper(root, REPOSITORY, metadata_service_url="http://service").map()
+
+    fetch.assert_called_once_with(mock_session().subject, "http://service")
+    assert _intended_measurements(_patch_cords(mapped)["Patch Cord 0"])["Fiber_0_Green"] == "serotonin"
+
+
+def test_mapping_fails_when_intended_measurements_cannot_be_fetched(tmp_path):
+    """A failed lookup stops the mapping rather than writing an acquisition without measurements"""
+    root = _make_session(tmp_path, mock_roi_settings())
+    with (
+        patch(
+            "aind_physiology_fip_data_mappers._acquisition.fetch_intended_measurements",
+            side_effect=ConnectionError("unreachable"),
+        ),
+        pytest.raises(ConnectionError),
+    ):
+        AindAcquisitionDataMapper(root, REPOSITORY).map()

@@ -97,10 +97,9 @@ class TestParse:
         assert list(parsed) == ["Fiber_0"]
 
     @pytest.mark.parametrize("data", [None, [], [{"intended_measurement_G": "dopamine"}]])
-    def test_response_without_a_fiber_is_rejected(self, data):
-        """A response with no fiber has nothing to map"""
-        with pytest.raises(ValueError, match="no fiber"):
-            parse_intended_measurements({"data": data})
+    def test_response_without_a_fiber_reads_as_none(self, data):
+        """A response with no fiber reads as no measurements"""
+        assert parse_intended_measurements({"data": data}) == {}
 
 
 class TestFetch:
@@ -117,14 +116,11 @@ class TestFetch:
         with patch(URLOPEN, return_value=_ok(200, {"data": RESPONSE["data"][0]})):
             assert list(fetch_intended_measurements("876201")) == ["Fiber_0"]
 
-    def test_unknown_subject_is_rejected(self):
-        """A subject the service has no measurements for fails the lookup"""
+    def test_unknown_subject_has_no_measurements(self):
+        """The service answering that it has no data for the subject is not a failure"""
         not_found = _http_error(404, {"message": "No Data Found.", "data": None})
-        with (
-            patch(URLOPEN, side_effect=not_found),
-            pytest.raises(ValueError, match="No intended measurements for subject 000000"),
-        ):
-            fetch_intended_measurements("000000")
+        with patch(URLOPEN, side_effect=not_found):
+            assert fetch_intended_measurements("000000") == {}
 
     def test_service_error_is_rejected(self):
         """An error from the service fails the lookup with its status"""

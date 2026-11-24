@@ -285,17 +285,19 @@ def test_intended_measurement_follows_the_fiber_not_the_roi(tmp_path):
     }
 
 
-def test_fiber_without_intended_measurements_is_left_out(tmp_path, caplog):
-    """A recorded fiber the subject has no measurements for loses its patch cord, devices and connection"""
+def test_fiber_without_intended_measurements_is_recorded_without_one(tmp_path, caplog):
+    """A recorded fiber the subject has no measurements for keeps its patch cord, with null measurements"""
     intended_measurements = {k: v for k, v in INTENDED_MEASUREMENTS.items() if k != "Fiber_1"}
     with caplog.at_level(logging.WARNING, logger="aind_physiology_fip_data_mappers._acquisition"):
         mapped = _map(_make_session(tmp_path, mock_roi_settings()), intended_measurements)
     (stream,) = mapped.data_streams
+    patch_cords = _patch_cords(mapped)
 
-    assert sorted(_patch_cords(mapped)) == ["Patch Cord 0", "Patch Cord 2", "Patch Cord 3"]
-    assert not {"Patch Cord 1", "Fiber_1"} & set(stream.active_devices)
-    assert ("Patch Cord 1", "Fiber_1") not in {(c.source_device, c.target_device) for c in stream.connections}
-    assert "no intended measurements for Fiber_1" in caplog.text
+    assert sorted(patch_cords) == [f"Patch Cord {i}" for i in range(4)]
+    assert ("Patch Cord 1", "Fiber_1") in {(c.source_device, c.target_device) for c in stream.connections}
+    assert set(_intended_measurements(patch_cords["Patch Cord 1"]).values()) == {None}
+    assert _intended_measurements(patch_cords["Patch Cord 0"])["Fiber_0_Green"] == "serotonin"
+    assert "No intended measurements for Fiber_1" in caplog.text
 
 
 def test_unrecorded_fiber_with_intended_measurements_adds_nothing(tmp_path):
@@ -311,12 +313,12 @@ def test_unrecorded_fiber_with_intended_measurements_adds_nothing(tmp_path):
     assert "Fiber_7" not in stream.active_devices
 
 
-def test_epoch_without_a_measured_fiber_is_rejected(tmp_path):
-    """With no recorded fiber left to describe, the stream would have no patch cord, so mapping fails"""
-    intended_measurements = {"Fiber_7": {"Green": "dopamine", "Isosbestic": "control", "Red": None}}
+def test_subject_without_intended_measurements_still_maps(tmp_path):
+    """When the service has no measurements for the subject, every patch cord is kept with null measurements"""
+    patch_cords = _patch_cords(_map(_make_session(tmp_path, mock_roi_settings()), {}))
 
-    with pytest.raises(ValueError, match="intended measurements"):
-        _map(_make_session(tmp_path, mock_roi_settings()), intended_measurements)
+    assert sorted(patch_cords) == [f"Patch Cord {i}" for i in range(4)]
+    assert all(set(_intended_measurements(p).values()) == {None} for p in patch_cords.values())
 
 
 def test_intended_measurements_are_fetched_for_the_session_subject(tmp_path):

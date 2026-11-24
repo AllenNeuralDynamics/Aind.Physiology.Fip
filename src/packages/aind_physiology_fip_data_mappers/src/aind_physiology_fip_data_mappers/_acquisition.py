@@ -32,6 +32,10 @@ from clabe.data_mapper.helpers import snapshot_bonsai_environment
 from pandas import DataFrame
 
 from aind_physiology_fip_data_mappers._base import DataMapper
+from aind_physiology_fip_data_mappers._intended_measurements import (
+    IntendedMeasurements,
+    fetch_intended_measurements,
+)
 from aind_physiology_fip_data_mappers._utils import (
     FIP_CHANNELS,
     GREEN_ISO_CAMERA,
@@ -101,6 +105,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
             raise ValueError(f"No FIP epoch under {self._data_path} has both regions and timing to map.")
 
         code = self._get_code()
+        intended_measurements = fetch_intended_measurements(session.subject)
         return acquisition.Acquisition(
             subject_id=session.subject,
             acquisition_start_time=min(stream.start_time for stream in streams),
@@ -112,7 +117,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
             # TODO: Revisit if aind-data-schema allows composing acquisition_type across modalities
             # (https://github.com/AllenNeuralDynamics/aind-data-schema/issues/1624).
             acquisition_type="",
-            data_streams=[self._get_data_stream(rig, stream, code) for stream in streams],
+            data_streams=[self._get_data_stream(rig, stream, code, intended_measurements) for stream in streams],
         )
 
     def _get_code(self) -> list[Code]:
@@ -146,7 +151,11 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
 
     @classmethod
     def _get_data_stream(
-        cls, rig: AindPhysioFipRig, stream: _FipDataStreamMetadata, code: list[Code]
+        cls,
+        rig: AindPhysioFipRig,
+        stream: _FipDataStreamMetadata,
+        code: list[Code],
+        intended_measurements: IntendedMeasurements,
     ) -> acquisition.DataStream:
         """One epoch: the patch cords acquired, and how each of their channels was excited and imaged."""
         light_sources = cls._get_light_source_configs(stream.light_source_output)
@@ -163,8 +172,12 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         # Each recorded fiber adds its patch cord and the implant the patch cord connects to.
         for roi, fiber in cls._get_recorded_fibers(stream):
             patch_cord, implant = patch_cord_name(roi), _fiber_name(fiber)
+            if implant not in intended_measurements:
+                logger.warning(f"No intended measurements for {implant}; its channels are recorded without one.")
             active_devices.extend([patch_cord, implant])
-            configurations.append(cls._get_patch_cord_config(roi, fiber, light_sources, exposures))
+            configurations.append(
+                cls._get_patch_cord_config(roi, fiber, light_sources, exposures, intended_measurements.get(implant, {}))
+            )
             connections.append(Connection(source_device=patch_cord, target_device=implant))
 
         return acquisition.DataStream(
@@ -250,16 +263,20 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         fiber: int,
         light_sources: dict[LedId, configs.LightEmittingDiodeConfig],
         exposures: dict[LedId, float],
+        intended_measurements: dict[str, str | None],
     ) -> configs.PatchCordConfig:
         """The patch cord over ROI ``roi``, carrying one channel per LED and camera pairing.
 
-        Each channel's camera exposure is the one set by the LED that excites it.
+        Each channel's camera exposure is the one set by the LED that excites it, and its intended
+        measurement is the one ``intended_measurements`` holds for that channel of fiber ``fiber``,
+        or None if it holds none.
         """
         return configs.PatchCordConfig(
             device_name=patch_cord_name(roi),
             channels=[
                 configs.Channel(
                     channel_name=f"Fiber_{fiber}_{channel.name}",
+                    intended_measurement=intended_measurements.get(channel.name),
                     detector=configs.DetectorConfig(
                         device_name=channel.camera.name,
                         exposure_time=exposures[channel.led],

@@ -229,7 +229,8 @@ Alternatively, you can use the mapping classes directly. For instance to map the
 from aind_physiology_fip_data_mappers import AindAcquisitionDataMapper
 
 data_path = "path to dataset"
-acquisition_mapped = AindAcquisitionDataMapper(data_path).map()
+repository_path = "path to the Aind.Physiology.Fip checkout the session was acquired with"
+acquisition_mapped = AindAcquisitionDataMapper(data_path, repository_path).map()
 with open("acquisition_fib.json", "w", encoding="utf-8") as f:
     f.write(acquisition_mapped.model_dump_json(indent=2))
 ```

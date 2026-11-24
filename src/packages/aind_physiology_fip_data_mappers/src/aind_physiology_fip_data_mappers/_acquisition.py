@@ -170,11 +170,13 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         connections = []
 
         # Each recorded fiber adds its patch cord and the implant the patch cord connects to.
-        for roi, fiber in cls._get_recorded_fibers(stream, intended_measurements):
+        for roi, fiber in cls._get_recorded_fibers(stream):
             patch_cord, implant = patch_cord_name(roi), _fiber_name(fiber)
+            if implant not in intended_measurements:
+                logger.warning(f"No intended measurements for {implant}; its channels are recorded without one.")
             active_devices.extend([patch_cord, implant])
             configurations.append(
-                cls._get_patch_cord_config(roi, fiber, light_sources, exposures, intended_measurements[implant])
+                cls._get_patch_cord_config(roi, fiber, light_sources, exposures, intended_measurements.get(implant, {}))
             )
             connections.append(Connection(source_device=patch_cord, target_device=implant))
 
@@ -221,20 +223,15 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         }
 
     @staticmethod
-    def _get_recorded_fibers(
-        stream: _FipDataStreamMetadata, intended_measurements: IntendedMeasurements
-    ) -> list[tuple[int, int]]:
-        """(ROI index, fiber number) for each ROI recorded as enabled, mapped to a fiber, and measured.
+    def _get_recorded_fibers(stream: _FipDataStreamMetadata) -> list[tuple[int, int]]:
+        """(ROI index, fiber number) for each ROI recorded as enabled and mapped to a fiber.
 
         ROI N on each camera sits over patch cord N. The ROI manager edits one table for both
         cameras, so an ROI's fiber and enabled state must agree between them.
 
-        A recorded fiber the subject has no intended measurements for is left out with a warning,
-        along with its patch cord and connection. Measured fibers that were not recorded add nothing.
-
         aind-data-schema requires at least one patch cord in a fiber photometry stream, so an
-        epoch left with no fiber cannot be described and is rejected. That includes sessions
-        predating fiber numbers, which already have their metadata.
+        epoch with no enabled, mapped ROI cannot be described and is rejected. That includes
+        sessions predating fiber numbers, which already have their metadata.
         """
         green, red = stream.regions.camera_green_iso_roi, stream.regions.camera_red_roi
         if len(green) != len(red):
@@ -258,24 +255,7 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
                 f"No enabled ROI in {stream.id} is mapped to a fiber, and aind-data-schema requires at least one "
                 "patch cord in a fiber photometry stream."
             )
-
-        fibers_with_intended_measures = []
-        for roi, fiber in fibers:
-            if _fiber_name(fiber) in intended_measurements:
-                fibers_with_intended_measures.append((roi, fiber))
-            else:
-                logger.warning(
-                    f"The subject has no intended measurements for {_fiber_name(fiber)}, "
-                    f"so {patch_cord_name(roi)} is left out of {stream.id}."
-                )
-        if not fibers_with_intended_measures:
-            recorded = [_fiber_name(fiber) for _, fiber in fibers]
-            raise ValueError(
-                f"None of the fibers recorded in {stream.id} {recorded} have intended measurements; the subject "
-                f"has them for {sorted(intended_measurements)}. aind-data-schema requires at least one patch cord in a "
-                "fiber photometry stream."
-            )
-        return fibers_with_intended_measures
+        return fibers
 
     @staticmethod
     def _get_patch_cord_config(
@@ -288,14 +268,15 @@ class AindAcquisitionDataMapper(DataMapper[acquisition.Acquisition]):
         """The patch cord over ROI ``roi``, carrying one channel per LED and camera pairing.
 
         Each channel's camera exposure is the one set by the LED that excites it, and its intended
-        measurement is the one ``intended_measurements`` holds for that channel of fiber ``fiber``.
+        measurement is the one ``intended_measurements`` holds for that channel of fiber ``fiber``,
+        or None if it holds none.
         """
         return configs.PatchCordConfig(
             device_name=patch_cord_name(roi),
             channels=[
                 configs.Channel(
                     channel_name=f"Fiber_{fiber}_{channel.name}",
-                    intended_measurement=intended_measurements[channel.name],
+                    intended_measurement=intended_measurements.get(channel.name),
                     detector=configs.DetectorConfig(
                         device_name=channel.camera.name,
                         exposure_time=exposures[channel.led],

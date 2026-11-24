@@ -2,8 +2,9 @@
 
 The values are not on the rig, so the acquisition mapper fetches them from the service's
 ``intended_measurements`` endpoint, as the aind-metadata-mapper FIP mapper did at upload.
-The lookup fails loudly: a session whose measurements cannot be fetched stays on the rig
-until it is mapped again.
+If the service cannot be reached, the lookup fails, so the session stays on the rig until it
+is mapped again. If the service answers without measurements for the subject or one of its
+fibers, those channels are recorded without one.
 
 TODO: Temporary. Replace with the powerlims endpoint once procedures, and with them the
 intended measurements, are in Dataverse
@@ -32,13 +33,19 @@ IntendedMeasurements = dict[str, dict[str, str | None]]
 def fetch_intended_measurements(subject_id: str) -> IntendedMeasurements:
     """Query aind-metadata-service for the intended measurements of a subject's fibers.
 
+    Returns:
+        IntendedMeasurements: The measurements of each fiber, empty if the service has none
+            for the subject.
+
     Raises:
         urllib.error.URLError: If the service cannot be reached after a few attempts.
-        ValueError: If the service has no measurements for the subject, answers with an
-            error, or returns a response that cannot be read.
+        ValueError: If the service answers with an error or a response that cannot be read.
     """
     url = f"{METADATA_SERVICE_URL}/intended_measurements/{subject_id}"
     status, body = _get(url)
+    if status == 404:
+        logger.warning(f"aind-metadata-service has no intended measurements for subject {subject_id}.")
+        return {}
     # The service answers 300 when the subject has more than one fiber.
     if status not in (200, 300):
         raise ValueError(f"No intended measurements for subject {subject_id}: {url} answered {status}: {body[:500]!r}")
@@ -65,10 +72,7 @@ def parse_intended_measurements(response: dict[str, Any]) -> IntendedMeasurement
     """Read an ``intended_measurements`` response into the measurements of each fiber.
 
     ``data`` holds one row per fiber, or a single row on its own. FIP has no blue channel, so
-    the blue measurement is not read.
-
-    Raises:
-        ValueError: If the response holds no fiber.
+    the blue measurement is not read. A response with no fiber reads as no measurements.
     """
     rows = response.get("data") or []
     if isinstance(rows, dict):
@@ -84,7 +88,7 @@ def parse_intended_measurements(response: dict[str, Any]) -> IntendedMeasurement
         if row.get("fiber_name")
     }
     if not result:
-        raise ValueError("The response holds no fiber.")
+        logger.warning("The intended measurements response holds no fiber.")
     return result
 
 

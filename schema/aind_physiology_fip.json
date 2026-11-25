@@ -10,8 +10,8 @@
           "type": "string"
         },
         "version": {
-          "const": "0.5.3",
-          "default": "0.5.3",
+          "const": "0.5.4",
+          "default": "0.5.4",
           "title": "Version",
           "type": "string"
         },
@@ -111,8 +111,8 @@
           "description": "Parameters of the task"
         },
         "version": {
-          "const": "0.5.3",
-          "default": "0.5.3",
+          "const": "0.5.4",
+          "default": "0.5.4",
           "title": "Version",
           "type": "string"
         },
